@@ -5,10 +5,12 @@
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
+//include { READ_YAML } from '../../modules/local/read_yaml'
 
 workflow INPUT_CHECK {
     take:
     samplesheet // file: /path/to/samplesheet.csv
+    paramsyaml
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
@@ -16,6 +18,9 @@ workflow INPUT_CHECK {
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channel(it) }
         .set { reads }
+
+//    READ_YAML ( paramsyaml )
+// add code to read the params.yaml file with e.g. info about reference genome path
 
     emit:
     reads                                     // channel: [ val(meta), [ reads ] ]
