@@ -1,2 +1,3 @@
 .nextflow*
 read-harvester/work/*
+read-harvester/configs/samplesheet_*
