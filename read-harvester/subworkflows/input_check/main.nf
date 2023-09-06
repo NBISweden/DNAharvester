@@ -5,12 +5,10 @@
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
-//include { READ_DATA } from '../../modules/local/read_data'
 
-workflow PREPARE_INPUT {
+workflow INPUT_CHECK {
     take:
     samplesheet // file: /path/to/samplesheet.csv
-    //parameters
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
@@ -18,9 +16,6 @@ workflow PREPARE_INPUT {
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channel(it) }
         .set { reads }
-
-//    READ_DATA ( parameters )
-// add code to read the params.yaml file with e.g. info about reference genome path
 
     emit:
     reads                                     // channel: [ val(meta), [ reads ] ]
@@ -30,6 +25,7 @@ workflow PREPARE_INPUT {
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channel(LinkedHashMap row) {
     // create meta map: [id, single_end]
+    // TO DO Update to take strandedness and damage treatment
     def meta = [:]
     meta.id         = row.sample
     meta.single_end = row.single_end.toBoolean()

@@ -4,14 +4,14 @@
 
 nextflow.enable.dsl = 2
 
-include { PREPARE_INPUT } from "$projectDir/subworkflows/prepare_input/main"
-//include { MERGE_READS   } from "$projectDir/subworkflows/merge_reads/main"
+include { INPUT_CHECK } from "$projectDir/subworkflows/input_check/main"
+//include { MERGE_FILTER_READS   } from "$projectDir/subworkflows/merge_filter_reads/main"
 
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['merge_reads']
+    def recognized_workflow_stages = ['read_processing']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -25,12 +25,12 @@ workflow {
     """)
 
     // Read in data
-    PREPARE_INPUT ( params.samplesheet )
+    INPUT_CHECK ( params.samplesheet )
 
-    // Merge reads, trim adapters and filter for minimum read length
-    //if ( 'merge_reads' in workflow_steps ) {
+    // Merge paired-end reads, trim adapters and filter for minimum read length
+    //if ( 'read_processing' in workflow_steps ) {
     //    FASTP (
-    //        PREPARE_INPUT.out // specify channel
+    //        INPUT_CHECK.out // specify channel
     //    ) 
     //}
 

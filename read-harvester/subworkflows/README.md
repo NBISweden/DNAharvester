@@ -2,7 +2,7 @@
 
 ## Currently planned subworkflows:
 
-merge_reads
+merge_filter_reads
 - fastp (minimum read length from config file or from subworkflow min_read_length_identification)
 
 mapping
