@@ -28,7 +28,6 @@ process FASTP {
     // Added soft-links to original fastqs for consistent naming in MultiQC
     def prefix = task.ext.prefix ?: "${meta.id}"
     if (meta.single_end) {
-        def fail_fastq = save_trimmed_fail ? "--failed_out ${prefix}.fail.fastq.gz" : ''
         """
         [ ! -f  ${prefix}.fastq.gz ] && ln -sf $reads ${prefix}.fastq.gz
         fastp \\
@@ -37,7 +36,6 @@ process FASTP {
             --thread $task.cpus \\
             --json ${prefix}.fastp.json \\
             --html ${prefix}.fastp.html \\
-            $fail_fastq \\
             $args \\
             2> ${prefix}.fastp.log
         cat <<-END_VERSIONS > versions.yml
@@ -46,20 +44,19 @@ process FASTP {
         END_VERSIONS
         """
     } else {
-        def fail_fastq  = save_trimmed_fail ? "--unpaired1 ${prefix}_1.fail.fastq.gz --unpaired2 ${prefix}_2.fail.fastq.gz" : ''
-        def merge_fastq = save_merged ? "-m --merged_out ${prefix}.merged.fastq.gz" : ''
         """
         [ ! -f  ${prefix}_1.fastq.gz ] && ln -sf ${reads[0]} ${prefix}_1.fastq.gz
         [ ! -f  ${prefix}_2.fastq.gz ] && ln -sf ${reads[1]} ${prefix}_2.fastq.gz
         fastp \\
             --in1 ${prefix}_1.fastq.gz \\
             --in2 ${prefix}_2.fastq.gz \\
+            --merge \\
+            --merged_out= ${prefix}.merged.fastq.gz \\
+            --correction \\
             --out1 ${prefix}_1.fastp.fastq.gz \\
             --out2 ${prefix}_2.fastp.fastq.gz \\
             --json ${prefix}.fastp.json \\
             --html ${prefix}.fastp.html \\
-            $fail_fastq \\
-            $merge_fastq \\
             --thread $task.cpus \\
             --detect_adapter_for_pe \\
             $args \\
