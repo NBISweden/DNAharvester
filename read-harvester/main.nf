@@ -5,7 +5,7 @@
 nextflow.enable.dsl = 2
 
 include { INPUT_CHECK } from "$projectDir/subworkflows/input_check/main"
-//include { MERGE_FILTER_READS   } from "$projectDir/subworkflows/merge_filter_reads/main"
+include { MERGE_FILTER_READS   } from "$projectDir/subworkflows/merge_filter_reads/main"
 
 
 workflow {
@@ -28,11 +28,11 @@ workflow {
     INPUT_CHECK ( params.samplesheet )
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
-    //if ( 'read_processing' in workflow_steps ) {
-    //    FASTP (
-    //        INPUT_CHECK.out // specify channel
-    //    ) 
-    //}
+    if ( 'read_processing' in workflow_steps ) {
+        MERGE_FILTER_READS (
+            INPUT_CHECK.out.reads // specify channel
+        ) 
+    }
 
 }
 
