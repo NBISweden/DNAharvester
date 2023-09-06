@@ -5,7 +5,7 @@
 nextflow.enable.dsl = 2
 
 include { PREPARE_INPUT } from "$projectDir/subworkflows/prepare_input/main"
-include { MERGE_READS   } from "$projectDir/subworkflows/merge_reads/main"
+//include { MERGE_READS   } from "$projectDir/subworkflows/merge_reads/main"
 
 
 workflow {
@@ -25,14 +25,14 @@ workflow {
     """)
 
     // Read in data
-    //PREPARE_INPUT ( params.input, samplesheet )
+    PREPARE_INPUT ( params.samplesheet )
 
     // Merge reads, trim adapters and filter for minimum read length
     //if ( 'merge_reads' in workflow_steps ) {
     //    FASTP (
     //        PREPARE_INPUT.out // specify channel
     //    ) 
-    }
+    //}
 
 }
 

@@ -7,10 +7,10 @@
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
 //include { READ_YAML } from '../../modules/local/read_yaml'
 
-workflow INPUT_CHECK {
+workflow PREPARE_INPUT {
     take:
     samplesheet // file: /path/to/samplesheet.csv
-    paramsyaml
+    //paramsyaml
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
