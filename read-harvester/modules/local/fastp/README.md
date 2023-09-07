@@ -1,6 +1,7 @@
 # Notes on FastP module implementation
 
-Kept option to process single-end data (pairedness is automatically detected from samplesheet)
+Currently, the pipeline only works with paired-end data.
+- Kept draft module to process single-end data (pairedness is automatically detected from samplesheet)
 
 Reads that do not pass filtering and trimming are discarded
 
