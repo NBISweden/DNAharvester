@@ -35,7 +35,7 @@ process FASTP {
         --in1 ${prefix}_1.fastq.gz \\
         --in2 ${prefix}_2.fastq.gz \\
         --merge \\
-        --merged_out= ${prefix}.merged.fastq.gz \\
+        --merged_out ${prefix}.merged.fastq.gz \\
         --correction \\
         --out1 ${prefix}_1.fastp.fastq.gz \\
         --out2 ${prefix}_2.fastp.fastq.gz \\
