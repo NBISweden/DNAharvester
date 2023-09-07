@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { FASTP } from '../../modules/local/fastp/main.nf'
+include { FASTP } from '../../modules/local/fastp/pairedend.nf'
 
 workflow MERGE_FILTER_READS {
     take:
@@ -10,7 +10,7 @@ workflow MERGE_FILTER_READS {
     FASTP ( reads )
 
     emit:
-    reads_merged                  // channel: [ val(meta), [ reads ] ]
-    reads_unmerged                // channel: [ val(meta), [ reads ] ]
-    versions = FASTP.out.versions // channel: [ versions.yml ]
+    reads_merged   = FASTP.out.reads_merged                  // channel: [ val(meta), [ reads ] ]
+    reads_unmerged = FASTP.out.reads_unmerged                // channel: [ val(meta), [ reads ] ]
+    versions       = FASTP.out.versions                      // channel: [ versions.yml ]
 }
