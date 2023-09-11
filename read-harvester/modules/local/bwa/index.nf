@@ -7,7 +7,7 @@ process BWA_INDEX {
         'biocontainers/bwa:0.7.17--hed695b0_7' }"
 
     input:
-    tuple val(meta), path(fasta)
+    path(fasta)
 
     output:
     tuple val(meta), path(bwa) , emit: index

@@ -25,8 +25,10 @@ workflow {
     Running Read Harvester.
     """)
 
-    // Read in data
+    // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
+    Channel.fromPath( params.reference, checkIfExists: true )
+        .set{ reference }
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'read_processing' in workflow_steps ) {
