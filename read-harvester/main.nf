@@ -4,14 +4,15 @@
 
 nextflow.enable.dsl = 2
 
-include { INPUT_CHECK } from "$projectDir/subworkflows/input_check/main"
-include { MERGE_FILTER_READS   } from "$projectDir/subworkflows/merge_filter_reads/main"
+include { INPUT_CHECK        } from "$projectDir/subworkflows/input_check/main"
+include { MERGE_FILTER_READS } from "$projectDir/subworkflows/merge_filter_reads/main"
+include { MAPPING            } from "$projectDir/subworkflows/mapping/main"
 
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['read_processing']
+    def recognized_workflow_stages = ['read_processing','mapping']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -30,10 +31,17 @@ workflow {
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'read_processing' in workflow_steps ) {
         MERGE_FILTER_READS (
-            INPUT_CHECK.out.reads // specify channel
-        ) 
+            INPUT_CHECK.out.reads
+        )
     }
 
+    // Index the reference genome, map with bwa-aln (aDNA parameters) and convert to bam
+    if ( 'mapping' in workflow_steps ) {
+        MAPPING (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            MERGE_FILTER_READS.out.reads
+        ) 
+    }
 }
 
 workflow.onComplete {
