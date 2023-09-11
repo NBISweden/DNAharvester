@@ -20,12 +20,11 @@ process BWA_INDEX {
     def args = task.ext.args ?: ''
     """
     mkdir bwa
-    [ ! -f bwa/${fasta.name} ] && ln -sf ${fasta} bwa/${fasta.name}
     bwa \\
         index \\
         $args \\
         -p bwa/${fasta.baseName} \\
-        bwa/${fasta.name}
+        ${fasta}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
