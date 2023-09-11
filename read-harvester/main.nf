@@ -4,9 +4,9 @@
 
 nextflow.enable.dsl = 2
 
-include { INPUT_CHECK        } from "$projectDir/subworkflows/input_check/main"
-include { MERGE_FILTER_READS } from "$projectDir/subworkflows/merge_filter_reads/main"
-include { MAPPING            } from "$projectDir/subworkflows/mapping/main"
+include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/main"
+include { MERGE_FILTER_READS } from "$projectDir/subworkflows/local/merge_filter_reads/main"
+include { MAPPING            } from "$projectDir/subworkflows/local/mapping/main"
 
 
 workflow {
