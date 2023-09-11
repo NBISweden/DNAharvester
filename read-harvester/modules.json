@@ -1,0 +1,22 @@
+{
+  "name": "Read Harvester pipeline",
+  "homePage": "https://github.com/NBISweden/LTS-L_Dalen_2302/read-harvester",
+  "repos": {
+    "https://github.com/nf-core/modules.git": {
+      "modules": {
+        "nf-core": {
+          "fastqc": {
+            "branch": "master",
+            "git_sha": "9a4517e720bc812e95b56d23d15a1653b6db4f53",
+            "installed_by": ["modules"]
+          },
+          "multiqc": {
+            "branch": "master",
+            "git_sha": "a6e11ac655e744f7ebc724be669dd568ffdc0e80",
+            "installed_by": ["modules"]
+          }
+        }
+      }
+    }
+  }
+}
