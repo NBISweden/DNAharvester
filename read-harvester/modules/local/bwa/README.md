@@ -1,4 +1,4 @@
-# Notes on FastP module implementation
+# Notes on bwa module implementation
 
 Currently, the pipeline only works with merged paired-end or with single-end data.
 
