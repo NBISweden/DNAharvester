@@ -20,7 +20,7 @@ process BWA_INDEX {
     def args = task.ext.args ?: ''
     """
     mkdir bwa
-    [ ! -f bwa/${fasta.name} ] && ln -sf ${fasta} bwa/${fasta.name} ]
+    [ ! -f bwa/${fasta.name} ] && ln -sf ${fasta} bwa/${fasta.name}
     bwa \\
         index \\
         $args \\
