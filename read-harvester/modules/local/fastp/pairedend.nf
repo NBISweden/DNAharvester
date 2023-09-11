@@ -14,7 +14,7 @@ process FASTP {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path('*.merged.fastq.gz'), emit: reads_merged
+    tuple val(meta), path('*.merged.fastq.gz'), emit: reads
     tuple val(meta), path('*.json')           , emit: json
     tuple val(meta), path('*.html')           , emit: html
     tuple val(meta), path('*.log')            , emit: log

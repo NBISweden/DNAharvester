@@ -13,7 +13,7 @@ process FASTP_SINGLE {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path('*.fastp.fastq.gz') , emit: reads_unmerged
+    tuple val(meta), path('*.fastp.fastq.gz') , emit: reads
     tuple val(meta), path('*.json')           , emit: json
     tuple val(meta), path('*.html')           , emit: html
     tuple val(meta), path('*.log')            , emit: log

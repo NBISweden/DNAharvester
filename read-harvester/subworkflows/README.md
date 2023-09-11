@@ -3,7 +3,7 @@
 ## Currently planned subworkflows:
 
 merge_filter_reads
-- fastp (minimum read length from config file or from subworkflow min_read_length_identification)
+- fastp (paired-end and single-strand libraries, minimum read length from config file or from subworkflow min_read_length_identification)
 
 mapping
 - bwa index
