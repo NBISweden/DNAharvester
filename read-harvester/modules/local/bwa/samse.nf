@@ -22,7 +22,7 @@ process BWA_SAMSE {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def read_group = meta.read_group ? "-r ${meta.read_group}" : ""
+    def read_group = meta.read_group ? "-r '${meta.read_group}'" : ""
 
     """
     INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
