@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { FASTP } from '../../modules/local/fastp/pairedend.nf'
+include { FASTP } from '../../../modules/local/fastp/pairedend.nf'
 
 workflow MERGE_FILTER_READS {
     take:
