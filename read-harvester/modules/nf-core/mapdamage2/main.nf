@@ -2,10 +2,10 @@ process MAPDAMAGE2 {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::mapdamage2=2.2.1"
+    conda "bioconda::mapdamage2=2.2.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mapdamage2:2.2.1--pyr40_0' :
-        'biocontainers/mapdamage2:2.2.1--pyr40_0' }"
+        'https://depot.galaxyproject.org/singularity/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
+        'quay.io/biocontainers/mapdamage2:2.2.2--pyr43hdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)
