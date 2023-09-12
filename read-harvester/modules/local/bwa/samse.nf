@@ -1,6 +1,6 @@
 process BWA_SAMSE {
     tag "$meta.id"
-    //label 'process_medium'
+    label 'process_medium'
 
     conda "bioconda::bwa=0.7.17 bioconda::samtools=1.16.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
