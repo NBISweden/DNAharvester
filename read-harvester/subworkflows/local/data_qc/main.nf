@@ -1,29 +1,47 @@
 #! /usr/bin/env nextflow
 
-include { FASTQC as FASTQC_RAW       } from '../../../modules/nf-core/fastqc/main'
-include { FASTQC as FASTQC_PROCESSED } from '../../../modules/nf-core/fastqc/main'
-include { MAPDAMAGE2                 } from '../../../modules/nf-core/mapdamage2/main'
-include { MULTIQC                    } from '../../../modules/nf-core/multiqc/main'
+include { FASTQC as FASTQC_RAW         } from '../../../modules/nf-core/fastqc/main'
+include { FASTQC as FASTQC_PROCESSED   } from '../../../modules/nf-core/fastqc/main'
+include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
+include { MULTIQC                      } from '../../../modules/nf-core/multiqc/main'
 
 workflow DATA_QC {
     take:
     reference
     raw_reads       // paired-end reads or single-end reads
     processed_reads // merged paired-end reads or trimmed single-end reads
+    fastp_json      // read statistic files from FastP
     bam
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions                              = Channel.empty()
 
     FASTQC_RAW ( raw_reads )
     FASTQC_PROCESSED ( processed_reads )
-    ch_versions = ch_versions.mix(FASTQC_PROCESSED.out.versions)
+    ch_versions                              = ch_versions.mix(FASTQC_PROCESSED.out.versions)
 
     MAPDAMAGE2 ( bam, reference )
-    ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
+    ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    //MULTIQC (  )
-    //ch_versions = ch_versions.mix(MULTIQC.out.versions)
+    // Run MultiQC on output
+    ch_multiqc_files                         = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.mix(
+                                                FASTQC_PROCESSED.out.zip.map{ meta, qcfile -> qcfile },
+                                                fastp_json.map{ meta, fastp_json -> fastp_json },
+                                                MAPDAMAGE2.out.pgtoa_freq.map{ meta, pgtoa_freq -> pgtoa_freq },
+                                                MAPDAMAGE2.out.pctot_freq.map{ meta, pctot_freq -> pctot_freq },
+                                                MAPDAMAGE2.out.lgdistribution.map{ meta, lgdistribution -> lgdistribution },
+                                                ).collect()
+    ch_multiqc_config                        = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                          = params.multiqc_logo ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+
+    MULTIQC (
+        ch_multiqc_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_extra_config.toList(),
+        ch_multiqc_logo.toList()
+    )
+    ch_versions                              = ch_versions.mix(MULTIQC.out.versions)
 
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
@@ -45,6 +63,6 @@ workflow DATA_QC {
     mapdamage2_pctot_freq                    = MAPDAMAGE2.out.pctot_freq                    // channel: [ val(meta), path(pctot_freq) ]
     mapdamage2_pgtoa_freq                    = MAPDAMAGE2.out.pgtoa_freq                    // channel: [ val(meta), path(pgtoa_freq) ]
     mapdamage2_folder                        = MAPDAMAGE2.out.folder                        // channel: [ val(meta), path(folder) ]
-
+    multiqc_report                           = MULTIQC.out.report.toList()                  // channel: [ val(meta), path(report) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }

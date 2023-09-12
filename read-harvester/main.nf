@@ -4,6 +4,7 @@
 
 nextflow.enable.dsl = 2
 
+// Import subworkflows
 include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/main"
 include { MERGE_FILTER_READS } from "$projectDir/subworkflows/local/merge_filter_reads/main"
 include { MAPPING            } from "$projectDir/subworkflows/local/mapping/main"
@@ -51,6 +52,7 @@ workflow {
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
+            MERGE_FILTER_READS.out.json,
             MAPPING.out.bam
         ) 
     }
