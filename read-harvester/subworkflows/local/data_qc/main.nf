@@ -16,19 +16,19 @@ workflow DATA_QC {
     ch_versions = Channel.empty()
 
     FASTQC_RAW ( raw_reads )
-    FASTQC_TRIM ( trimmed_reads )
-    ch_versions = ch_versions.mix(FASTQC_TRIM.out.versions)
+    FASTQC_MERGE ( trimmed_reads )
+    ch_versions = ch_versions.mix(FASTQC_MERGE.out.versions)
 
-    //MAPDAMAGE2 ( BWA_SAMSE.out.bam, reference )
+    //MAPDAMAGE2 ( bam, reference )
     //ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
 
     //MULTIQC (  )
     //ch_versions = ch_versions.mix(MULTIQC.out.versions)
 
     emit:
-    fastqc_raw_html  = FASTQC_TRIM.out.html                    // channel: [ val(meta), path(html) ]
-    fastqc_raw_zip   = FASTQC_TRIM.out.zip                     // channel: [ val(meta), path(zip) ]
-    fastqc_trim_html = FASTQC_TRIM.out.html                    // channel: [ val(meta), path(html) ]
-    fastqc_trim_zip  = FASTQC_TRIM.out.zip                     // channel: [ val(meta), path(zip) ]
-    versions         = ch_versions                             // channel: [ versions.yml ]
+    fastqc_raw_html   = FASTQC_RAW.out.html                    // channel: [ val(meta), path(html) ]
+    fastqc_raw_zip    = FASTQC_RAW.out.zip                     // channel: [ val(meta), path(zip) ]
+    fastqc_merge_html = FASTQC_MERGE.out.html                  // channel: [ val(meta), path(html) ]
+    fastqc_merge_zip  = FASTQC_MERGE.out.zip                   // channel: [ val(meta), path(zip) ]
+    versions          = ch_versions                            // channel: [ versions.yml ]
 }
