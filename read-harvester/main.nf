@@ -7,12 +7,12 @@ nextflow.enable.dsl = 2
 include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/main"
 include { MERGE_FILTER_READS } from "$projectDir/subworkflows/local/merge_filter_reads/main"
 include { MAPPING            } from "$projectDir/subworkflows/local/mapping/main"
-
+include { DATA_QC            } from "$projectDir/subworkflows/local/data_qc/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['read_processing','mapping']
+    def recognized_workflow_stages = ['read_processing','mapping','data_qc']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -44,6 +44,17 @@ workflow {
             MERGE_FILTER_READS.out.reads
         ) 
     }
+
+    // Run FastQC, MapDamage2, AMBER and MultiQC to assess the data quality
+    if ( 'data_qc' in workflow_steps ) {
+        DATA_QC (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            INPUT_CHECK.out.reads,
+            MERGE_FILTER_READS.out.reads,
+            MAPPING.out.bam
+        ) 
+    }
+
 }
 
 workflow.onComplete {
