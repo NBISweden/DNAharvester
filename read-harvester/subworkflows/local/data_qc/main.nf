@@ -27,9 +27,6 @@ workflow DATA_QC {
     ch_multiqc_files                         = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.mix(
                                                 FASTQC_PROCESSED.out.zip.map{ meta, qcfile -> qcfile },
                                                 fastp_json.map{ meta, fastp_json -> fastp_json },
-                                                MAPDAMAGE2.out.pgtoa_freq.map{ meta, pgtoa_freq -> pgtoa_freq },
-                                                MAPDAMAGE2.out.pctot_freq.map{ meta, pctot_freq -> pctot_freq },
-                                                MAPDAMAGE2.out.lgdistribution.map{ meta, lgdistribution -> lgdistribution },
                                                 ).collect()
     ch_multiqc_config                        = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()

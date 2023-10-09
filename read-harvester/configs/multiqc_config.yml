@@ -3,9 +3,7 @@ title: "Read harvester pipeline MultiQC report"
 run_modules:
     - fastp
     - fastqc
-    - mapdamage
 
 module_order:
     - fastp
     - fastqc
-    - mapdamage
