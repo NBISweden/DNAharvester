@@ -4,7 +4,7 @@ include { FASTQC as FASTQC_RAW         } from '../../../modules/nf-core/fastqc/m
 include { FASTQC as FASTQC_PROCESSED   } from '../../../modules/nf-core/fastqc/main'
 include { MULTIQC                      } from '../../../modules/nf-core/multiqc/main'
 include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
-include { AMBER                        } from '../../../modules/local/amber/main'
+include { AMBER                        } from '../../../modules/local/amber/amber'
 
 workflow DATA_QC {
     take:
@@ -12,8 +12,8 @@ workflow DATA_QC {
     raw_reads       // paired-end reads or single-end reads
     processed_reads // merged paired-end reads or trimmed single-end reads
     fastp_json      // read statistic files from FastP
-    bam
-    bamfile         // tab-separated file with sample and path to bam file (one file per bam file)
+    bam             // bam file from mapping subworkflow
+    tsv             // input for AMBER
 
     main:
     ch_versions                              = Channel.empty()
@@ -43,7 +43,7 @@ workflow DATA_QC {
     MAPDAMAGE2 ( bam, reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    AMBER ( bamfile )
+    AMBER ( bam, tsv )
 
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
