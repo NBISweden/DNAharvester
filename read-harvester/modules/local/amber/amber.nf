@@ -5,7 +5,8 @@ process AMBER {
     container "ghcr.io/NBISweden/LTS-L_Dalen_2302/AMBER"
 
     input:
-    tuple val(meta), path(bamfiles)
+    tuple val(meta), path(bam)
+    tuple val(meta), path(tsv)
 
 
     output:
@@ -20,6 +21,6 @@ process AMBER {
     """
     python AMBER \\
             $args \\
-            --bamfiles $bamfiles
+            --bamfiles $tsv
     """
 }
