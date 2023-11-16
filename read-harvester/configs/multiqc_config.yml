@@ -1,0 +1,9 @@
+title: "Read harvester pipeline MultiQC report"
+
+run_modules:
+    - fastp
+    - fastqc
+
+module_order:
+    - fastp
+    - fastqc
