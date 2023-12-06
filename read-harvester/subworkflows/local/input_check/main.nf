@@ -20,6 +20,7 @@ workflow INPUT_CHECK {
 
     emit:
     reads                                         // channel: [ val(meta), [ reads ] ]
+    csv      = SAMPLESHEET_CHECK.out.csv          // channel: [ samplesheet.valid.csv ]
     versions = SAMPLESHEET_CHECK.out.versions     // channel: [ versions.yml ]
 }
 

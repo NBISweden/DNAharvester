@@ -12,8 +12,8 @@ process SAMPLESHEET_CHECK {
     path samplesheet
 
     output:
-    path '*.valid.csv'       , emit: csv
-    path "versions.yml", emit: versions
+    path "samplesheet.valid.csv" , emit: csv
+    path "versions.yml"          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
