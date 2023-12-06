@@ -18,11 +18,11 @@ workflow INPUT_CHECK {
         .map { create_fastq_channel(it) }
         .set { reads }
     
-    SAMPLESHEET2AMBER ( SAMPLESHEET_CHECK.out.tsv )
+    SAMPLESHEET2AMBER ( SAMPLESHEET_CHECK.out.csv )
 
     emit:
-    reads                                     // channel: [ val(meta), [ reads ] ]
-    tsv                                       // channel: [ sample.amber.tsv ]
+    reads    = SAMPLESHEET_CHECK.out.reads        // channel: [ val(meta), [ reads ] ]
+    tsv      = SAMPLESHEET2AMBER.out.tsv          // channel: [ sample.amber.tsv ]
     versions = SAMPLESHEET_CHECK.out.versions     // channel: [ versions.yml ]
 }
 

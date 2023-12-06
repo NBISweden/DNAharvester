@@ -12,7 +12,7 @@ process SAMPLESHEET_CHECK {
     path samplesheet
 
     output:
-    path '*.csv'       , emit: csv
+    path '*.valid.csv'       , emit: csv
     path "versions.yml", emit: versions
 
     when:
