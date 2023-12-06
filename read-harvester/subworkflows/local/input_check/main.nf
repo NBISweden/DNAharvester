@@ -5,7 +5,6 @@
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
 include { SAMPLESHEET_CHECK  } from '../../../modules/local/samplesheet_check'
-include { SAMPLESHEET2AMBER  } from '../../../modules/local/amber/samplesheet2amber'
 
 workflow INPUT_CHECK {
     take:
@@ -18,11 +17,9 @@ workflow INPUT_CHECK {
         .map { create_fastq_channel(it) }
         .set { reads }
     
-    SAMPLESHEET2AMBER ( SAMPLESHEET_CHECK.out.csv )
 
     emit:
-    reads    = SAMPLESHEET_CHECK.out.reads        // channel: [ val(meta), [ reads ] ]
-    tsv      = SAMPLESHEET2AMBER.out.tsv          // channel: [ sample.amber.tsv ]
+    reads                                         // channel: [ val(meta), [ reads ] ]
     versions = SAMPLESHEET_CHECK.out.versions     // channel: [ versions.yml ]
 }
 
