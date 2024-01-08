@@ -6,11 +6,12 @@ process SAMPLESHEET2AMBER {
         'quay.io/biocontainers/python:3.8.3' }"
 
     input:
-    path samplesheet_valid
+    path(samplesheet_valid)
+    tuple val(meta), path(bam)
 
     output:
-    path "*.amber.tsv"       , emit: tsv
-    path "versions.yml"      , emit: versions
+    tuple val(meta), path("*.amber.tsv") , emit: tsv
+    path "versions.yml"                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -18,7 +19,8 @@ process SAMPLESHEET2AMBER {
     script: // This script is bundled with the pipeline, in {{ name }}/bin/
     """
     samplesheet_valid2amber_input.py \\
-        $samplesheet_valid
+        $samplesheet_valid \\
+        $bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
