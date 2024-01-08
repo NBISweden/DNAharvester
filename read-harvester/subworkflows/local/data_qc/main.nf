@@ -44,9 +44,13 @@ workflow DATA_QC {
     MAPDAMAGE2 ( bam, reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    SAMPLESHEET2AMBER ( csv )
+    SAMPLESHEET2AMBER ( csv, bam )
+    ch_versions                              = ch_versions.mix(SAMPLESHEET2AMBER.out.versions)
 
-    AMBER ( bam, SAMPLESHEET2AMBER.out.tsv )
+    AMBER ( 
+        bam.join( SAMPLESHEET2AMBER.out.tsv )
+    )
+    ch_versions                              = ch_versions.mix(AMBER.out.versions)
 
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
