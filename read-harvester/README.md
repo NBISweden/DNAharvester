@@ -35,6 +35,12 @@ is a template, a filled-out example is available here:
 `process.clusterOptions` in line 54 of the custom config 
 file (see `configs/test-rackham.config`).
 
+- Read harvester runs AMBER, a tool that is not available 
+as container image or conda package yet. To run the pipeline, 
+clone the AMBER Github repository (`https://github.com/tvandervalk/AMBER/`) 
+into a different location and copy the file `AMBER` to 
+`read-harvester/bin`. 
+
 - Open a tmux or screen session on Rackham, e.g.: 
 
 ```
@@ -83,6 +89,12 @@ to input data, pipeline steps to be run, path to results
 directory, and tool-specific parameters. `configs/custom.config` 
 is a template, a filled-out example is available here: 
 `configs/test-local.config`.
+
+- Read harvester runs AMBER, a tool that is not available 
+as container image or conda package yet. To run the pipeline, 
+clone the AMBER Github repository (`https://github.com/tvandervalk/AMBER/`) 
+into a different location and copy the file `AMBER` to 
+`read-harvester/bin`. 
 
 - Open a tmux or screen session, e.g.: 
 
