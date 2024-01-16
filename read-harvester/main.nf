@@ -13,7 +13,7 @@ include { DATA_QC            } from "$projectDir/subworkflows/local/data_qc/main
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['read_processing','mapping','data_qc']
+    def recognized_workflow_stages = ['fastq_processing','mapping','data_qc', 'bam_processing']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -32,7 +32,7 @@ workflow {
         .set{ reference }
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
-    if ( 'read_processing' in workflow_steps ) {
+    if ( 'fastq_processing' in workflow_steps ) {
         MERGE_FILTER_READS (
             INPUT_CHECK.out.reads
         )
@@ -53,6 +53,14 @@ workflow {
             INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
             MERGE_FILTER_READS.out.json,
+            MAPPING.out.bam
+        ) 
+    }
+
+    // Index the reference genome, remove duplicates from library bam files, merge bam files per sample
+    if ( 'bam_processing' in workflow_steps ) {
+        MERGE_DEDUP_BAMS (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam
         ) 
     }
