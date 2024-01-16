@@ -1,3 +1,5 @@
+#! /usr/bin/env nextflow
+
 process SAMREMOVEDUP {
     tag "$meta.id"
     label 'process_single'
