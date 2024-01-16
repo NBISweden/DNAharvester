@@ -2,7 +2,7 @@ process SAMTOOLS_MERGE {
     tag "$meta.id"
     label 'process_low'
 
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::samtools=1.18"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/samtools:1.18--h50ea8bc_1' :
         'biocontainers/samtools:1.18--h50ea8bc_1' }"
