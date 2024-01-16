@@ -9,6 +9,7 @@ include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/
 include { MERGE_FILTER_READS } from "$projectDir/subworkflows/local/merge_filter_reads/main"
 include { MAPPING            } from "$projectDir/subworkflows/local/mapping/main"
 include { DATA_QC            } from "$projectDir/subworkflows/local/data_qc/main"
+include { MERGE_DEDUP_BAMS   } from "$projectDir/subworkflows/local/merge_dedup_bams/main"
 
 workflow {
 
