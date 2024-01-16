@@ -33,6 +33,8 @@ class RowChecker:
     def __init__(
         self,
         sample_col="sample",
+        index_col="index",
+        lane_col="lane",
         first_col="fastq_1",
         second_col="fastq_2",
         single_col="single_end",
@@ -44,6 +46,10 @@ class RowChecker:
         Args:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
+            index_col (str): The name of the column that contains the index (id) of 
+                the sequencing library (default "index").
+            lane_col (str): The name of the column that contains the lane number 
+                on which the sample was sequenced (default "lane").
             first_col (str): The name of the column that contains the first (or only)
                 FASTQ file path (default "fastq_1").
             second_col (str): The name of the column that contains the second (if any)
@@ -55,6 +61,8 @@ class RowChecker:
         """
         super().__init__(**kwargs)
         self._sample_col = sample_col
+        self._index_col = index_col
+        self._lane_col = lane_col
         self._first_col = first_col
         self._second_col = second_col
         self._single_col = single_col
@@ -71,6 +79,8 @@ class RowChecker:
 
         """
         self._validate_sample(row)
+        self._validate_index(row)
+        self._validate_lane(row)
         self._validate_first(row)
         self._validate_second(row)
         self._validate_pair(row)
@@ -80,9 +90,19 @@ class RowChecker:
     def _validate_sample(self, row):
         """Assert that the sample name exists and convert spaces to underscores."""
         if len(row[self._sample_col]) <= 0:
-            raise AssertionError("Sample input is required.")
+            raise AssertionError("A sample ID is required.")
         # Sanitize samples slightly.
-        row[self._sample_col] = row[self._sample_col].replace(" ", "_")
+        row[self._sample_col] = row[self._sample_col].replace(" ", "-")
+
+    def _validate_index(self, row):
+        """Assert that the index number exists."""
+        if len(row[self._index_col]) <= 0:
+            raise AssertionError("An index number that is unique for each sequencing library is required.")
+
+    def _validate_lane(self, row):
+        """Assert that the lane number exists."""
+        if len(row[self._lane_col]) <= 0:
+            raise AssertionError("A lane number is required.")
 
     def _validate_first(self, row):
         """Assert that the first FASTQ entry is non-empty and has the right format."""
@@ -117,18 +137,9 @@ class RowChecker:
     def validate_unique_samples(self):
         """
         Assert that the combination of sample name and FASTQ filename is unique.
-
-        In addition to the validation, also rename all samples to have a suffix of _T{n}, where n is the
-        number of times the same sample exist, but with different FASTQ files, e.g., multiple runs per experiment.
-
         """
         if len(self._seen) != len(self.modified):
-            raise AssertionError("The pair of sample name and FASTQ must be unique.")
-        seen = Counter()
-        for row in self.modified:
-            sample = row[self._sample_col]
-            seen[sample] += 1
-            row[self._sample_col] = f"{sample}_T{seen[sample]}"
+            raise AssertionError("The pair of sample name and FASTQ filename must be unique.")
 
 
 def read_head(handle, num_lines=10):

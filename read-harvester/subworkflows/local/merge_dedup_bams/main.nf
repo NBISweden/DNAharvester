@@ -8,18 +8,24 @@ include { SAMTOOLS_MERGE } from '../../../modules/nf-core/samtools/merge/main'
 workflow MERGE_DEDUP_BAMS {
     take:
     reference
-    bams
+    bam
 
     main:
     ch_versions = Channel.empty()
 
-    SAMREMOVEDUP ( bams )
+    SAMREMOVEDUP ( bam )
     ch_versions = ch_versions.mix(SAMREMOVEDUP.out.versions)
 
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    SAMTOOLS_MERGE ( SAMREMOVEDUP.out.dedup, reference, SAMTOOLS_FAIDX.out.fai )
+    ch_bam_index_to_merge = SAMREMOVEDUP.out.dedup.map {
+        meta, bam -> [ meta.subMap('sample', 'index'), bam ]
+        }
+        .groupTuple()
+    ch_bam_index_to_merge.view()
+
+    SAMTOOLS_MERGE ( ch_bam_index_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
 
     emit:
