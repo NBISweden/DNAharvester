@@ -4,10 +4,8 @@ process SAMREMOVEDUP {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::samtools=1.18"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/samtools:1.18--h50ea8bc_1' :
-        'quay.io/biocontainers/samtools:1.18--h50ea8bc_1' }"
+    conda "conda-forge::python=3.11.0 bioconda::samtools=1.16.1"
+    container "quay.io/biocontainers/mulled-v2-1a35167f7a491c7086c13835aaa74b39f1f43979:9254eac8981f615fb6c417fa44e77c3b44bc3abd-0"
 
     input:
     tuple val(meta), path(bam)
