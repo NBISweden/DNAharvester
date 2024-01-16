@@ -9,7 +9,6 @@ process SAMTOOLS_FAIDX {
 
     input:
     tuple val(meta), path(fasta)
-    tuple val(meta2), path(fai)
 
     output:
     tuple val(meta), path ("*.{fa,fasta}") , emit: fa , optional: true
