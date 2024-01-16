@@ -8,12 +8,10 @@ process SAMTOOLS_FAIDX {
         'biocontainers/samtools:1.18--h50ea8bc_1' }"
 
     input:
-    tuple val(meta), path(fasta)
+    path(fasta)
 
     output:
-    tuple val(meta), path ("*.{fa,fasta}") , emit: fa , optional: true
-    tuple val(meta), path ("*.fai")        , emit: fai, optional: true
-    tuple val(meta), path ("*.gzi")        , emit: gzi, optional: true
+    path ("*.fai")                         , emit: fai, optional: true
     path "versions.yml"                    , emit: versions
 
     when:
