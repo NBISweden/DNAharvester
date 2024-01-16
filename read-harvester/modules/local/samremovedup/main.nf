@@ -23,7 +23,7 @@ process SAMREMOVEDUP {
     samtools view \\
         -@ ${task.cpus-1} \\
         -h $bam | \\
-        python3 samremovedup.py | \\
+        samremovedup.py | \\
         samtools view \\
         -b \\
         -o ${prefix}.dedup.bam
