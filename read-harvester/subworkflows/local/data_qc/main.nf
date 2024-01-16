@@ -2,8 +2,10 @@
 
 include { FASTQC as FASTQC_RAW         } from '../../../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_PROCESSED   } from '../../../modules/nf-core/fastqc/main'
-include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
 include { MULTIQC                      } from '../../../modules/nf-core/multiqc/main'
+include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
+include { SAMPLESHEET2AMBER            } from '../../../modules/local/amber/samplesheet2amber'
+include { AMBER                        } from '../../../modules/local/amber/amber'
 
 workflow DATA_QC {
     take:
@@ -11,7 +13,8 @@ workflow DATA_QC {
     raw_reads       // paired-end reads or single-end reads
     processed_reads // merged paired-end reads or trimmed single-end reads
     fastp_json      // read statistic files from FastP
-    bam
+    bam             // bam file from mapping subworkflow
+    csv             // samplesheet for samplesheet2amber
 
     main:
     ch_versions                              = Channel.empty()
@@ -20,10 +23,7 @@ workflow DATA_QC {
     FASTQC_PROCESSED ( processed_reads )
     ch_versions                              = ch_versions.mix(FASTQC_PROCESSED.out.versions)
 
-    MAPDAMAGE2 ( bam, reference )
-    ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
-
-    // Run MultiQC on output
+    // Run MultiQC on FastQC output
     ch_multiqc_files                         = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.mix(
                                                 FASTQC_PROCESSED.out.zip.map{ meta, qcfile -> qcfile },
                                                 fastp_json.map{ meta, fastp_json -> fastp_json },
@@ -40,11 +40,24 @@ workflow DATA_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC.out.versions)
 
+
+    MAPDAMAGE2 ( bam, reference )
+    ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
+
+    SAMPLESHEET2AMBER ( csv, bam )
+    ch_versions                              = ch_versions.mix(SAMPLESHEET2AMBER.out.versions)
+
+    AMBER ( 
+        bam.join( SAMPLESHEET2AMBER.out.tsv )
+    )
+    ch_versions                              = ch_versions.mix(AMBER.out.versions)
+
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
     fastqc_raw_zip                           = FASTQC_RAW.out.zip                           // channel: [ val(meta), path(zip) ]
     fastqc_processed_html                    = FASTQC_PROCESSED.out.html                    // channel: [ val(meta), path(html) ]
     fastqc_processed_zip                     = FASTQC_PROCESSED.out.zip                     // channel: [ val(meta), path(zip) ]
+    multiqc_report                           = MULTIQC.out.report.toList()                  // channel: [ val(meta), path(report) ]
     mapdamage2_fragmisincorporation_plot     = MAPDAMAGE2.out.fragmisincorporation_plot     // channel: [ val(meta), path(fragmisincorporation_plot) ]
     mapdamage2_length_plot                   = MAPDAMAGE2.out.length_plot                   // channel: [ val(meta), path(length_plot) ]
     mapdamage2_misincorporation              = MAPDAMAGE2.out.misincorporation              // channel: [ val(meta), path(misincorporation) ]
@@ -60,6 +73,6 @@ workflow DATA_QC {
     mapdamage2_pctot_freq                    = MAPDAMAGE2.out.pctot_freq                    // channel: [ val(meta), path(pctot_freq) ]
     mapdamage2_pgtoa_freq                    = MAPDAMAGE2.out.pgtoa_freq                    // channel: [ val(meta), path(pgtoa_freq) ]
     mapdamage2_folder                        = MAPDAMAGE2.out.folder                        // channel: [ val(meta), path(folder) ]
-    multiqc_report                           = MULTIQC.out.report.toList()                  // channel: [ val(meta), path(report) ]
+    amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }

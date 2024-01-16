@@ -54,7 +54,8 @@ workflow {
             INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
             MERGE_FILTER_READS.out.json,
-            MAPPING.out.bam
+            MAPPING.out.bam,
+            INPUT_CHECK.out.csv
         ) 
     }
 
