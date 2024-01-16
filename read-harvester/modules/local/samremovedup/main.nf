@@ -13,7 +13,7 @@ process SAMREMOVEDUP {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*dedup.bam"),                      , emit: dedup
+    tuple val(meta), path("*dedup.bam")                       , emit: dedup
     path "versions.yml"                                       , emit: versions
 
     when:
