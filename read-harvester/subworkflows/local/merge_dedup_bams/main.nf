@@ -1,7 +1,7 @@
 #! /usr/bin/env nextflow
 
-include { SAMREMOVEDUP } from '../../../modules/local/samremovedup/main'
-include { SAMTOOLS_FAIDX } from '../modules/nf-core/samtools/faidx/main'
+include { SAMREMOVEDUP   } from '../../../modules/local/samremovedup/main'
+include { SAMTOOLS_FAIDX } from '../../../modules/nf-core/samtools/faidx/main'
 include { SAMTOOLS_MERGE } from '../../../modules/nf-core/samtools/merge/main'
 
 
