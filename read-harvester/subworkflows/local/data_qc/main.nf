@@ -44,7 +44,7 @@ workflow DATA_QC {
     MAPDAMAGE2 ( bam, reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    SAMPLESHEET2AMBER ( csv, bam )
+    SAMPLESHEET2AMBER ( bam )
     ch_versions                              = ch_versions.mix(SAMPLESHEET2AMBER.out.versions)
 
     AMBER ( 

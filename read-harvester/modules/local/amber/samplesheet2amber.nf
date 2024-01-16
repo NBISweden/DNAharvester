@@ -6,7 +6,6 @@ process SAMPLESHEET2AMBER {
         'quay.io/biocontainers/python:3.8.3' }"
 
     input:
-    path(samplesheet_valid)
     tuple val(meta), path(bam)
 
     output:
@@ -19,7 +18,6 @@ process SAMPLESHEET2AMBER {
     script: // This script is bundled with the pipeline, in {{ name }}/bin/
     """
     samplesheet_valid2amber_input.py \\
-        $samplesheet_valid \\
         $bam
 
     cat <<-END_VERSIONS > versions.yml
