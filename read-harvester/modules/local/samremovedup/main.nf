@@ -11,8 +11,8 @@ process SAMREMOVEDUP {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("results/*dedup.bam"),                      , emit: dedup
-    path "versions.yml"                                               , emit: versions
+    tuple val(meta), path("*dedup.bam"),                      , emit: dedup
+    path "versions.yml"                                       , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,7 +21,7 @@ process SAMREMOVEDUP {
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
     samtools view \\
-        -@ task.cpus \\
+        -@ ${task.cpus-1} \\
         -h $bam | \\
         python3 samremovedup.py | \\
         samtools view \\
