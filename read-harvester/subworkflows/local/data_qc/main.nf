@@ -6,6 +6,7 @@ include { MULTIQC                      } from '../../../modules/nf-core/multiqc/
 include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
 include { CREATE_AMBER_SAMPLESHEET     } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                        } from '../../../modules/local/amber/amber'
+include { QUALIMAP_BAMQC               } from '../../../modules/nf-core/qualimap/bamqc/main'
 
 workflow DATA_QC {
     take:
@@ -51,6 +52,9 @@ workflow DATA_QC {
     )
     ch_versions                              = ch_versions.mix(AMBER.out.versions)
 
+    QUALIMAP_BAMQC ( bam )
+    ch_versions                              = ch_versions.mix(QUALIMAP_BAMQC.out.versions)
+
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
     fastqc_raw_zip                           = FASTQC_RAW.out.zip                           // channel: [ val(meta), path(zip) ]
@@ -73,5 +77,6 @@ workflow DATA_QC {
     mapdamage2_pgtoa_freq                    = MAPDAMAGE2.out.pgtoa_freq                    // channel: [ val(meta), path(pgtoa_freq) ]
     mapdamage2_folder                        = MAPDAMAGE2.out.folder                        // channel: [ val(meta), path(folder) ]
     amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
+    qualimap_results                         = QUALIMAP_BAMQC.out.results                   // channel: [ val(meta), path(results) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
