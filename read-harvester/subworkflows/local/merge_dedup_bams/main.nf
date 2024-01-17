@@ -20,7 +20,7 @@ workflow MERGE_DEDUP_BAMS {
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     ch_bam_index_to_merge = SAMREMOVEDUP.out.dedup.map {
-        meta, bam -> [ meta.subMap('sample', 'index'), bam ]
+        meta, bam -> [ ['id':meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
         }
         .groupTuple()
     ch_bam_index_to_merge.view()
