@@ -19,21 +19,20 @@ export CONDA_ENVS_PATH=/proj/sllstore2017093/b2016342/b2016342_nobackup/lts/cond
 mamba env create -p /proj/sllstore2017093/b2016342/b2016342_nobackup/lts/conda_environments/read-harvester -f environment.yaml
 ```
 
-- Create a sample sheet in `configs/`, listing metadata 
-information for each sample, including the location of raw 
-fastq files with the sequencing data. Here is an example: 
-`configs/samplesheet.csv`. Note that the pipeline currently 
-only supports paired-end data.
+- Create a sample sheet, listing metadata information for 
+each sample, including the location of raw fastq files with 
+the sequencing data. Here is an example: `assets/samplesheet.csv`. 
+Note that the pipeline currently only supports paired-end data. 
 
 - Create a custom pipeline configuration file with paths 
 to input data, pipeline steps to be run, path to results 
-directory, and tool-specific parameters. `configs/custom.config` 
+directory, and tool-specific parameters. `assets/custom.config` 
 is a template, a filled-out example is available here: 
-`configs/test-rackham.config`.
+`assets/test-rackham.config`.
 
 - Add your UPPMAX compute project ID to the parameter 
 `process.clusterOptions` in line 54 of the custom config 
-file (see `configs/test-rackham.config`).
+file (see `assets/test-rackham.config`).
 
 - Read harvester runs AMBER, a tool that is not available 
 as container image or conda package yet. To run the pipeline, 
@@ -56,11 +55,11 @@ conda activate read-harvester
 ```
 
 - Start the pipeline in the tmux session with the activated 
-conda environment as follows (replace `config/test-rackham.config` 
+conda environment as follows (replace `assets/test-rackham.config` 
 with your custom config file): 
 
 ```
-nextflow run -c configs/test-rackham.config -profile uppmax main.nf &> YYMMDD_rh.out
+nextflow run -c assets/test-rackham.config -profile uppmax main.nf &> YYMMDD_rh.out
 ```
 
 > The `uppmax` profile is set up to submit each process as 
@@ -78,17 +77,17 @@ if you haven't done so yet (with mamba or conda):
 mamba env create -f environment.yaml
 ```
 
-- Create a sample sheet in `configs/`, listing metadata 
+- Create a sample sheet in `assets/`, listing metadata 
 information for each sample, including the location of raw 
 fastq files with the sequencing data. Here is an example: 
-`configs/samplesheet.csv`. Note that the pipeline currently 
+`assets/samplesheet.csv`. Note that the pipeline currently 
 only supports paired-end data.
 
 - Create a custom pipeline configuration file with paths 
 to input data, pipeline steps to be run, path to results 
-directory, and tool-specific parameters. `configs/custom.config` 
+directory, and tool-specific parameters. `assets/custom.config` 
 is a template, a filled-out example is available here: 
-`configs/test-local.config`.
+`assets/test-local.config`.
 
 - Read harvester runs AMBER, a tool that is not available 
 as container image or conda package yet. To run the pipeline, 
@@ -109,11 +108,11 @@ conda activate read-harvester
 ```
 
 - Start the pipeline in the tmux session with the activated 
-conda environment as follows (replace `config/test-local.config` 
+conda environment as follows (replace `assets/test-local.config` 
 with your custom config file): 
 
 ```
-nextflow run -c configs/test-local.config -profile conda main.nf &> YYMMDD_rh.out
+nextflow run -c assets/test-local.config -profile conda main.nf &> YYMMDD_rh.out
 ```
 
 > The `conda` profile is set up to to use conda to run each 

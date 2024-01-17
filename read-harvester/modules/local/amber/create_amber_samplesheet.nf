@@ -1,4 +1,4 @@
-process SAMPLESHEET2AMBER {
+process CREATE_AMBER_SAMPLESHEET {
 
     conda "conda-forge::python=3.8.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -17,7 +17,7 @@ process SAMPLESHEET2AMBER {
 
     script: // This script is bundled with the pipeline, in {{ name }}/bin/
     """
-    samplesheet_valid2amber_input.py \\
+    create_amber_samplesheet.py \\
         $bam
 
     cat <<-END_VERSIONS > versions.yml

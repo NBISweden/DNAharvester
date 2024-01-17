@@ -54,9 +54,8 @@ workflow {
             INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
             MERGE_FILTER_READS.out.json,
-            MAPPING.out.bam,
-            INPUT_CHECK.out.csv
-        ) 
+            MAPPING.out.bam
+        )
     }
 
     // Index the reference genome, remove duplicates from library bam files, merge bam files per sample
