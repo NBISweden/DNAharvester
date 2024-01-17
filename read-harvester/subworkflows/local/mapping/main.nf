@@ -17,7 +17,7 @@ workflow MAPPING {
     ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
     BWA_ALN ( reads, BWA_INDEX.out.index )
     ch_versions = ch_versions.mix(BWA_ALN.out.versions)
-    BWA_SAMSE ( reads, BWA_ALN.out.sai, BWA_INDEX.out.index )
+    BWA_SAMSE ( BWA_ALN.out.reads, BWA_ALN.out.sai, BWA_INDEX.out.index )
     ch_versions = ch_versions.mix(BWA_SAMSE.out.versions)
 
     emit:
