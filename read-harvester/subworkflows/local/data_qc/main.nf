@@ -2,11 +2,13 @@
 
 include { FASTQC as FASTQC_RAW         } from '../../../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_PROCESSED   } from '../../../modules/nf-core/fastqc/main'
-include { MULTIQC                      } from '../../../modules/nf-core/multiqc/main'
+include { MULTIQC as MULTIQC_FASTQ     } from '../../../modules/nf-core/multiqc/main'
 include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
 include { CREATE_AMBER_SAMPLESHEET     } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                        } from '../../../modules/local/amber/amber'
 include { QUALIMAP_BAMQC               } from '../../../modules/nf-core/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_BAM       } from '../../../modules/nf-core/multiqc/main'
+
 
 workflow DATA_QC {
     take:
@@ -24,21 +26,21 @@ workflow DATA_QC {
     ch_versions                              = ch_versions.mix(FASTQC_PROCESSED.out.versions)
 
     // Run MultiQC on FastQC output
-    ch_multiqc_files                         = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.mix(
+    ch_multiqc_fastq_files                   = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.mix(
                                                 FASTQC_PROCESSED.out.zip.map{ meta, qcfile -> qcfile },
                                                 fastp_json.map{ meta, fastp_json -> fastp_json },
                                                 ).collect()
-    ch_multiqc_config                        = params.multiqc_config ? Channel.fromPath( params.multiqc_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
     ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
-    ch_multiqc_logo                          = params.multiqc_logo ? Channel.fromPath( params.multiqc_logo, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                          = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
 
-    MULTIQC (
-        ch_multiqc_files.collect(),
+    MULTIQC_FASTQ (
+        ch_multiqc_fastq_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_extra_config.toList(),
         ch_multiqc_logo.toList()
     )
-    ch_versions                              = ch_versions.mix(MULTIQC.out.versions)
+    ch_versions                              = ch_versions.mix(MULTIQC_FASTQ.out.versions)
 
 
     MAPDAMAGE2 ( bam, reference )
@@ -55,12 +57,25 @@ workflow DATA_QC {
     QUALIMAP_BAMQC ( bam )
     ch_versions                              = ch_versions.mix(QUALIMAP_BAMQC.out.versions)
 
+    // Run MultiQC on MapDamage and QualiMap output
+    ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix(
+                                                QUALIMAP_BAMQC.out.results.map{ meta, qcfile -> qcfile }
+                                                ).collect()
+
+    MULTIQC_BAM (
+        ch_multiqc_bam_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_extra_config.toList(),
+        ch_multiqc_logo.toList()
+    )
+    ch_versions                              = ch_versions.mix(MULTIQC_BAM.out.versions)
+
     emit:
     fastqc_raw_html                          = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
     fastqc_raw_zip                           = FASTQC_RAW.out.zip                           // channel: [ val(meta), path(zip) ]
     fastqc_processed_html                    = FASTQC_PROCESSED.out.html                    // channel: [ val(meta), path(html) ]
     fastqc_processed_zip                     = FASTQC_PROCESSED.out.zip                     // channel: [ val(meta), path(zip) ]
-    multiqc_report                           = MULTIQC.out.report.toList()                  // channel: [ val(meta), path(report) ]
+    multiqc_fastq_report                     = MULTIQC_FASTQ.out.report.toList()            // channel: [ val(meta), path(report) ]
     mapdamage2_fragmisincorporation_plot     = MAPDAMAGE2.out.fragmisincorporation_plot     // channel: [ val(meta), path(fragmisincorporation_plot) ]
     mapdamage2_length_plot                   = MAPDAMAGE2.out.length_plot                   // channel: [ val(meta), path(length_plot) ]
     mapdamage2_misincorporation              = MAPDAMAGE2.out.misincorporation              // channel: [ val(meta), path(misincorporation) ]
