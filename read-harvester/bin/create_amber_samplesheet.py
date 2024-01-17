@@ -19,8 +19,9 @@ def create_amber_samplesheet(bam):
     Args:
         bam: BAM file for which the AMBER samplesheet is being generated
     """
+    sample = str(bam).strip(".bam")
+    file_out = sample + ".amber.tsv"
     with open(file_out, "w") as out_handle:
-        sample = str(bam).strip(".bam")
         writer = csv.DictWriter(out_handle, fieldnames=["sample", "bam"], delimiter="\t")
         new_row = {"sample": sample, "bam": str(bam)}
         writer.writerow(new_row)
