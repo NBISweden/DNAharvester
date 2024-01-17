@@ -5,7 +5,7 @@ process QUALIMAP_BAMQC {
     conda "bioconda::qualimap=2.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/qualimap:2.3--hdfd78af_0' :
-        'biocontainers/qualimap:2.3--hdfd78af_0' }"
+        'quay.io/biocontainers/qualimap:2.3--hdfd78af_0' }"
 
     input:
     tuple val(meta), path(bam)
