@@ -62,7 +62,7 @@
     },
     "steps": {
       "type": "string",
-      "default": "read_processing"
+      "default": "fastq_processing"
     },
     "workDir": {
       "type": "string",
