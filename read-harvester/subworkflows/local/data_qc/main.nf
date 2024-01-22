@@ -58,9 +58,13 @@ workflow DATA_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_BAMQC.out.versions)
 
     // Run MultiQC on MapDamage and QualiMap output
-    ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix(
+    ch_multiqc_bam_files                     = MAPDAMAGE2.out.pgtoa_freq.concat( 
+                                                MAPDAMAGE2.out.pctot_freq, 
+                                                MAPDAMAGE2.out.lgdistribution).map{ meta, results -> results }.mix(
                                                 QUALIMAP_BAMQC.out.results.map{ meta, qcfile -> qcfile }
                                                 ).collect()
+
+    ch_multiqc_bam_files.view()
 
     MULTIQC_BAM (
         ch_multiqc_bam_files.collect(),
