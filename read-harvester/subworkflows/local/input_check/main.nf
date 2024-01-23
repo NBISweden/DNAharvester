@@ -4,7 +4,7 @@
 // Modified from nf-core pipeline template 
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
-include { SAMPLESHEET_CHECK } from '../../../modules/local/samplesheet_check'
+include { SAMPLESHEET_CHECK  } from '../../../modules/local/samplesheet_check'
 
 workflow INPUT_CHECK {
     take:
@@ -16,10 +16,12 @@ workflow INPUT_CHECK {
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channel(it) }
         .set { reads }
+    
 
     emit:
-    reads                                     // channel: [ val(meta), [ reads ] ]
-    versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
+    reads                                         // channel: [ val(meta), [ reads ] ]
+    csv      = SAMPLESHEET_CHECK.out.csv          // channel: [ samplesheet.valid.csv ]
+    versions = SAMPLESHEET_CHECK.out.versions     // channel: [ versions.yml ]
 }
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
