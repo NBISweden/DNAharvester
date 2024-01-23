@@ -101,8 +101,11 @@ conda environment as follows (replace `config/test-local.config`
 with your custom config file): 
 
 ```
-nextflow run -c configs/test-local.config -profile conda main.nf &> YYMMDD_rh.out
+nextflow run -c configs/test-local.config -profile docker main.nf &> YYMMDD_rh.out
 ```
 
-> The `conda` profile is set up to to use conda to run each 
-process in a conda environment with the required software. 
+> The `docker` profile is set up to to use Docker to run each 
+process in a container with the required software. It requires 
+Docker to be installed and running on your local machine.
+Alternatively, you can use `-profile mamba` or `-profile conda` 
+to run each process in its own conda environment.
