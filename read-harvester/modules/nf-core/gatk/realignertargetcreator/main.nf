@@ -12,7 +12,7 @@ process GATK_REALIGNERTARGETCREATOR {
     tuple val(meta2), path(fasta)
     tuple val(meta3), path(fai)
     tuple val(meta4), path(dict)
-    tuple val(meta5), path(known_vcf)
+    //tuple val(meta5), path(known_vcf)
 
     output:
     tuple val(meta), path("*.intervals"), emit: intervals
@@ -42,7 +42,6 @@ process GATK_REALIGNERTARGETCREATOR {
         -I ${bam} \\
         -R ${fasta} \\
         -o ${prefix}.intervals \\
-        ${known} \\
         $args
 
     cat <<-END_VERSIONS > versions.yml

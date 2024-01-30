@@ -12,11 +12,11 @@ process GATK_INDELREALIGNER {
     tuple val(meta2), path(fasta)
     tuple val(meta3), path(fai)
     tuple val(meta4), path(dict)
-    tuple val(meta5), path(known_vcf)
+    //tuple val(meta5), path(known_vcf)
 
     output:
     tuple val(meta), path("*.bam"), path("*.bai"), emit: bam
-    path "versions.yml"           , emit: versions
+    path "versions.yml"                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -42,7 +42,6 @@ process GATK_INDELREALIGNER {
         -R ${fasta} \\
         -I ${bam} \\
         --targetIntervals ${intervals} \\
-        ${known} \\
         -o ${prefix}.bam \\
         $args
 
