@@ -21,7 +21,6 @@ workflow MERGE_DEDUP_BAMS {
         meta, bam -> [ ['id':meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
         }
         .groupTuple()
-    ch_bam_index_to_merge.view()
 
     SAMTOOLS_MERGE_INDEX ( ch_bam_index_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_INDEX.out.versions)
@@ -33,7 +32,6 @@ workflow MERGE_DEDUP_BAMS {
         meta, bam -> [ ['id':meta.id.split("_")[0]], bam ]
         }
         .groupTuple()
-    ch_bam_sample_to_merge.view()
 
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
