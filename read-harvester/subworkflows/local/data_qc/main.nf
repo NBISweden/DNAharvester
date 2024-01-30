@@ -64,8 +64,6 @@ workflow DATA_QC {
                                                 QUALIMAP_BAMQC.out.results.map{ meta, qcfile -> qcfile }
                                                 ).collect()
 
-    ch_multiqc_bam_files.view()
-
     MULTIQC_BAM (
         ch_multiqc_bam_files.collect(),
         ch_multiqc_config.toList(),
