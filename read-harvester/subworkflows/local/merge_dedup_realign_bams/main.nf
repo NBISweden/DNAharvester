@@ -5,8 +5,9 @@ include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_INDEX  } from '../../../modules/local
 include { SAMREMOVEDUP as SAMREMOVEDUP_INDEX      } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE } from '../../../modules/local/samtools/merge/main'
 include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE     } from '../../../modules/local/samremovedup/main'
-include { GATK_REALIGNERTARGETCREATOR } from '../modules/nf-core/gatk/realignertargetcreator/main'  
-include { GATK_INDELREALIGNER         } from '../modules/nf-core/gatk/indelrealigner/main'
+include { SAMTOOLS_INDEX                          } from '../../../modules/nf-core/samtools/index/main'
+include { GATK_REALIGNERTARGETCREATOR             } from '../../../modules/nf-core/gatk/realignertargetcreator/main'
+include { GATK_INDELREALIGNER                     } from '../../../modules/nf-core/gatk/indelrealigner/main'
 
 workflow MERGE_DEDUP_BAMS {
     take:
@@ -41,9 +42,12 @@ workflow MERGE_DEDUP_BAMS {
     SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
 
+    SAMTOOLS_INDEX ( SAMREMOVEDUP_SAMPLE.out.bam )
+    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
+
     GATK_REALIGNERTARGETCREATOR ( 
         SAMREMOVEDUP_SAMPLE.out.bam, 
-        bai, 
+        SAMTOOLS_INDEX.out.bai, 
         reference, 
         SAMTOOLS_FAIDX.out.fai, 
         dict )
