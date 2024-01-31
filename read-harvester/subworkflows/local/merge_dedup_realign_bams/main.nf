@@ -43,27 +43,30 @@ workflow MERGE_DEDUP_REALIGN_BAMS {
     SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
 
-    SAMTOOLS_INDEX ( SAMREMOVEDUP_SAMPLE.out.bam )
+    SAMTOOLS_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     PICARD_CREATESEQUENCEDICTIONARY ( reference )
     ch_versions = ch_versions.mix(PICARD_CREATESEQUENCEDICTIONARY.out.versions)
 
+    ch_gatk_realignertargetcreator = SAMREMOVEDUP_SAMPLE.out.dedup.mix(SAMTOOLS_INDEX.out.bai)
+    ch_gatk_realignertargetcreator.view()
+
     GATK_REALIGNERTARGETCREATOR ( 
-        SAMREMOVEDUP_SAMPLE.out.bam, 
-        SAMTOOLS_INDEX.out.bai, 
+        ch_gatk_realignertargetcreator, 
         reference, 
         SAMTOOLS_FAIDX.out.fai, 
-        PICARD_CREATESEQUENCEDICTIONARY.reference_dict )
+        PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
 
+    ch_gatk_indelrealigner = SAMREMOVEDUP_SAMPLE.out.dedup.mix(SAMTOOLS_INDEX.out.bai, GATK_REALIGNERTARGETCREATOR.out.intervals)
+    ch_gatk_indelrealigner.view()
+
     GATK_INDELREALIGNER ( 
-        SAMREMOVEDUP_SAMPLE.out.bam, 
-        SAMTOOLS_INDEX.out.bai, 
-        GATK_REALIGNERTARGETCREATOR.out.intervals, 
+        ch_gatk_indelrealigner, 
         reference, 
         SAMTOOLS_FAIDX.out.fai, 
-        PICARD_CREATESEQUENCEDICTIONARY.reference_dict )
+        PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 
     emit:
