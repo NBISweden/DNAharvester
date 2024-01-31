@@ -50,7 +50,7 @@ workflow MERGE_DEDUP_REALIGN_BAMS {
     ch_versions = ch_versions.mix(PICARD_CREATESEQUENCEDICTIONARY.out.versions)
 
     ch_gatk_realignertargetcreator = SAMREMOVEDUP_SAMPLE.out.dedup.join(
-        SAMTOOLS_INDEX.out.bai).collect()
+        SAMTOOLS_INDEX.out.bai).groupTuple()
 
     GATK_REALIGNERTARGETCREATOR ( 
         ch_gatk_realignertargetcreator, 
@@ -61,7 +61,7 @@ workflow MERGE_DEDUP_REALIGN_BAMS {
 
     ch_gatk_indelrealigner = SAMREMOVEDUP_SAMPLE.out.dedup.join(
         SAMTOOLS_INDEX.out.bai).join(
-            GATK_REALIGNERTARGETCREATOR.out.intervals).collect()
+            GATK_REALIGNERTARGETCREATOR.out.intervals).groupTuple()
 
     GATK_INDELREALIGNER ( 
         ch_gatk_indelrealigner, 
