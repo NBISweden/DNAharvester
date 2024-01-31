@@ -5,11 +5,11 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
-include { INPUT_CHECK        } from "$projectDir/subworkflows/local/input_check/main"
-include { MERGE_FILTER_READS } from "$projectDir/subworkflows/local/merge_filter_reads/main"
-include { MAPPING            } from "$projectDir/subworkflows/local/mapping/main"
-include { DATA_QC            } from "$projectDir/subworkflows/local/data_qc/main"
-include { MERGE_DEDUP_BAMS   } from "$projectDir/subworkflows/local/merge_dedup_bams/main"
+include { INPUT_CHECK              } from "$projectDir/subworkflows/local/input_check/main"
+include { MERGE_FILTER_READS       } from "$projectDir/subworkflows/local/merge_filter_reads/main"
+include { MAPPING                  } from "$projectDir/subworkflows/local/mapping/main"
+include { DATA_QC                  } from "$projectDir/subworkflows/local/data_qc/main"
+include { MERGE_DEDUP_REALIGN_BAMS } from "$projectDir/subworkflows/local/merge_dedup_realign_bams/main"
 
 workflow {
 
@@ -60,7 +60,7 @@ workflow {
 
     // Index the reference genome, remove duplicates from library bam files, merge bam files per sample
     if ( 'bam_processing' in workflow_steps ) {
-        MERGE_DEDUP_BAMS (
+        MERGE_DEDUP_REALIGN_BAMS (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam
         ) 
