@@ -1,5 +1,4 @@
 process PICARD_CREATESEQUENCEDICTIONARY {
-    tag "$meta.id"
     label 'process_medium'
 
     conda "bioconda::picard=3.1.1"
@@ -8,10 +7,10 @@ process PICARD_CREATESEQUENCEDICTIONARY {
         'biocontainers/picard:3.1.1--hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(fasta)
+    path(fasta)
 
     output:
-    tuple val(meta), path("*.dict"), emit: reference_dict
+    path("*.dict")                 , emit: reference_dict
     path "versions.yml"            , emit: versions
 
     when:
@@ -19,7 +18,6 @@ process PICARD_CREATESEQUENCEDICTIONARY {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
     def avail_mem = 3072
     if (!task.memory) {
         log.info '[Picard CreateSequenceDictionary] Available memory not known - defaulting to 3GB. Specify process memory requirements to change this.'
@@ -31,8 +29,7 @@ process PICARD_CREATESEQUENCEDICTIONARY {
         -Xmx${avail_mem}M \\
         CreateSequenceDictionary  \\
         $args \\
-        --REFERENCE $fasta \\
-        --OUTPUT ${prefix}.dict
+        --REFERENCE $fasta
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
