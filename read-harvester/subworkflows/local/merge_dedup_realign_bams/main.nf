@@ -6,9 +6,9 @@ include { SAMREMOVEDUP as SAMREMOVEDUP_INDEX      } from '../../../modules/local
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE } from '../../../modules/local/samtools/merge/main'
 include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE     } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX                          } from '../../../modules/nf-core/samtools/index/main'
-include { PICARD_CREATESEQUENCEDICTIONARY         } from '../../../modules/nf-core/picard/createsequencedictionary/main'
-include { GATK_REALIGNERTARGETCREATOR             } from '../../../modules/nf-core/gatk/realignertargetcreator/main'
-include { GATK_INDELREALIGNER                     } from '../../../modules/nf-core/gatk/indelrealigner/main'
+include { PICARD_CREATESEQUENCEDICTIONARY         } from '../../../modules/local/picard/createsequencedictionary/main'
+include { GATK_REALIGNERTARGETCREATOR             } from '../../../modules/local/gatk/realignertargetcreator/main'
+include { GATK_INDELREALIGNER                     } from '../../../modules/local/gatk/indelrealigner/main'
 
 workflow MERGE_DEDUP_REALIGN_BAMS {
     take:
