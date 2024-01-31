@@ -3,10 +3,10 @@
 include { FASTQC as FASTQC_RAW         } from '../../../modules/nf-core/fastqc/main'
 include { FASTQC as FASTQC_PROCESSED   } from '../../../modules/nf-core/fastqc/main'
 include { MULTIQC as MULTIQC_FASTQ     } from '../../../modules/nf-core/multiqc/main'
-include { MAPDAMAGE2                   } from '../../../modules/nf-core/mapdamage2/main'
+include { MAPDAMAGE2                   } from '../../../modules/local/mapdamage2/main'
 include { CREATE_AMBER_SAMPLESHEET     } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                        } from '../../../modules/local/amber/amber'
-include { QUALIMAP_BAMQC               } from '../../../modules/nf-core/qualimap/bamqc/main'
+include { QUALIMAP_BAMQC               } from '../../../modules/local/qualimap/bamqc/main'
 include { MULTIQC as MULTIQC_BAM       } from '../../../modules/nf-core/multiqc/main'
 
 
