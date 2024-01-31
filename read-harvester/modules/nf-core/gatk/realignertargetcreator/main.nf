@@ -23,7 +23,6 @@ process GATK_REALIGNERTARGETCREATOR {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def known = known_vcf ? "-known ${known_vcf}" : ""
     if ("$bam" == "${prefix}.bam") error "Input and output names are the same, set prefix in module configuration to disambiguate!"
 
     def avail_mem = 3072
