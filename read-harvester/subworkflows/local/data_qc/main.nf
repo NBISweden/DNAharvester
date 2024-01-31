@@ -58,11 +58,8 @@ workflow DATA_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_BAMQC.out.versions)
 
     // Run MultiQC on MapDamage and QualiMap output
-    ch_multiqc_bam_files                     = MAPDAMAGE2.out.pgtoa_freq.concat( 
-                                                MAPDAMAGE2.out.pctot_freq, 
-                                                MAPDAMAGE2.out.lgdistribution).map{ meta, results -> results }.mix(
-                                                QUALIMAP_BAMQC.out.results.map{ meta, qcfile -> qcfile }
-                                                ).collect()
+    ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix( 
+                                                QUALIMAP_BAMQC.out.results.map{ meta, results -> results }).collect()
 
     MULTIQC_BAM (
         ch_multiqc_bam_files.collect(),
@@ -95,5 +92,6 @@ workflow DATA_QC {
     mapdamage2_folder                        = MAPDAMAGE2.out.folder                        // channel: [ val(meta), path(folder) ]
     amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
     qualimap_results                         = QUALIMAP_BAMQC.out.results                   // channel: [ val(meta), path(results) ]
+    multiqc_bam_report                       = MULTIQC_BAM.out.report.toList()              // channel: [ val(meta), path(report) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
