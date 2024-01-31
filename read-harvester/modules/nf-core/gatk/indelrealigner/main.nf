@@ -9,10 +9,9 @@ process GATK_INDELREALIGNER {
 
     input:
     tuple val(meta), path(bam), path(bai), path(intervals)
-    tuple val(meta2), path(fasta)
-    tuple val(meta3), path(fai)
-    tuple val(meta4), path(dict)
-    //tuple val(meta5), path(known_vcf)
+    path(fasta)
+    path(fai)
+    path(dict)
 
     output:
     tuple val(meta), path("*.bam"), path("*.bai"), emit: bam
