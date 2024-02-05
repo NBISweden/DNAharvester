@@ -7,7 +7,7 @@ input_check
 - FastQC
 - MultiQC
 
-merge_filter_reads
+fastq_processing
 - fastp
 
 mapping
@@ -15,13 +15,13 @@ mapping
 - bwa aln
 - bwa samse
 
-processed_mapped_reads_qc
+processed_fastq_raw_bam_qc
 - FastQC
 - MapDamage2
 - AMBER
 - MultiQC
 
-merge_dedup_realign_bams
+bam_processing
 - samtools faidx
 - samtools merge to merge bam files per library index (sample_index_lane.bam --> sample_index.bam)
 - samremovedup on merged bam files

@@ -9,7 +9,7 @@ include { QUALIMAP_BAMQC             } from '../../../modules/local/qualimap/bam
 include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/main'
 
 
-workflow PROCESSED_MAPPED_READS_QC {
+workflow PROCESSED_FASTQ_RAW_BAM_QC {
     take:
     reference
     processed_reads // merged and filtered paired-end reads

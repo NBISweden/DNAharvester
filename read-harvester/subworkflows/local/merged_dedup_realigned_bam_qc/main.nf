@@ -11,7 +11,7 @@ include { MULTIQC as MULTIQC_DEDUP_SAMPLE              } from '../../../modules/
 include { QUALIMAP_BAMQC as QUALIMAP_REALIGNED         } from '../../../modules/local/qualimap/bamqc/main'
 include { MULTIQC as MULTIQC_REALIGNED                 } from '../../../modules/nf-core/multiqc/main'
 
-workflow MERGED_DEDUP_REALIGNED_BAM_QC {
+workflow PROCESSED_BAM_QC {
     take:
     reference
     merged_bam_index
@@ -29,6 +29,9 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
 
     // Run MultiQC on QualiMap output
     ch_multiqc_merged_bam_index_files        = QUALIMAP_MERGED_BAM_INDEX.out.results.map{ meta, results -> results }.collect()
+    ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
+    ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                          = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
 
     MULTIQC_MERGED_BAM_INDEX (
         ch_multiqc_merged_bam_index_files.collect(),
