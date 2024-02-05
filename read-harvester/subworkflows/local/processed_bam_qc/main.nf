@@ -87,7 +87,10 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_DEDUP_SAMPLE.out.versions)
 
     // realigned
-    QUALIMAP_REALIGNED ( realigned )
+    ch_realigned_for_qualimap = realigned.map {
+        meta, bam, bai -> [ meta, bam ] }
+
+    QUALIMAP_REALIGNED ( ch_realigned_for_qualimap )
     ch_versions                              = ch_versions.mix(QUALIMAP_REALIGNED.out.versions)
 
     // Run MultiQC on QualiMap output
