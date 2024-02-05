@@ -2,19 +2,22 @@
 
 ## Implemented subworkflows:
 
+input_check
+- input_check to read in data from samplesheet
+
 merge_filter_reads
-- fastp (paired-end and single-strand libraries, minimum read length from config file or from subworkflow min_read_length_identification)
+- fastp
 
 mapping
 - bwa index
-- bwa aln (aDNA specific parameters, paired-end and single-strand libraries, config file)
+- bwa aln
 - bwa samse
 
 raw_processed_mapped_reads_qc
 - FastQC
 - MapDamage2
 - AMBER
-- MultiQC (including fastp reports)
+- MultiQC
 
 merge_dedup_realign_bams
 - samtools faidx
@@ -28,6 +31,8 @@ merge_dedup_realign_bams
 - GATK indelrealigner
 
 ## Planned subworkflows:
+
+merge_dedup_realign_bam_qc
 
 bam_filtering
 - samtools view -q minMQ (config file)
