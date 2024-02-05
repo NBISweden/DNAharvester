@@ -5,17 +5,17 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
-include { INPUT_CHECK                   } from "$projectDir/subworkflows/local/input_check/main"
-include { MERGE_FILTER_READS            } from "$projectDir/subworkflows/local/merge_filter_reads/main"
-include { MAPPING                       } from "$projectDir/subworkflows/local/mapping/main"
-include { PROCESSED_MAPPED_READS_QC     } from "$projectDir/subworkflows/local/processed_mapped_reads_qc/main"
-include { MERGE_DEDUP_REALIGN_BAMS      } from "$projectDir/subworkflows/local/merge_dedup_realign_bams/main"
-include { MERGED_DEDUP_REALIGNED_BAM_QC } from "$projectDir/subworkflows/local/merged_dedup_realigned_bam_qc/main"
+include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
+include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
+include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
+include { PROCESSED_FASTQ_RAW_BAM_QC } from "$projectDir/subworkflows/local/processed_fastq_raw_bam_qc/main"
+include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
+include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_mapped_reads_qc', 'bam_processing', 'merged_dedup_realigned_bam_qc']
+    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_raw_bam_qc', 'bam_processing', 'processed_bam_qc']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -35,7 +35,7 @@ workflow {
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
-        MERGE_FILTER_READS (
+        FASTQ_PROCESSING (
             INPUT_CHECK.out.reads
         )
     }
@@ -44,37 +44,37 @@ workflow {
     if ( 'mapping' in workflow_steps ) {
         MAPPING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MERGE_FILTER_READS.out.reads
+            FASTQ_PROCESSING.out.reads
         ) 
     }
 
     // Run FastQC, QualiMap, MapDamage2, AMBER and MultiQC to assess the data quality
-    if ( 'processed_mapped_reads_qc' in workflow_steps ) {
-        PROCESSED_MAPPED_READS_QC (
+    if ( 'processed_fastq_raw_bam_qc' in workflow_steps ) {
+        PROCESSED_FASTQ_RAW_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MERGE_FILTER_READS.out.reads,
-            MERGE_FILTER_READS.out.json,
+            FASTQ_PROCESSING.out.reads,
+            FASTQ_PROCESSING.out.json,
             MAPPING.out.bam
         )
     }
 
     // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
-        MERGE_DEDUP_REALIGN_BAMS (
+        BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam
         ) 
     }
 
     // Run QualiMap and MultiQC on processed bam files
-    if ( 'merged_dedup_realigned_bam_qc' in workflow_steps ) {
-        MERGED_DEDUP_REALIGNED_BAM_QC (
+    if ( 'processed_bam_qc' in workflow_steps ) {
+        PROCESSED_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MERGE_DEDUP_REALIGN_BAMS.out.merged_bam_index,
-            MERGE_DEDUP_REALIGN_BAMS.out.dedup_index,
-            MERGE_DEDUP_REALIGN_BAMS.out.merged_bam_sample,
-            MERGE_DEDUP_REALIGN_BAMS.out.dedup_sample,
-            MERGE_DEDUP_REALIGN_BAMS.out.realigned
+            BAM_PROCESSING.out.merged_bam_index,
+            BAM_PROCESSING.out.dedup_index,
+            BAM_PROCESSING.out.merged_bam_sample,
+            BAM_PROCESSING.out.dedup_sample,
+            BAM_PROCESSING.out.realigned
         ) 
     }
 

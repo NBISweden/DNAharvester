@@ -10,7 +10,7 @@ include { PICARD_CREATESEQUENCEDICTIONARY         } from '../../../modules/local
 include { GATK_REALIGNERTARGETCREATOR             } from '../../../modules/local/gatk/realignertargetcreator/main'
 include { GATK_INDELREALIGNER                     } from '../../../modules/local/gatk/indelrealigner/main'
 
-workflow MERGE_DEDUP_REALIGN_BAMS {
+workflow BAM_PROCESSING {
     take:
     reference
     bam

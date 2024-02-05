@@ -2,7 +2,7 @@
 
 include { FASTP } from '../../../modules/local/fastp/pairedend.nf'
 
-workflow MERGE_FILTER_READS {
+workflow FASTQ_PROCESSING {
     take:
     reads
 
