@@ -10,7 +10,7 @@ include { QUALIMAP_BAMQC               } from '../../../modules/local/qualimap/b
 include { MULTIQC as MULTIQC_BAM       } from '../../../modules/nf-core/multiqc/main'
 
 
-workflow DATA_QC {
+workflow RAW_PROCESSED_MAPPED_READS_QC {
     take:
     reference
     raw_reads       // paired-end reads or single-end reads

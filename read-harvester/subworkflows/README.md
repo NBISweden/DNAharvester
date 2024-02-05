@@ -13,7 +13,7 @@ mapping
 bam_filtering
 - samtools view -q minMQ (config file)
 
-data_qc
+raw_processed_mapped_reads_qc
 - FastQC
 - MapDamage2
 - AMBER
