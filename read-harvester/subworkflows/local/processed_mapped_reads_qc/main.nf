@@ -1,12 +1,12 @@
 #! /usr/bin/env nextflow
 
-include { FASTQC                   } from '../../../modules/nf-core/fastqc/main'
-include { MULTIQC as MULTIQC_FASTQ } from '../../../modules/nf-core/multiqc/main'
-include { MAPDAMAGE2               } from '../../../modules/local/mapdamage2/main'
-include { CREATE_AMBER_SAMPLESHEET } from '../../../modules/local/amber/create_amber_samplesheet'
-include { AMBER                    } from '../../../modules/local/amber/amber'
-include { QUALIMAP_BAMQC           } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_BAM   } from '../../../modules/nf-core/multiqc/main'
+include { FASTQC as FASTQC_PROCESSED } from '../../../modules/nf-core/fastqc/main'
+include { MULTIQC as MULTIQC_FASTQ   } from '../../../modules/nf-core/multiqc/main'
+include { MAPDAMAGE2                 } from '../../../modules/local/mapdamage2/main'
+include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
+include { AMBER                      } from '../../../modules/local/amber/amber'
+include { QUALIMAP_BAMQC             } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/main'
 
 
 workflow PROCESSED_MAPPED_READS_QC {
@@ -19,11 +19,11 @@ workflow PROCESSED_MAPPED_READS_QC {
     main:
     ch_versions                              = Channel.empty()
 
-    FASTQC ( processed_reads )
-    ch_versions                              = ch_versions.mix(FASTQC.out.versions)
+    FASTQC_PROCESSED ( processed_reads )
+    ch_versions                              = ch_versions.mix(FASTQC_PROCESSED.out.versions)
 
     // Run MultiQC on FastQC output
-    ch_multiqc_fastq_files                   = FASTQC.out.zip.map{ meta, qcfile -> qcfile }.mix(
+    ch_multiqc_fastq_files                   = FASTQC_PROCESSED.out.zip.map{ meta, qcfile -> qcfile }.mix(
                                                 fastp_json.map{ meta, fastp_json -> fastp_json }).collect()
     ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
     ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
@@ -65,8 +65,8 @@ workflow PROCESSED_MAPPED_READS_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_BAM.out.versions)
 
     emit:
-    fastqc_html                              = FASTQC.out.html                              // channel: [ val(meta), path(html) ]
-    fastqc_zip                               = FASTQC.out.zip                               // channel: [ val(meta), path(zip) ]
+    fastqc_html                              = FASTQC_PROCESSED.out.html                    // channel: [ val(meta), path(html) ]
+    fastqc_zip                               = FASTQC_PROCESSED.out.zip                     // channel: [ val(meta), path(zip) ]
     multiqc_fastq_report                     = MULTIQC_FASTQ.out.report.toList()            // channel: [ val(meta), path(report) ]
     mapdamage2_fragmisincorporation_plot     = MAPDAMAGE2.out.fragmisincorporation_plot     // channel: [ val(meta), path(fragmisincorporation_plot) ]
     mapdamage2_length_plot                   = MAPDAMAGE2.out.length_plot                   // channel: [ val(meta), path(length_plot) ]

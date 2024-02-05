@@ -52,7 +52,6 @@ workflow {
     if ( 'processed_mapped_reads_qc' in workflow_steps ) {
         PROCESSED_MAPPED_READS_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
             MERGE_FILTER_READS.out.json,
             MAPPING.out.bam
