@@ -5,16 +5,16 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
-include { INPUT_CHECK              } from "$projectDir/subworkflows/local/input_check/main"
-include { MERGE_FILTER_READS       } from "$projectDir/subworkflows/local/merge_filter_reads/main"
-include { MAPPING                  } from "$projectDir/subworkflows/local/mapping/main"
-include { DATA_QC                  } from "$projectDir/subworkflows/local/data_qc/main"
-include { MERGE_DEDUP_REALIGN_BAMS } from "$projectDir/subworkflows/local/merge_dedup_realign_bams/main"
+include { INPUT_CHECK                   } from "$projectDir/subworkflows/local/input_check/main"
+include { MERGE_FILTER_READS            } from "$projectDir/subworkflows/local/merge_filter_reads/main"
+include { MAPPING                       } from "$projectDir/subworkflows/local/mapping/main"
+include { RAW_PROCESSED_MAPPED_READS_QC } from "$projectDir/subworkflows/local/raw_processed_mapped_reads_qc/main"
+include { MERGE_DEDUP_REALIGN_BAMS      } from "$projectDir/subworkflows/local/merge_dedup_realign_bams/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','data_qc', 'bam_processing']
+    def recognized_workflow_stages = ['fastq_processing','mapping','raw_processed_mapped_reads_qc', 'bam_processing']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -48,8 +48,8 @@ workflow {
     }
 
     // Run FastQC, MapDamage2, AMBER and MultiQC to assess the data quality
-    if ( 'data_qc' in workflow_steps ) {
-        DATA_QC (
+    if ( 'raw_processed_mapped_reads_qc' in workflow_steps ) {
+        RAW_PROCESSED_MAPPED_READS_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             INPUT_CHECK.out.reads,
             MERGE_FILTER_READS.out.reads,
