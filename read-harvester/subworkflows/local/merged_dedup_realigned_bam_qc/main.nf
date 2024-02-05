@@ -1,15 +1,15 @@
 #! /usr/bin/env nextflow
 
-include { QUALIMAP_BAMQC as QUALIMAP_MERGED_BAM_INDEX   } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_MERGED_BAM_INDEX           } from '../../../modules/nf-core/multiqc/main'
-include { QUALIMAP_BAMQC as QUALIMAP_DEDUP_INDEX    } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_DEDUP_INDEX            } from '../../../modules/nf-core/multiqc/main'
-include { QUALIMAP_BAMQC as QUALIMAP_MERGED_BAM_SAMPLE   } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_MERGED_BAM_SAMPLE           } from '../../../modules/nf-core/multiqc/main'
-include { QUALIMAP_BAMQC as QUALIMAP_DEDUP_SAMPLE    } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_DEDUP_SAMPLE            } from '../../../modules/nf-core/multiqc/main'
-include { QUALIMAP_BAMQC as QUALIMAP_REALIGNED } from '../../../modules/local/qualimap/bamqc/main'
-include { MULTIQC as MULTIQC_REALIGNED         } from '../../../modules/nf-core/multiqc/main'
+include { QUALIMAP_BAMQC as QUALIMAP_MERGED_BAM_INDEX  } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_MERGED_BAM_INDEX          } from '../../../modules/nf-core/multiqc/main'
+include { QUALIMAP_BAMQC as QUALIMAP_DEDUP_INDEX       } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_DEDUP_INDEX               } from '../../../modules/nf-core/multiqc/main'
+include { QUALIMAP_BAMQC as QUALIMAP_MERGED_BAM_SAMPLE } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_MERGED_BAM_SAMPLE         } from '../../../modules/nf-core/multiqc/main'
+include { QUALIMAP_BAMQC as QUALIMAP_DEDUP_SAMPLE      } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_DEDUP_SAMPLE              } from '../../../modules/nf-core/multiqc/main'
+include { QUALIMAP_BAMQC as QUALIMAP_REALIGNED         } from '../../../modules/local/qualimap/bamqc/main'
+include { MULTIQC as MULTIQC_REALIGNED                 } from '../../../modules/nf-core/multiqc/main'
 
 workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     take:
@@ -28,7 +28,7 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_MERGED_BAM_INDEX.out.versions)
 
     // Run MultiQC on QualiMap output
-    ch_multiqc_merged_bam_index_files                 = QUALIMAP_MERGED_BAM_INDEX.out.results.map{ meta, results -> results }).collect()
+    ch_multiqc_merged_bam_index_files        = QUALIMAP_MERGED_BAM_INDEX.out.results.map{ meta, results -> results }.collect()
 
     MULTIQC_MERGED_BAM_INDEX (
         ch_multiqc_merged_bam_index_files.collect(),
@@ -43,7 +43,7 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_DEDUP_INDEX.out.versions)
 
     // Run MultiQC on QualiMap output
-    ch_multiqc_dedup_index_files                  = QUALIMAP_DEDUP_INDEX.out.results.map{ meta, results -> results }).collect()
+    ch_multiqc_dedup_index_files             = QUALIMAP_DEDUP_INDEX.out.results.map{ meta, results -> results }.collect()
 
     MULTIQC_DEDUP_INDEX (
         ch_multiqc_dedup_index_files.collect(),
@@ -58,7 +58,7 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_MERGED_BAM_SAMPLE.out.versions)
 
     // Run MultiQC on QualiMap output
-    ch_multiqc_merged_bam_sample_files                 = QUALIMAP_MERGED_BAM_SAMPLE.out.results.map{ meta, results -> results }).collect()
+    ch_multiqc_merged_bam_sample_files       = QUALIMAP_MERGED_BAM_SAMPLE.out.results.map{ meta, results -> results }.collect()
 
     MULTIQC_MERGED_BAM_SAMPLE (
         ch_multiqc_merged_bam_sample_files.collect(),
@@ -73,7 +73,7 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_DEDUP_SAMPLE.out.versions)
 
     // Run MultiQC on QualiMap output
-    ch_multiqc_dedup_sample_files                  = QUALIMAP_DEDUP_SAMPLE.out.results.map{ meta, results -> results }).collect()
+    ch_multiqc_dedup_sample_files            = QUALIMAP_DEDUP_SAMPLE.out.results.map{ meta, results -> results }.collect()
 
     MULTIQC_DEDUP_SAMPLE (
         ch_multiqc_dedup_sample_files.collect(),
@@ -88,7 +88,7 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(QUALIMAP_REALIGNED.out.versions)
 
     // Run MultiQC on QualiMap output
-    ch_multiqc_realigned_files               = QUALIMAP_REALIGNED.out.results.map{ meta, results -> results }).collect()
+    ch_multiqc_realigned_files               = QUALIMAP_REALIGNED.out.results.map{ meta, results -> results }.collect()
 
     MULTIQC_REALIGNED (
         ch_multiqc_realigned_files.collect(),
@@ -99,10 +99,10 @@ workflow MERGED_DEDUP_REALIGNED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_REALIGNED.out.versions)
 
     emit:
-    multiqc_merged_bam_index_report                   = MULTIQC_MERGED_BAM_INDEX.out.report.toList()          // channel: [ val(meta), path(report) ]
-    multiqc_dedup_index_report                    = MULTIQC_DEDUP_INDEX.out.report.toList()           // channel: [ val(meta), path(report) ]
-    multiqc_merged_bam_sample_report                   = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()          // channel: [ val(meta), path(report) ]
-    multiqc_dedup_sample_report                    = MULTIQC_DEDUP_SAMPLE.out.report.toList()           // channel: [ val(meta), path(report) ]
-    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()        // channel: [ val(meta), path(report) ]
-    versions                                 = ch_versions                                  // channel: [ versions.yml ]
+    multiqc_merged_bam_index_report          = MULTIQC_MERGED_BAM_INDEX.out.report.toList()       // channel: [ val(meta), path(report) ]
+    multiqc_dedup_index_report               = MULTIQC_DEDUP_INDEX.out.report.toList()            // channel: [ val(meta), path(report) ]
+    multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()      // channel: [ val(meta), path(report) ]
+    multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()           // channel: [ val(meta), path(report) ]
+    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()              // channel: [ val(meta), path(report) ]
+    versions                                 = ch_versions                                        // channel: [ versions.yml ]
 }
