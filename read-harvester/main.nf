@@ -10,11 +10,12 @@ include { MERGE_FILTER_READS            } from "$projectDir/subworkflows/local/m
 include { MAPPING                       } from "$projectDir/subworkflows/local/mapping/main"
 include { RAW_PROCESSED_MAPPED_READS_QC } from "$projectDir/subworkflows/local/raw_processed_mapped_reads_qc/main"
 include { MERGE_DEDUP_REALIGN_BAMS      } from "$projectDir/subworkflows/local/merge_dedup_realign_bams/main"
+include { MERGED_DEDUP_REALIGNED_BAM_QC } from "$projectDir/subworkflows/local/merged_dedup_realigned_bam_qc/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','raw_processed_mapped_reads_qc', 'bam_processing']
+    def recognized_workflow_stages = ['fastq_processing','mapping','raw_processed_mapped_reads_qc', 'bam_processing', 'merged_dedup_realigned_bam_qc']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -47,7 +48,7 @@ workflow {
         ) 
     }
 
-    // Run FastQC, MapDamage2, AMBER and MultiQC to assess the data quality
+    // Run FastQC, QualiMap, MapDamage2, AMBER and MultiQC to assess the data quality
     if ( 'raw_processed_mapped_reads_qc' in workflow_steps ) {
         RAW_PROCESSED_MAPPED_READS_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
@@ -58,11 +59,23 @@ workflow {
         )
     }
 
-    // Index the reference genome, remove duplicates from library bam files, merge bam files per sample
+    // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         MERGE_DEDUP_REALIGN_BAMS (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam
+        ) 
+    }
+
+    // Run QualiMap and MultiQC on processed bam files
+    if ( 'merged_dedup_realigned_bam_qc' in workflow_steps ) {
+        MERGED_DEDUP_REALIGNED_BAM_QC (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            MERGE_DEDUP_REALIGN_BAMS.out.merged_bam_index,
+            MERGE_DEDUP_REALIGN_BAMS.out.dedup_index,
+            MERGE_DEDUP_REALIGN_BAMS.out.merged_bam_sample,
+            MERGE_DEDUP_REALIGN_BAMS.out.dedup_sample,
+            MERGE_DEDUP_REALIGN_BAMS.out.realigned
         ) 
     }
 
