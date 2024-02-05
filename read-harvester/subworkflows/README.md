@@ -4,6 +4,8 @@
 
 input_check
 - input_check to read in data from samplesheet
+- FastQC
+- MultiQC
 
 merge_filter_reads
 - fastp
@@ -13,7 +15,7 @@ mapping
 - bwa aln
 - bwa samse
 
-raw_processed_mapped_reads_qc
+processed_mapped_reads_qc
 - FastQC
 - MapDamage2
 - AMBER
