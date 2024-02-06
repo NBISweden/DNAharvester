@@ -4,24 +4,48 @@
 // Modified from nf-core pipeline template 
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
-include { SAMPLESHEET_CHECK  } from '../../../modules/local/samplesheet_check'
+include { SAMPLESHEET_CHECK      } from '../../../modules/local/samplesheet_check'
+include { FASTQC as FASTQC_RAW   } from '../../../modules/nf-core/fastqc/main'
+include { MULTIQC as MULTIQC_RAW } from '../../../modules/nf-core/multiqc/main'
 
 workflow INPUT_CHECK {
     take:
     samplesheet // file: /path/to/samplesheet.csv
 
     main:
+    ch_versions                              = Channel.empty()
+
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )
         .map { create_fastq_channel(it) }
         .set { reads }
-    
+    ch_versions                              = ch_versions.mix(SAMPLESHEET_CHECK.out.versions)
+
+    FASTQC_RAW ( reads )
+    ch_versions                              = ch_versions.mix(FASTQC_RAW.out.versions)
+
+    // Run MultiQC on FastQC output
+    ch_multiqc_fastq_files                   = FASTQC_RAW.out.zip.map{ meta, qcfile -> qcfile }.collect()
+    ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
+    ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                          = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
+
+    MULTIQC_RAW (
+        ch_multiqc_fastq_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_extra_config.toList(),
+        ch_multiqc_logo.toList()
+    )
+    ch_versions                              = ch_versions.mix(MULTIQC_RAW.out.versions)
 
     emit:
-    reads                                         // channel: [ val(meta), [ reads ] ]
-    csv      = SAMPLESHEET_CHECK.out.csv          // channel: [ samplesheet.valid.csv ]
-    versions = SAMPLESHEET_CHECK.out.versions     // channel: [ versions.yml ]
+    reads                                                                                   // channel: [ val(meta), [ reads ] ]
+    csv                                      = SAMPLESHEET_CHECK.out.csv                    // channel: [ samplesheet.valid.csv ]
+    fastqc_html                              = FASTQC_RAW.out.html                          // channel: [ val(meta), path(html) ]
+    fastqc_zip                               = FASTQC_RAW.out.zip                           // channel: [ val(meta), path(zip) ]
+    multiqc_report                           = MULTIQC_RAW.out.report.toList()              // channel: [ val(meta), path(report) ]
+    versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
@@ -29,10 +53,10 @@ def create_fastq_channel(LinkedHashMap row) {
     // create meta map: [id, single_end]
     // TO DO Update to take strandedness and damage treatment
     def meta = [:]
-    meta.id           = row.sample
-    meta.single_end   = row.single_end.toBoolean()
+    meta.id                = row.sample + "_" + row.index + "_" + row.lane
+    meta.single_end        = row.single_end.toBoolean()
     // readgroup: ID = ID = readgroup id (flowcell-id.lane-nr.library-index-nr), SM = sample-id, PL = sequencing platform (e.g. Illumina, NovaSeq), LB = library-index-nr based on the number of unique libraries per sample in samplesheet
-    meta.read_group    = "@RG\\tID:" + row.flowcell_id + "." + row.lane + "." + row.sample.split('_')[1] + "\\tSM:" + row.sample.split('_')[0] + "\\tPL:" + row.seq_platform + "\\tLB:" + row.sample.split('_')[1]
+    meta.read_group        = "@RG\\tID:" + row.flowcell_id + "." + row.lane + "." + row.index + "\\tSM:" + row.sample + "\\tPL:" + row.seq_platform + "\\tLB:" + row.index
 
     // add path(s) of the fastq file(s) to the meta map
     def fastq_meta = []

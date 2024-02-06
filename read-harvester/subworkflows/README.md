@@ -1,23 +1,43 @@
 # Custom workflows for different stages of the main analysis
 
-## Currently planned subworkflows:
+## Implemented subworkflows:
 
-merge_filter_reads
-- fastp (paired-end and single-strand libraries, minimum read length from config file or from subworkflow min_read_length_identification)
+input_check
+- input_check to read in data from samplesheet
+- FastQC
+- MultiQC
+
+fastq_processing
+- fastp
 
 mapping
 - bwa index
-- bwa aln (aDNA specific parameters, paired-end and single-strand libraries, config file)
+- bwa aln
 - bwa samse
 
-bam_filtering
-- samtools view -q minMQ (config file)
-
-data_qc
+processed_fastq_raw_bam_qc
 - FastQC
 - MapDamage2
 - AMBER
-- MultiQC (including fastp reports)
+- MultiQC
+
+bam_processing
+- samtools faidx
+- samtools merge to merge bam files per library index (sample_index_lane.bam --> sample_index.bam)
+- samremovedup on merged bam files
+- samtools merge to merge bam files per sample (sample_index.bam --> sample.bam)
+- samremovedup on merged bam files
+- samtools index
+- picard createsequencedictionary
+- GATK realignertargetcreator
+- GATK indelrealigner
+
+## Planned subworkflows:
+
+merge_dedup_realign_bam_qc
+
+bam_filtering
+- samtools view -q minMQ (config file)
 
 min_read_length_identification
 - Custom code: identify min. read length from AMBER output (mismatch/read length plot)
