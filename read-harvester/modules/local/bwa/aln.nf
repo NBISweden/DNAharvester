@@ -12,6 +12,7 @@ process BWA_ALN {
     path(index)
 
     output:
+    tuple val(meta), path(reads)  , emit: reads
     tuple val(meta), path("*.sai"), emit: sai
     path "versions.yml"           , emit: versions
 
