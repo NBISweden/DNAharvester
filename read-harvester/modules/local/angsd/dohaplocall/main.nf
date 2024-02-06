@@ -28,6 +28,7 @@ process ANGSD_DOHAPLOCALL {
         -nThreads ${task.cpus} \\
         -dohaplocall 1 \\
         -doCounts 1 \\
+        -out ${prefix} \\
         $args
 
     cat <<-END_VERSIONS > versions.yml
