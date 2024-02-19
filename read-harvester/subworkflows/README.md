@@ -19,6 +19,7 @@ processed_fastq_raw_bam_qc
 - FastQC
 - MapDamage2
 - AMBER
+- QualiMap
 - MultiQC
 
 bam_processing
@@ -32,9 +33,14 @@ bam_processing
 - GATK realignertargetcreator
 - GATK indelrealigner
 
+processed_bam_qc
+- QualiMap after each processing stage
+- MultiQC after each processing stage
+
 ## Planned subworkflows:
 
-merge_dedup_realign_bam_qc
+random_sampling_bam
+- angsd -doHaploCall 1
 
 bam_filtering
 - samtools view -q minMQ (config file)
