@@ -28,6 +28,6 @@ workflow RANDOM_SAMPLING_BAM {
     haplo                                    = ANGSD_DOHAPLOCALL.out.haplo                  // channel: [ val(meta), haplofile ]
     tfam                                     = ANGSD_HAPLOTOPLINK.out.tfam                  // channel: [ val(meta), tfam ]
     tped                                     = ANGSD_HAPLOTOPLINK.out.tped                  // channel: [ val(meta), tped ]
-    vcfgz                                    = PLINK_RECODE.out.vcfgz                       // channel: [ val(meta), vcfgz ]
+    vcf                                      = PLINK_RECODE.out.vcf                         // channel: [ val(meta), vcf ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }

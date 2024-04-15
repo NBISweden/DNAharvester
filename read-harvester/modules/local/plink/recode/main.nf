@@ -5,14 +5,14 @@ process PLINK_RECODE {
     conda "bioconda::plink=1.90b6.21"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/plink:1.90b6.21--h779adbc_1':
-        'biocontainers/plink:1.90b6.21--h779adbc_1' }"
+        'quay.io/biocontainers/plink:1.90b6.21--h779adbc_1' }"
 
     input:
     tuple val(meta), path(tfam)
     tuple val(meta), path(tped)
 
     output:
-    tuple val(meta), path("*.vcf.gz")                 , emit: vcfgz
+    tuple val(meta), path("*.vcf")                    , emit: vcf
     path "versions.yml"                               , emit: versions
 
     when:
@@ -26,8 +26,9 @@ process PLINK_RECODE {
     plink \\
         --tped ${tped}  \\
         --tfam ${tfam}  \\
+        --allow-extra-chr \\
         --threads $task.cpus \\
-        --recode \\
+        --recode vcf \\
         $args \\
         --out $prefix
     cat <<-END_VERSIONS > versions.yml
