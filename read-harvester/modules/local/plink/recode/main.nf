@@ -12,7 +12,7 @@ process PLINK_RECODE {
     tuple val(meta), path(tped)
 
     output:
-    tuple val(meta), path("*.vcf")                    , emit: vcf
+    tuple val(meta), path("*.vcf.gz")                 , emit: vcf
     path "versions.yml"                               , emit: versions
 
     when:
@@ -28,7 +28,7 @@ process PLINK_RECODE {
         --tfam ${tfam}  \\
         --allow-extra-chr \\
         --threads $task.cpus \\
-        --recode vcf \\
+        --recode vcf bgz \\
         $args \\
         --out $prefix
     cat <<-END_VERSIONS > versions.yml
