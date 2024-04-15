@@ -28,7 +28,7 @@ process PLINK_RECODE {
         --tfam ${tfam}  \\
         --allow-extra-chr \\
         --threads $task.cpus \\
-        --recode vcf bgz \\
+        --recode vcf-iid bgz \\
         $args \\
         --out $prefix
     cat <<-END_VERSIONS > versions.yml

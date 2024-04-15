@@ -24,7 +24,10 @@ process ANGSD_HAPLOTOPLINK {
     """
     haploToPlink \\
         ${prefix}.haplo.gz \\
-        ${prefix}
+        ${prefix} &&
+
+    # Modify sample name in *.tfam output
+    sed -i 's/ind0/${prefix}/g' ${prefix}.tfam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
