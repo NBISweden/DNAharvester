@@ -32,6 +32,11 @@ bam_processing
 - GATK realignertargetcreator
 - GATK indelrealigner
 
+random_sampling_bam
+- ANGSD -dohaplocall 1
+- ANGSD haploToPlink
+- plink to convert from tfam/tped to VCF format
+
 ## Planned subworkflows:
 
 merge_dedup_realign_bam_qc

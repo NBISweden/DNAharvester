@@ -2,6 +2,7 @@
 
 include { ANGSD_DOHAPLOCALL  } from '../../../modules/local/angsd/dohaplocall/main'
 include { ANGSD_HAPLOTOPLINK } from '../../../modules/local/angsd/haplotoplink/main'
+include { PLINK_RECODE       } from '../../../modules/local/plink/recode/main'
 
 workflow RANDOM_SAMPLING_BAM {
     take:
@@ -20,9 +21,13 @@ workflow RANDOM_SAMPLING_BAM {
     ANGSD_HAPLOTOPLINK ( ANGSD_DOHAPLOCALL.out.haplo )
     ch_versions                              = ch_versions.mix(ANGSD_HAPLOTOPLINK.out.versions)
 
+    PLINK_RECODE ( ANGSD_HAPLOTOPLINK.out.tfam, ANGSD_HAPLOTOPLINK.out.tped )
+    ch_versions                              = ch_versions.mix(PLINK_RECODE.out.versions)
+
     emit:
     haplo                                    = ANGSD_DOHAPLOCALL.out.haplo                  // channel: [ val(meta), haplofile ]
     tfam                                     = ANGSD_HAPLOTOPLINK.out.tfam                  // channel: [ val(meta), tfam ]
     tped                                     = ANGSD_HAPLOTOPLINK.out.tped                  // channel: [ val(meta), tped ]
+    vcfgz                                    = PLINK_RECODE.out.vcfgz                       // channel: [ val(meta), vcfgz ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
