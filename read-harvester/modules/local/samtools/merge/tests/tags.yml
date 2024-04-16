@@ -1,0 +1,2 @@
+samtools/merge:
+  - "modules/local/samtools/merge/**"

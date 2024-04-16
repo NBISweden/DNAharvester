@@ -27,6 +27,11 @@ process FASTP {
     def args = task.ext.args ?: ''
     // Added soft-links to original fastqs for consistent naming in MultiQC
     def prefix = task.ext.prefix ?: "${meta.id}"
+    if (meta.single_end) {
+    """
+    echo "Read Harvester currently does not process single end reads"
+    """
+    } else {
     """
     [ ! -f  ${prefix}_1.fastq.gz ] && ln -sf ${reads[0]} ${prefix}_1.fastq.gz
     [ ! -f  ${prefix}_2.fastq.gz ] && ln -sf ${reads[1]} ${prefix}_2.fastq.gz
@@ -50,4 +55,5 @@ process FASTP {
         fastp: \$(fastp --version 2>&1 | sed -e "s/fastp //g")
     END_VERSIONS
     """
+    }
 }
