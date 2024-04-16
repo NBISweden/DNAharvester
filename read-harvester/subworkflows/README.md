@@ -19,6 +19,7 @@ processed_fastq_raw_bam_qc
 - FastQC
 - MapDamage2
 - AMBER
+- QualiMap
 - MultiQC
 
 bam_processing
@@ -32,14 +33,16 @@ bam_processing
 - GATK realignertargetcreator
 - GATK indelrealigner
 
+processed_bam_qc
+- QualiMap after each processing stage
+- MultiQC after each processing stage
+
 random_sampling_bam
 - ANGSD -dohaplocall 1
 - ANGSD haploToPlink
 - plink to convert from tfam/tped to VCF format
 
 ## Planned subworkflows:
-
-merge_dedup_realign_bam_qc
 
 bam_filtering
 - samtools view -q minMQ (config file)
