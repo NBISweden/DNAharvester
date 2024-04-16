@@ -1,15 +1,28 @@
 # Process definitions for tools used in the workflow
 
-Currently planned modules:
+Implemented modules:
 
-- Fastp
+- samplesheet_check
+- fastp
 - bwa index
 - bwa aln
 - bwa samse
 - FastQC
 - MultiQC
 - MapDamage2
-- AMBER
+- amber
+- amber create_amber_samplesheet
+- GATK RealignerTargetCreator
+- GATK IndelRealigner
+- Picard createsequencedictionary
+- QualiMap bamqc
+- samremovedup
+- samtools faidx
+- samtools merge
+- samtools index
+
+Planned modules:
+
 - samtools view -q minMQ
 - custom code: identify minimum read length from AMBER output
 - bcftools mpileup
