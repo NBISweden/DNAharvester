@@ -82,7 +82,8 @@ workflow {
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
-            BAM_PROCESSING.out.realigned
+            BAM_PROCESSING.out.realigned,
+            params.reference ? file( params.reference, checkIfExists: true ) : []
         ) 
     }
 

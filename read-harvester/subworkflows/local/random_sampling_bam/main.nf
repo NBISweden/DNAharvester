@@ -7,6 +7,7 @@ include { PLINK_RECODE       } from '../../../modules/local/plink/recode/main'
 workflow RANDOM_SAMPLING_BAM {
     take:
     bam  // list of meta, bam, bai
+    reference
 
     main:
     ch_versions                              = Channel.empty()
@@ -21,7 +22,7 @@ workflow RANDOM_SAMPLING_BAM {
     ANGSD_HAPLOTOPLINK ( ANGSD_DOHAPLOCALL.out.haplo )
     ch_versions                              = ch_versions.mix(ANGSD_HAPLOTOPLINK.out.versions)
 
-    PLINK_RECODE ( ANGSD_HAPLOTOPLINK.out.tfam, ANGSD_HAPLOTOPLINK.out.tped )
+    PLINK_RECODE ( ANGSD_HAPLOTOPLINK.out.tfam, ANGSD_HAPLOTOPLINK.out.tped, reference )
     ch_versions                              = ch_versions.mix(PLINK_RECODE.out.versions)
 
     emit:
