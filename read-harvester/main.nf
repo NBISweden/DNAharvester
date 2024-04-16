@@ -11,11 +11,12 @@ include { MAPPING                    } from "$projectDir/subworkflows/local/mapp
 include { PROCESSED_FASTQ_RAW_BAM_QC } from "$projectDir/subworkflows/local/processed_fastq_raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
+include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_raw_bam_qc', 'bam_processing', 'processed_bam_qc']
+    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -75,6 +76,14 @@ workflow {
             BAM_PROCESSING.out.merged_bam_sample,
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.realigned
+        ) 
+    }
+
+    // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
+    if ( 'random_sampling_bam' in workflow_steps ) {
+        RANDOM_SAMPLING_BAM (
+            BAM_PROCESSING.out.realigned,
+            params.reference ? file( params.reference, checkIfExists: true ) : []
         ) 
     }
 
