@@ -12,8 +12,8 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
     path(fasta)
 
     output:
-    tuple val(meta), path("${prefix}.${subsample}_reads.bam") , optional:true, emit: bam
-    path "versions.yml",                                                       emit: versions
+    tuple val(meta), path("*.bam") , emit: subsampled_bam
+    path "versions.yml",             emit: versions
 
     when:
     task.ext.when == null || task.ext.when
