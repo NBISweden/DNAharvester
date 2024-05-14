@@ -30,14 +30,14 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
                     args.contains("--output-fmt cram") ? "cram" :
                     input.getExtension()
     """
-    total=`samtools view -c $bam` # total number of reads, not pairs (may include unmapped and duplicated multi-aligned reads)
-    frac=`awk -v s=$subsample -v t=$total "BEGIN {{print s/t}}"` # fraction of reads to keep
+    total=\$(samtools view -c $bam) # total number of reads, not pairs (may include unmapped and duplicated multi-aligned reads)
+    frac=\$(awk -v s=$subsample -v t=\$total "BEGIN {print s/t}") # fraction of reads to keep
 
     samtools \\
         view \\
         --threads ${task.cpus-1} \\
         ${reference} \\
-        -s $frac \\
+        -s \$frac \\
         $args \\
         -o ${prefix}.${subsample}_reads.${file_type} \\
         $bam \\
