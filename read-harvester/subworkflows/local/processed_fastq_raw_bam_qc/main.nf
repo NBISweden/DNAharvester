@@ -3,6 +3,7 @@
 include { FASTQC as FASTQC_PROCESSED } from '../../../modules/nf-core/fastqc/main'
 include { MULTIQC as MULTIQC_FASTQ   } from '../../../modules/nf-core/multiqc/main'
 include { MAPDAMAGE2                 } from '../../../modules/local/mapdamage2/main'
+include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/view_subsample/main'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
 include { QUALIMAP_BAMQC             } from '../../../modules/local/qualimap/bamqc/main'
@@ -41,7 +42,10 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     MAPDAMAGE2 ( bam, reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    CREATE_AMBER_SAMPLESHEET ( bam )
+    SAMTOOLS_VIEW_SUBSAMPLE ( bam, reference )
+    ch_versions                              = ch_versions.mix(SAMTOOLS_VIEW_SUBSAMPLE.out.versions)
+
+    CREATE_AMBER_SAMPLESHEET ( SAMTOOLS_VIEW_SUBSAMPLE.out.bam )
     ch_versions                              = ch_versions.mix(CREATE_AMBER_SAMPLESHEET.out.versions)
 
     AMBER ( 
