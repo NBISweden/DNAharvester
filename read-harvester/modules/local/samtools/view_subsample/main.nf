@@ -19,7 +19,7 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
     task.ext.when == null || task.ext.when
 
     script:
-    def subsample = task.ext.subsample ?: '1'
+    def subsample = params.subsample ?: '1'
     def args = task.ext.args ?: ''
     def args2 = task.ext.args2 ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
