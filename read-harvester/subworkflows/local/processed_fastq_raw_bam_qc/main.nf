@@ -49,7 +49,7 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
 
     // Run MultiQC on MapDamage and samtools flagstat output
     ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix( 
-                                                SAMTOOLS_FLAGSTAT.out.flagstat).collect()
+                                                SAMTOOLS_FLAGSTAT.out.flagstat.map{ meta, flagstat -> flagstat }).collect()
 
     MULTIQC_BAM (
         ch_multiqc_bam_files.collect(),
