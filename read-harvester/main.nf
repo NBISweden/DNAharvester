@@ -72,10 +72,14 @@ workflow {
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            BAM_PROCESSING.out.merged_bam_index,
-            BAM_PROCESSING.out.dedup_index,
+            BAM_PROCESSING.out.merged_bam_lib,
+            BAM_PROCESSING.out.merged_bam_lib_index,
+            BAM_PROCESSING.out.dedup_lib,
+            BAM_PROCESSING.out.dedup_lib_index,
             BAM_PROCESSING.out.merged_bam_sample,
+            BAM_PROCESSING.out.merged_bam_sample_index,
             BAM_PROCESSING.out.dedup_sample,
+            BAM_PROCESSING.out.dedup_sample_index,
             BAM_PROCESSING.out.realigned
         ) 
     }
