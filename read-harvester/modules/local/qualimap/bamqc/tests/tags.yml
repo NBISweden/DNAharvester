@@ -1,2 +1,0 @@
-qualimap/bamqc:
-  - modules/local/qualimap/bamqc/**
