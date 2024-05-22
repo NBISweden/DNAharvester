@@ -25,7 +25,7 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = fasta ? "--reference ${fasta}" : ""
     """
-    total=\$(samtools view -c $bam) # total number of reads, not pairs (may include unmapped and duplicated multi-aligned reads)
+    total=\$(samtools view -F 4 -q 1 -c $bam) # total number of reads, not pairs (excluding unmapped and duplicated multi-aligned reads)
     frac=\$(awk -v s=$subsample -v t=\$total "BEGIN {print s/t}") # fraction of reads to keep
 
     samtools \\
