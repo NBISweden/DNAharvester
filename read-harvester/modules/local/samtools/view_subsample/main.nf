@@ -34,7 +34,7 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
         ${reference} \\
         -s \$frac \\
         $args \\
-        -o ${prefix}.${subsample}_reads.bam \\
+        -o ${prefix}.approx_${subsample}_reads.bam \\
         $bam \\
         $args2
 
@@ -50,7 +50,7 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    touch ${prefix}.${subsample}_reads.bam
+    touch ${prefix}.approx_${subsample}_reads.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
