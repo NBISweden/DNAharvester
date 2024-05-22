@@ -2,7 +2,7 @@ process SAMTOOLS_FLAGSTAT {
     tag "$meta.id"
     label 'process_single'
 
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::samtools=1.19.2 bioconda::htslib=1.19.1"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/samtools:1.19.2--h50ea8bc_0' :
         'biocontainers/samtools:1.19.2--h50ea8bc_0' }"
