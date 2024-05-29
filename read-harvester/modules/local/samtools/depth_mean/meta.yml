@@ -1,5 +1,5 @@
-name: samtools_depth
-description: Computes the depth at each position or region.
+name: SAMTOOLS_DEPTH_MEAN
+description: Computes the mean depth based on the depth at each position or region.
 keywords:
   - depth
   - samtools
@@ -14,7 +14,7 @@ tools:
       doi: "10.1093/bioinformatics/btp352"
       licence: ["MIT"]
 input:
-  - meta1:
+  - meta:
       type: map
       description: |
         Groovy Map containing sample information
@@ -23,17 +23,12 @@ input:
       type: file
       description: sorted BAM/CRAM/SAM file
       pattern: "*.{bam,cram,sam}"
-  - meta2:
-      type: map
-      description: |
-        Groovy Map containing sample information
-        e.g. [ id:'test' ]
   - intervals:
       type: file
       description: list of positions or regions in specified bed file
       pattern: "*.{bed}"
 output:
-  - meta1:
+  - meta:
       type: map
       description: |
         Groovy Map containing sample information
@@ -42,13 +37,13 @@ output:
       type: file
       description: File containing software versions
       pattern: "versions.yml"
-  - tsv:
+  - dpstats:
       type: file
-      description: The output of samtools depth has three columns - the name of the contig or chromosome, the position and the number of reads aligned at that position
-      pattern: "*.{tsv}"
+      description: floating point number, mean depth
+      pattern: "*.{dpstats.txt}"
 authors:
   - "@louperelo"
   - "@nevinwu"
+  - "@verku"
 maintainers:
-  - "@louperelo"
-  - "@nevinwu"
+  - "@verku"

@@ -80,7 +80,8 @@ workflow {
             BAM_PROCESSING.out.merged_bam_sample_index,
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.dedup_sample_index,
-            BAM_PROCESSING.out.realigned
+            BAM_PROCESSING.out.realigned,
+            params.intervals
         ) 
     }
 

@@ -10,6 +10,7 @@ include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_SAMPLE      } from '../../../modul
 include { MULTIQC as MULTIQC_DEDUP_SAMPLE                 } from '../../../modules/nf-core/multiqc/main'
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_REALIGNED         } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_REALIGNED                    } from '../../../modules/nf-core/multiqc/main'
+include { SAMTOOLS_DEPTH_MEAN                             } from '../../../modules/local/samtools/depth_mean/main'
 
 workflow PROCESSED_BAM_QC {
     take:
@@ -23,6 +24,7 @@ workflow PROCESSED_BAM_QC {
     dedup_sample
     dedup_sample_index
     realigned
+    bed
 
     main:
     ch_versions                              = Channel.empty()
@@ -113,11 +115,16 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_REALIGNED.out.versions)
 
+    // Calculate mean genome-wide depth
+    SAMTOOLS_DEPTH_MEAN ( realigned, bed )
+    ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
+
     emit:
     multiqc_merged_bam_lib_report            = MULTIQC_MERGED_BAM_LIB.out.report.toList()       // channel: [ val(meta), path(report) ]
     multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()            // channel: [ val(meta), path(report) ]
-    multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()      // channel: [ val(meta), path(report) ]
-    multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()           // channel: [ val(meta), path(report) ]
-    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()              // channel: [ val(meta), path(report) ]
-    versions                                 = ch_versions                                        // channel: [ versions.yml ]
+    multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()    // channel: [ val(meta), path(report) ]
+    multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()         // channel: [ val(meta), path(report) ]
+    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()            // channel: [ val(meta), path(report) ]
+    dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                  // channel: [ val(meta), path(dpstats) ]
+    versions                                 = ch_versions                                      // channel: [ versions.yml ]
 }
