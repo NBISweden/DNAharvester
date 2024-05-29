@@ -8,7 +8,7 @@ process SAMTOOLS_DEPTH_MEAN {
         'community.wave.seqera.io/library/htslib_samtools:1.20--11a4e6daa46930ec' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
     path(intervals)
 
     output:
