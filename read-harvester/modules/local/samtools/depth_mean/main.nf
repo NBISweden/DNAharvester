@@ -1,4 +1,4 @@
-process SAMTOOLS_DEPTH {
+process SAMTOOLS_DEPTH_MEAN {
     tag "$meta.id"
     label 'process_low'
 
@@ -32,10 +32,10 @@ process SAMTOOLS_DEPTH {
         $bam
 
     awk \\
-        '{sum+=$3} END { print sum/NR }' \\
+        '{sum+=\$3} END { print sum/NR }' \\
         ${prefix}.tsv | \\
         awk \\
-        '{ printf "%.0f", $1 }' \\
+        '{ printf "%.0f", \$1 }' \\
         > ${prefix}.dpstats.txt
 
     cat <<-END_VERSIONS > versions.yml
