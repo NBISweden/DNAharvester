@@ -1,5 +1,5 @@
 process SAMTOOLS_DEPTH {
-    tag "$meta1.id"
+    tag "$meta.id"
     label 'process_low'
 
     conda "bioconda::samtools=1.20 bioconda::htslib=1.20"
@@ -8,11 +8,11 @@ process SAMTOOLS_DEPTH {
         'community.wave.seqera.io/library/htslib_samtools:1.20--11a4e6daa46930ec' }"
 
     input:
-    tuple val(meta1), path(bam)
-    tuple val(meta2), path(intervals)
+    tuple val(meta), path(bam)
+    path(intervals)
 
     output:
-    tuple val(meta1), path("*.tsv"), emit: tsv
+    tuple val(meta), path("*.tsv"), emit: tsv
     path "versions.yml"           , emit: versions
 
     when:
@@ -20,7 +20,7 @@ process SAMTOOLS_DEPTH {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta1.id}"
+    def prefix = task.ext.prefix ?: "${meta.id}"
     def positions = intervals ? "-b ${intervals}" : ""
     """
     samtools \\
