@@ -2,10 +2,10 @@ process SAMTOOLS_FLAGSTAT {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::samtools=1.19.2 bioconda::htslib=1.19.1"
+    conda "bioconda::samtools=1.20 bioconda::htslib=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/samtools:1.19.2--h50ea8bc_0' :
-        'quay.io/biocontainers/samtools:1.19.2--h50ea8bc_0' }"
+        'oras://community.wave.seqera.io/library/htslib_samtools:1.20--9fb9031594b6902c' :
+        'community.wave.seqera.io/library/htslib_samtools:1.20--11a4e6daa46930ec' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
