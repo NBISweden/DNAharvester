@@ -3,6 +3,7 @@
 include { FASTQC as FASTQC_PROCESSED } from '../../../modules/nf-core/fastqc/main'
 include { MULTIQC as MULTIQC_FASTQ   } from '../../../modules/nf-core/multiqc/main'
 include { MAPDAMAGE2                 } from '../../../modules/local/mapdamage2/main'
+include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/view_subsample/main'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
 include { QUALIMAP_BAMQC             } from '../../../modules/local/qualimap/bamqc/main'
@@ -41,11 +42,14 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     MAPDAMAGE2 ( bam, reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
-    CREATE_AMBER_SAMPLESHEET ( bam )
+    SAMTOOLS_VIEW_SUBSAMPLE ( bam, reference )
+    ch_versions                              = ch_versions.mix(SAMTOOLS_VIEW_SUBSAMPLE.out.versions)
+
+    CREATE_AMBER_SAMPLESHEET ( SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam )
     ch_versions                              = ch_versions.mix(CREATE_AMBER_SAMPLESHEET.out.versions)
 
     AMBER ( 
-        bam.join( CREATE_AMBER_SAMPLESHEET.out.tsv )
+        SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( CREATE_AMBER_SAMPLESHEET.out.tsv )
     )
     ch_versions                              = ch_versions.mix(AMBER.out.versions)
 
@@ -83,6 +87,7 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     mapdamage2_pctot_freq                    = MAPDAMAGE2.out.pctot_freq                    // channel: [ val(meta), path(pctot_freq) ]
     mapdamage2_pgtoa_freq                    = MAPDAMAGE2.out.pgtoa_freq                    // channel: [ val(meta), path(pgtoa_freq) ]
     mapdamage2_folder                        = MAPDAMAGE2.out.folder                        // channel: [ val(meta), path(folder) ]
+    subsampled_bam                           = SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam   // channel: [ val(meta), path(bam) ]
     amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
     qualimap_results                         = QUALIMAP_BAMQC.out.results                   // channel: [ val(meta), path(results) ]
     multiqc_bam_report                       = MULTIQC_BAM.out.report.toList()              // channel: [ val(meta), path(report) ]
