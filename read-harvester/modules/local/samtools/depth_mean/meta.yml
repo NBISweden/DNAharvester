@@ -1,0 +1,49 @@
+name: SAMTOOLS_DEPTH_MEAN
+description: Computes the mean depth based on the depth at each position or region.
+keywords:
+  - depth
+  - samtools
+  - statistics
+  - coverage
+tools:
+  - samtools:
+      description: Tools for dealing with SAM, BAM and CRAM files; samtools depth – computes the read depth at each position or region
+      homepage: http://www.htslib.org
+      documentation: http://www.htslib.org/doc/samtools-depth.html
+      tool_dev_url: https://github.com/samtools/samtools
+      doi: "10.1093/bioinformatics/btp352"
+      licence: ["MIT"]
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - bam:
+      type: file
+      description: sorted BAM/CRAM/SAM file
+      pattern: "*.{bam,cram,sam}"
+  - intervals:
+      type: file
+      description: list of positions or regions in specified bed file
+      pattern: "*.{bed}"
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. [ id:'test', single_end:false ]
+  - versions:
+      type: file
+      description: File containing software versions
+      pattern: "versions.yml"
+  - dpstats:
+      type: file
+      description: floating point number, mean depth
+      pattern: "*.{dpstats.txt}"
+authors:
+  - "@louperelo"
+  - "@nevinwu"
+  - "@verku"
+maintainers:
+  - "@verku"
