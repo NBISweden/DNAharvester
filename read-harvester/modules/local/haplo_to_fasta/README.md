@@ -1,0 +1,3 @@
+- Add two modules:
+    - subsample *.haplo.gz with the command `zcat filename.haplo.gz | awk 'NR%100==0' | gzip - > subsampled.haplo.gz`
+    - haplo2fasta.py
