@@ -1,6 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
+
 from sys import argv
-from itertools import izip, islice
+from itertools import islice
 import gzip
 
 def parse_haplo(haplo_file):
@@ -14,7 +15,7 @@ def parse_haplo(haplo_file):
         sample_dict[i] = ""
 
     # Open the haplo_file using gzip and iterate over each line
-    with gzip.open(haplo_file) as f1:
+    with gzip.open(haplo_file, 'rt') as f1:
         next(f1)  # Skip the header line
         for line in f1:
             splitted = line.strip().split("\t")
