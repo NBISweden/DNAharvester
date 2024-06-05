@@ -19,9 +19,14 @@ def parse_haplo(haplo_file):
         next(f1)  # Skip the header line
         for line in f1:
             splitted = line.strip().split("\t")
+            # Splits each line by tabs and extracts chrom, pos, and alleles.
+            # Alleles is formed by concatenating elements in the line starting from the fourth element onwards (splitted[3:]).
             chrom, pos, alleles = splitted[0], splitted[1], "".join(splitted[3:])
+            # Filters out lines where alleles contains 'N'.
             if "N" not in alleles:
+                # Checks if alleles contains exactly two unique values.
                 if len(set(alleles)) == 2:
+                    # Appends the respective allele (character) to the corresponding sample's sequence in sample_dict.
                     for i in range(len(alleles)):
                         focal_sample = samples[i]
                         sample_dict[focal_sample] += alleles[i]
