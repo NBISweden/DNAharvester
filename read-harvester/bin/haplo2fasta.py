@@ -20,10 +20,10 @@ def parse_haplo(haplo_file):
             splitted = line.strip().split("\t")
             chrom, pos, alleles = splitted[0], splitted[1], "".join(splitted[3:])
             if "N" not in alleles:
-            if len(set(alleles)) == 2:
-                for i in range(len(alleles)):
-                focal_sample = samples[i]
-                sample_dict[focal_sample] += alleles[i]
+                if len(set(alleles)) == 2:
+                    for i in range(len(alleles)):
+                        focal_sample = samples[i]
+                        sample_dict[focal_sample] += alleles[i]
 
     # Print the sequences for each sample
     for key, value in sample_dict.items():
