@@ -41,12 +41,14 @@ process FASTP {
         --merge \\
         --merged_out ${prefix}.merged.fastq.gz \\
         --correction \\
+        --overlap_len_require 15 \\
+        --overlap_diff_limit 1 \\
+        --detect_adapter_for_pe \\
         --out1 ${prefix}_1.fastp.fastq.gz \\
         --out2 ${prefix}_2.fastp.fastq.gz \\
         --json ${prefix}.fastp.json \\
         --html ${prefix}.fastp.html \\
         --thread $task.cpus \\
-        --detect_adapter_for_pe \\
         $args \\
         2> ${prefix}.fastp.log
 
