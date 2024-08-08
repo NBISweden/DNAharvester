@@ -49,13 +49,14 @@ workflow {
         ) 
     }
 
-    // Run FastQC, QualiMap, MapDamage2, AMBER and MultiQC to assess the data quality
+    // Run FastQC, samtools flagstat, MapDamage2, AMBER and MultiQC to assess the data quality
     if ( 'processed_fastq_raw_bam_qc' in workflow_steps ) {
         PROCESSED_FASTQ_RAW_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             FASTQ_PROCESSING.out.reads,
             FASTQ_PROCESSING.out.json,
-            MAPPING.out.bam
+            MAPPING.out.bam,
+            MAPPING.out.bai
         )
     }
 
@@ -71,11 +72,16 @@ workflow {
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            BAM_PROCESSING.out.merged_bam_index,
-            BAM_PROCESSING.out.dedup_index,
+            BAM_PROCESSING.out.merged_bam_lib,
+            BAM_PROCESSING.out.merged_bam_lib_index,
+            BAM_PROCESSING.out.dedup_lib,
+            BAM_PROCESSING.out.dedup_lib_index,
             BAM_PROCESSING.out.merged_bam_sample,
+            BAM_PROCESSING.out.merged_bam_sample_index,
             BAM_PROCESSING.out.dedup_sample,
-            BAM_PROCESSING.out.realigned
+            BAM_PROCESSING.out.dedup_sample_index,
+            BAM_PROCESSING.out.realigned,
+            params.intervals
         ) 
     }
 
