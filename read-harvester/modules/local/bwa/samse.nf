@@ -2,10 +2,10 @@ process BWA_SAMSE {
     tag "$meta.id"
     label 'process_medium'
 
-    conda "bioconda::bwa=0.7.17 bioconda::samtools=1.16.1"
+    conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:219b6c272b25e7e642ae3ff0bf0c5c81a5135ab4-0' :
-        'quay.io/biocontainers/mulled-v2-fe8faa35dbf6dc65a0f7f5d4ea12e31a79f73e40:219b6c272b25e7e642ae3ff0bf0c5c81a5135ab4-0' }"
+        'oras://community.wave.seqera.io/library/bwa_samtools:813d9b5fea3890ec' :
+        'community.wave.seqera.io/library/bwa_samtools:3938c84206f62975' }"
 
     input:
     tuple val(meta), path(reads)
