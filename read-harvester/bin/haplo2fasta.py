@@ -26,7 +26,8 @@ def parse_haplo(haplo_file, samplename):
         print(value)
 
 if __name__ == "__main__":
-    # Get the filename from command line arguments
+    # Get filename and sample name from command line arguments
     filename = argv[1]
-    # Call the parse_haplo function with the filename
-    parse_haplo(filename)
+    sample = argv[2]
+    # Call the parse_haplo function with filename and sample name
+    parse_haplo(filename, sample)
