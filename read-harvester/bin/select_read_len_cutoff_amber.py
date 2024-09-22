@@ -17,7 +17,7 @@ if len(sys.argv) != 2:
 filein = sys.argv[1]
 read_lengths = []
 mismatch_rates = []
-tolerance = 1.01 ## tolerance 5% higher than the average mismatch rate
+tolerance = 1.05 ## tolerance 5% higher than the average mismatch rate
 
 ### Read the mismatch rates from the input file
 data = False
