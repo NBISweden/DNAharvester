@@ -7,8 +7,8 @@ nextflow.enable.dsl = 2
 // Import subworkflows
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
-include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
+include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
@@ -66,18 +66,7 @@ workflow {
             MAPPING.out.bai
         )
     }
-    """
-    // Run FastQC, samtools flagstat, MapDamage2, AMBER and MultiQC to assess the data quality
-    if ( 'processed_fastq_raw_bam_qc' in workflow_steps ) {
-        PROCESSED_FASTQ_RAW_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            FASTQ_PROCESSING.out.reads,
-            FASTQ_PROCESSING.out.json,
-            MAPPING.out.bam,
-            MAPPING.out.bai
-        )
-    }
-    """
+
     // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
