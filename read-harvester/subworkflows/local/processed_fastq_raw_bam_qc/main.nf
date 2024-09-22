@@ -7,6 +7,7 @@ include { MAPDAMAGE2                 } from '../../../modules/local/mapdamage2/m
 include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/view_subsample/main'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
+include { READ_LEN_CUTOFF            } from '../../../modules/local/amber/read_len_cutoff'
 include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/main'
 
 
@@ -48,7 +49,7 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
     // Run MultiQC on MapDamage and samtools flagstat output
-    ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix( 
+    ch_multiqc_bam_files                     = MAPDAMAGE2.out.folder.map{ meta, folder -> folder }.mix(
                                                 SAMTOOLS_FLAGSTAT.out.flagstat.map{ meta, flagstat -> flagstat }).collect()
 
     MULTIQC_BAM (
@@ -65,10 +66,16 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     CREATE_AMBER_SAMPLESHEET ( SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam )
     ch_versions                              = ch_versions.mix(CREATE_AMBER_SAMPLESHEET.out.versions)
 
-    AMBER ( 
+    AMBER (
         SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( CREATE_AMBER_SAMPLESHEET.out.tsv )
     )
     ch_versions                              = ch_versions.mix(AMBER.out.versions)
+
+    READ_LEN_CUTOFF (
+        AMBER.out.txt
+    )
+    ch_versions                              = ch_versions.mix(READ_LEN_CUTOFF.out.versions)
+
 
     emit:
     fastqc_html                              = FASTQC_PROCESSED.out.html                    // channel: [ val(meta), path(html) ]
@@ -92,6 +99,8 @@ workflow PROCESSED_FASTQ_RAW_BAM_QC {
     flagstat                                 = SAMTOOLS_FLAGSTAT.out.flagstat               // channel: [ val(meta), path(flagstat) ]
     subsampled_bam                           = SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam   // channel: [ val(meta), path(bam) ]
     amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
+    amber_txt                                = AMBER.out.txt                                // channel: [ val(meta), path(txt) ]
+    read_len_cutoff                          = READ_LEN_CUTOFF.out.read_len                 // channel: [ val(meta), path(read_len) ]
     multiqc_bam_report                       = MULTIQC_BAM.out.report.toList()              // channel: [ val(meta), path(report) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
