@@ -8,7 +8,8 @@ nextflow.enable.dsl = 2
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
-include { PROCESSED_FASTQ_RAW_BAM_QC } from "$projectDir/subworkflows/local/processed_fastq_raw_bam_qc/main"
+include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
+include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
@@ -16,7 +17,7 @@ include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/rand
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam']
+    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -41,14 +42,31 @@ workflow {
         )
     }
 
+    // Run FastQC, MultiQC and read statistics on processed reads
+    if ( 'processed_fastq_qc' in workflow_steps ) {
+        PROCESSED_FASTQ_QC (
+            FASTQ_PROCESSING.out.reads,
+            FASTQ_PROCESSING.out.json
+        )
+    }
+
     // Index the reference genome, map with bwa-aln (aDNA parameters) and convert to bam
     if ( 'mapping' in workflow_steps ) {
         MAPPING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             FASTQ_PROCESSING.out.reads
-        ) 
+        )
     }
 
+    // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
+    if ( 'raw_bam_qc' in workflow_steps ) {
+        RAW_BAM_QC (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            MAPPING.out.bam,
+            MAPPING.out.bai
+        )
+    }
+    """
     // Run FastQC, samtools flagstat, MapDamage2, AMBER and MultiQC to assess the data quality
     if ( 'processed_fastq_raw_bam_qc' in workflow_steps ) {
         PROCESSED_FASTQ_RAW_BAM_QC (
@@ -59,13 +77,13 @@ workflow {
             MAPPING.out.bai
         )
     }
-
+    """
     // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam
-        ) 
+        )
     }
 
     // Run QualiMap and MultiQC on processed bam files
@@ -82,7 +100,7 @@ workflow {
             BAM_PROCESSING.out.dedup_sample_index,
             BAM_PROCESSING.out.realigned,
             params.intervals
-        ) 
+        )
     }
 
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
@@ -90,7 +108,7 @@ workflow {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
             params.reference ? file( params.reference, checkIfExists: true ) : []
-        ) 
+        )
     }
 
 }
