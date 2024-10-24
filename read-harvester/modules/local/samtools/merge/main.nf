@@ -1,6 +1,6 @@
 process SAMTOOLS_MERGE {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_long'
 
     conda "bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
