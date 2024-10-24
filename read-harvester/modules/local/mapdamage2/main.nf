@@ -1,6 +1,6 @@
 process MAPDAMAGE2 {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_medium'
 
     conda "bioconda::mapdamage2=2.2.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
