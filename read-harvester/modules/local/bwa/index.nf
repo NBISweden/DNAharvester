@@ -1,10 +1,11 @@
 process BWA_INDEX {
     tag "$fasta"
+    label 'process_medium'
 
-    conda "bioconda::bwa=0.7.17"
+    conda "bioconda::bwa=0.7.18"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bwa:0.7.17--hed695b0_7' :
-        'biocontainers/bwa:v0.7.17-3-deb_cv1' }"
+        'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
+        'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
     input:
     path(fasta)

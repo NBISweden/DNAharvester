@@ -1,11 +1,11 @@
 process BWA_ALN {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_high'
 
-    conda "bioconda::bwa=0.7.17"
+    conda "bioconda::bwa=0.7.18"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/bwa:0.7.17--h5bf99c6_8' :
-        'biocontainers/bwa:v0.7.17-3-deb_cv1' }"
+        'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
+        'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
     input:
     tuple val(meta) , path(reads)

@@ -2,10 +2,12 @@
 
 process SAMREMOVEDUP {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_high'
 
-    conda "conda-forge::python=3.11.0 bioconda::samtools=1.16.1"
-    container "quay.io/biocontainers/mulled-v2-1a35167f7a491c7086c13835aaa74b39f1f43979:9254eac8981f615fb6c417fa44e77c3b44bc3abd-0"
+    conda "conda-forge::python=3.12.3 bioconda::samtools=1.20"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'oras://community.wave.seqera.io/library/samtools_python:929f6700378eb560' :
+        'community.wave.seqera.io/library/samtools_python:5a63b0fea55e7e34' }"
 
     input:
     tuple val(meta), path(bam)
