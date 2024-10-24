@@ -2,7 +2,7 @@
 
 process SAMREMOVEDUP {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_high'
 
     conda "conda-forge::python=3.12.3 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?

@@ -1,6 +1,6 @@
 process GATK_REALIGNERTARGETCREATOR {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_high'
 
     conda "bioconda::gatk=3.5"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
