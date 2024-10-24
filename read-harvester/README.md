@@ -118,5 +118,6 @@ nextflow run -c assets/test-local.config -profile docker main.nf &> YYMMDD_rh.ou
 > The `docker` profile is set up to to use Docker to run each 
 process in a container with the required software. It requires 
 Docker to be installed and running on your local machine.
-Alternatively, you can use `-profile mamba` or `-profile conda` 
-to run each process in its own conda environment.
+Since ANGSD is only available as conda package for Linux, 
+`-profile mamba` or `-profile conda` can only be used on Linux 
+machines to run the pipeline. 

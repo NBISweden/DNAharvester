@@ -37,10 +37,12 @@ processed_bam_qc
 - QualiMap after each processing stage
 - MultiQC after each processing stage
 
-## Planned subworkflows:
-
 random_sampling_bam
-- angsd -doHaploCall 1
+- ANGSD -dohaplocall 1
+- ANGSD haploToPlink
+- plink to convert from tfam/tped to VCF format
+
+## Planned subworkflows:
 
 bam_filtering
 - samtools view -q minMQ (config file)
