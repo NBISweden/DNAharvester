@@ -21,7 +21,6 @@ process HAPLOTOFASTA {
     """
     haplo2fasta.py \\
         ${prefix}.haplo.gz \\
-        ${prefix} \\
         > ${prefix}.haplo.fasta &&
 
     cat <<-END_VERSIONS > versions.yml
