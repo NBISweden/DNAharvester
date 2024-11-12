@@ -71,7 +71,8 @@ workflow {
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MAPPING.out.bam
+            MAPPING.out.bam,
+            RAW_BAM_QC.out.read_len_cutoff
         )
     }
 
