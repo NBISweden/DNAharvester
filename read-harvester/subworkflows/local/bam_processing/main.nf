@@ -3,6 +3,10 @@
 // Index the reference genome
 include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/faidx/main'
 
+// Read Length threshold
+include { RM_SHORT_READS                            } from '../../../modules/local/samtools/rm_short_reads/main'
+include { SAMTOOLS_INDEX as RM_SHORT_READS_INDEX    } from '../../../modules/nf-core/samtools/index/main'
+
 // Merge BAM files per library index
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools/merge/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules/nf-core/samtools/index/main'
@@ -35,6 +39,13 @@ workflow BAM_PROCESSING {
     // Index the reference genome
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
+
+    // Remove short reads from BAM files
+    RM_SHORT_READS ( bam )
+    ch_versions = ch_versions.mix(RM_SHORT_READS.out.versions)
+
+    RM_SHORT_READS_INDEX ( RM_SHORT_READS.out.bam )
+    ch_versions = ch_versions.mix(RM_SHORT_READS_INDEX.out.versions)
 
     // Merge BAM files per library index
     ch_bam_lib_to_merge = bam.map {
@@ -81,10 +92,10 @@ workflow BAM_PROCESSING {
     ch_gatk_realignertargetcreator = SAMREMOVEDUP_SAMPLE.out.dedup.join(
         SAMREMOVEDUP_SAMPLE_INDEX.out.bai).groupTuple()
 
-    GATK_REALIGNERTARGETCREATOR ( 
-        ch_gatk_realignertargetcreator, 
-        reference, 
-        SAMTOOLS_FAIDX.out.fai, 
+    GATK_REALIGNERTARGETCREATOR (
+        ch_gatk_realignertargetcreator,
+        reference,
+        SAMTOOLS_FAIDX.out.fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
 
@@ -92,10 +103,10 @@ workflow BAM_PROCESSING {
         SAMREMOVEDUP_SAMPLE_INDEX.out.bai).join(
             GATK_REALIGNERTARGETCREATOR.out.intervals).groupTuple()
 
-    GATK_INDELREALIGNER ( 
-        ch_gatk_indelrealigner, 
-        reference, 
-        SAMTOOLS_FAIDX.out.fai, 
+    GATK_INDELREALIGNER (
+        ch_gatk_indelrealigner,
+        reference,
+        SAMTOOLS_FAIDX.out.fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 

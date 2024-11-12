@@ -6,18 +6,24 @@ from statistics import mean
 """
 Author:		Bilal Sharif
 Contact: 	bilal.bioinfo@gmail.com
-Usage:      read_len_cutoff_amber.py <amber_output.txt>
+Usage:      read_len_cutoff_amber.py <amber_output.txt> <tolerance>
 """
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
     print("Usage: read_len_cutoff_amber.py <amber_output.txt>")
+    sys.exit(1)
+
+if float(sys.argv[2]) <= 0 or float(sys.argv[2]) >= 1:
+    print("Error: The tolerance value should be a float between 0 and 1")
     sys.exit(1)
 
 ### Setting up initial variables
 filein = sys.argv[1]
 read_lengths = []
 mismatch_rates = []
-tolerance = 1.05 ## tolerance 5% higher than the average mismatch rate
+tolerance = 1 + float(sys.argv[2])
+
+
 
 ### Read the mismatch rates from the input file
 data = False
@@ -53,7 +59,7 @@ cutoff_length = None
 warning = False
 for i in range(39, read_lengths[0]-1, -1):  # Walk backward from 39 to the smallest read length
     mismatch_rate = mismatch_rates[read_lengths.index(i)]
-    tolerance_threshold = avg_mismatch_rate * tolerance ## the tolerance threshold is 5% higher than the average mismatch rate
+    tolerance_threshold = avg_mismatch_rate * tolerance
     if mismatch_rate > tolerance_threshold:
         cutoff_length = i+1 ## the cutoff length is the read length of the last read with a mismatch rate below the tolerance threshold
         if not mismatch_rates[read_lengths.index(i-1)] > tolerance_threshold: ## if the mismatch rate of the previous read is not higher than the tolerance threshold, probably not necessary!!!!
