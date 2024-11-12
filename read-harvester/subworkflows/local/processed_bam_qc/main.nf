@@ -116,9 +116,9 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_REALIGNED.out.versions)
 
     // Calculate mean genome-wide depth
-    SAMTOOLS_DEPTH_MEAN ( 
-        realigned, 
-        bed 
+    SAMTOOLS_DEPTH_MEAN (
+        realigned,
+        bed
     )
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
 
@@ -129,5 +129,6 @@ workflow PROCESSED_BAM_QC {
     multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()         // channel: [ val(meta), path(report) ]
     multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()            // channel: [ val(meta), path(report) ]
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                  // channel: [ val(meta), path(dpstats) ]
+    dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                  // channel: [ val(meta), path(flagstat) ]
     versions                                 = ch_versions                                      // channel: [ versions.yml ]
 }
