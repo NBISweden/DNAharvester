@@ -21,7 +21,7 @@ process READ_LEN_CUTOFF {
 
     """
     select_read_len_cutoff_amber.py \\
-        $amber_txt > ${prefix}_read_len_cutoff.txt
+        $amber_txt 0.05 > ${prefix}_read_len_cutoff.txt
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')

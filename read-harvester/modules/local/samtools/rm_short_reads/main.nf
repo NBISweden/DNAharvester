@@ -9,6 +9,7 @@ process RM_SHORT_READS {
 
     input:
     tuple val(meta), path(bam)
+    tuple val(meta), path(read_len)
 
     output:
     tuple val(meta), path("${prefix}.bam")  , emit: bam
@@ -20,12 +21,11 @@ process RM_SHORT_READS {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    //#len=$(head -n 1 $read_len | awk -F ': ' '{print \$2}')
-
 
     """
+    len=\$(head -n 1 $read_len | awk -F ': ' '{print \$2}')
     samtools view -h --threads ${task.cpus-1} $bam | \\
-    awk 'length(\$10) >= 30 || \$1 ~ /^@/' | \\
+    awk -v len=\$len 'length(\$10) >= \$len || \$1 ~ /^@/' | \\
     samtools view -bh --threads ${task.cpus-1} -o ${prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml

@@ -32,6 +32,7 @@ workflow BAM_PROCESSING {
     take:
     reference
     bam
+    read_len_cutoff
 
     main:
     ch_versions = Channel.empty()
@@ -41,14 +42,14 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // Remove short reads from BAM files
-    RM_SHORT_READS ( bam )
+    RM_SHORT_READS ( bam, read_len_cutoff )
     ch_versions = ch_versions.mix(RM_SHORT_READS.out.versions)
 
     RM_SHORT_READS_INDEX ( RM_SHORT_READS.out.bam )
     ch_versions = ch_versions.mix(RM_SHORT_READS_INDEX.out.versions)
 
     // Merge BAM files per library index
-    ch_bam_lib_to_merge = bam.map {
+    ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map {
         meta, bam -> [ ['id':meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
         }
         .groupTuple()
@@ -112,6 +113,8 @@ workflow BAM_PROCESSING {
 
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai                             // channel: path(index)
+    rm_short_reads_bam      = RM_SHORT_READS.out.bam                            // channel: [ val(meta), [ bam ] ]
+    rm_short_reads_index    = RM_SHORT_READS_INDEX.out.bai                       // channel: [ val(meta), [ bai ] ]
     merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                         // channel: [ val(meta), [ bam ] ]
     merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                   // channel: [ val(meta), [ bai ] ]
     dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                         // channel: [ val(meta), [ bam ] ]
