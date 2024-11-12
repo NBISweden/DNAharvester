@@ -3,6 +3,7 @@
 from sys import argv
 from itertools import islice
 import gzip
+import pandas as pd
 
 """
 This script parses a *.haplo.gz file produced with ANGSD 
@@ -11,13 +12,16 @@ doHaploCall for one sample and converts it to FASTA format.
 
 def parse_haplo(haplo_file, fasta_fai):
     # Open the fasta_fai and store chromosome names and lengths in a dictionary
-    chr_dict = {}
+    ref_dict = {}
     with open(fasta_fai) as fai:
         for line in fai:
             splitted = line.strip().split("\t")
             chrom, length = splitted[0], splitted[1]
-            if chrom not in chr_dict:
-                chr_dict[chrom] = length
+            if chrom not in ref_dict:
+                ref_dict[chrom] = list(range(1, int(length) + 1))
+    # Convert the dictionary to a pandas dataframe
+    ref_df = pd.DataFrame(list(ref_dict.items()), columns=['chrom', 'positions'])
+    print(ref_df)
     # Create an empty dictionary to store the sequence with a chromosome/scaffold name
     sequence_dict = {}
     # Open the haplo_file using gzip and iterate over each line
