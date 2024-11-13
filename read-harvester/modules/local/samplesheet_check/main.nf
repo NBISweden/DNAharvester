@@ -5,8 +5,8 @@ process SAMPLESHEET_CHECK {
 
     conda "conda-forge::python=3.13.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/python:3.13.0' :
-        'quay.io/biocontainers/python:3.13.0' }"
+        'oras://community.wave.seqera.io/library/python:3.13.0--a8086dc1de1c4e39' :
+        'community.wave.seqera.io/library/python:3.13.0--a025ad9838d75455' }"
 
     input:
     path samplesheet
