@@ -10,6 +10,9 @@ doHaploCall for one sample and the *.fasta.fai file of the
 reference genome that was used to generate the *.haplo.gz 
 file and converts the *.haplo.gz to FASTA format, filling 
 any missing sites with "N". 
+
+For large genomes, this script should be run per chromosome, 
+i.e. with split *.haplo.gz and *.fasta.fai files.
 """
 
 def parse_haplo(haplo_file):
