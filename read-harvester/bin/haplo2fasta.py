@@ -7,44 +7,56 @@ import pandas as pd
 
 """
 This script parses a *.haplo.gz file produced with ANGSD 
-doHaploCall for one sample and converts it to FASTA format. 
+doHaploCall for one sample and the *.fasta.fai file of the 
+reference genome that was used to generate the *.haplo.gz 
+file and converts the *.haplo.gz to FASTA format, filling 
+any missing sites with "N". 
 """
 
-def parse_haplo(haplo_file, fasta_fai):
-    # Open the fasta_fai and store chromosome names and lengths in a dictionary
-    ref_dict = {}
-    with open(fasta_fai) as fai:
-        for line in fai:
-            splitted = line.strip().split("\t")
-            chrom, length = splitted[0], splitted[1]
-            if chrom not in ref_dict:
-                ref_dict[chrom] = list(range(1, int(length) + 1))
-    # Convert the dictionary to a pandas dataframe
-    ref_df = pd.DataFrame(list(ref_dict.items()), columns=['chrom', 'positions'])
-    print(ref_df)
-    # Create an empty dictionary to store the sequence with a chromosome/scaffold name
-    sequence_dict = {}
-    # Open the haplo_file using gzip and iterate over each line
+def parse_haplo(haplo_file):
+    # Open haplo_file using gzip and iterate over each line
+    # Create a list to store the data from haplo_file
+    haplo_data = []
     with gzip.open(haplo_file, 'rt') as f:
         next(f)  # Skip the header line
         for line in f:
             splitted = line.strip().split("\t")
-            # Splits each line by tabs and extracts chromosome/scaffold name and allele for ind0.
+            # Splits each line by tabs and extracts chromosome/scaffold name, position, and allele for ind0.
             # Allele is extracted from column 4
-            chrom, pos, allele = splitted[0], splitted[1], splitted[3]
-            if chrom not in sequence_dict:
-                sequence_dict[chrom] = ""
-            # Appends the respective allele (character) to the chromosome's/scaffold's sequence in sequence_dict.
-            sequence_dict[chrom] += allele
+            chrom, position, allele = splitted[0], int(splitted[1]), splitted[3]
+            # Append the data to the haplo_data list
+            haplo_data.append([chrom, position, allele])
+    # Convert the list to a pandas dataframe
+    haplo_df = pd.DataFrame(haplo_data, columns=['chrom', 'position', 'allele'])
+    return haplo_df
 
-    # Print the sequences for each chromosome/scaffold
-    for key, value in sequence_dict.items():
-        print(">" + key)
-        print(value)
+def parse_fai(fasta_fai):
+    # Open the fasta_fai and store chromosome names and lengths in a dataframe
+    # Create a list to store the chromosome names and reference genome positions
+    fai_data = []
+    with open(fasta_fai) as fai:
+        for line in fai:
+            splitted = line.strip().split("\t")
+            chrom, length = splitted[0], int(splitted[1])
+            for position in range(1, length + 1):
+                fai_data.append([chrom, position])
+    # Convert the list to a pandas dataframe
+    fai_df = pd.DataFrame(fai_data, columns=['chrom', 'position'])
+    return fai_df
+
+def merge_fai_haplo_df(fai_df, haplo_df):
+    merged_df = fai_df.merge(haplo_df, on=['chrom', 'position'], how='left')
+    merged_df['allele'] = merged_df['allele'].fillna('N')
+    return merged_df
+
+    # # Print the sequences for each chromosome/scaffold
+    # for key, value in sequence_dict.items():
+    #     print(">" + key)
+    #     print(value)
 
 if __name__ == "__main__":
     # Get *haplo.gz and *.fasta.fai filenames from command line arguments
-    filename = argv[1]
-    fastaindex = argv[2]
-    # Call the parse_haplo function with filename
-    parse_haplo(filename, fastaindex)
+    haplo = argv[1]
+    fai = argv[2]
+    # Call the functions with haplo and fai
+    merge_fai_haplo_df(parse_fai(fai), parse_haplo(haplo))
