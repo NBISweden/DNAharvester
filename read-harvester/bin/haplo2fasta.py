@@ -45,18 +45,22 @@ def parse_fai(fasta_fai):
     return fai_df
 
 def merge_fai_haplo_df(fai_df, haplo_df):
+    # Merge the dataframes by chromosome name and position, using all positions from fai_df
     merged_df = fai_df.merge(haplo_df, on=['chrom', 'position'], how='left')
+    # Fill any positions with a missing allele from haplo_df with N
     merged_df['allele'] = merged_df['allele'].fillna('N')
     return merged_df
 
-    # # Print the sequences for each chromosome/scaffold
-    # for key, value in sequence_dict.items():
-    #     print(">" + key)
-    #     print(value)
+def print_to_fasta(merged_df):
+    # Print the merged_df in fasta format
+    for chrom, group in merged_df.groupby('chrom'):
+        alleles = ''.join(group['allele'])
+        print(f">{chrom}\n{alleles}")
 
 if __name__ == "__main__":
     # Get *haplo.gz and *.fasta.fai filenames from command line arguments
     haplo = argv[1]
     fai = argv[2]
     # Call the functions with haplo and fai
-    merge_fai_haplo_df(parse_fai(fai), parse_haplo(haplo))
+    fai_haplo_df = merge_fai_haplo_df(parse_fai(fai), parse_haplo(haplo))
+    print_to_fasta(fai_haplo_df)
