@@ -1,12 +1,13 @@
 process HAPLOTOFASTA {
 
-    conda "conda-forge::python=3.8.3"
+    conda "conda-forge::python=3.13.0 conda-forge::pandas=2.2.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/python:3.8.3' :
-        'quay.io/biocontainers/python:3.8.3' }"
+        'oras://community.wave.seqera.io/library/pandas_python:b56517cc205d1f0a' :
+        'community.wave.seqera.io/library/pandas_python:fd8290c2da2fd6ae' }"
 
     input:
     tuple val(meta), path(haplo)
+    path(fai)
 
     output:
     tuple val(meta), path("*.haplo.fasta") , emit: fasta
@@ -21,6 +22,7 @@ process HAPLOTOFASTA {
     """
     haplo2fasta.py \\
         ${prefix}.haplo.gz \\
+        ${fai} \\
         > ${prefix}.haplo.fasta &&
 
     cat <<-END_VERSIONS > versions.yml

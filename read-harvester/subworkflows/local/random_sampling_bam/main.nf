@@ -9,13 +9,13 @@ workflow RANDOM_SAMPLING_BAM {
     take:
     bam  // list of meta, bam, bai
     reference
+    fai
 
     main:
     ch_versions                              = Channel.empty()
 
     // Remove *.bai from input channel
-    ch_bam_for_angsd_dohaplocall = bam.map {
-        meta, bam, bai -> [ meta, bam ] }
+    ch_bam_for_angsd_dohaplocall             = bam.map {meta, bam, bai -> [ meta, bam ] }
 
     ANGSD_DOHAPLOCALL ( ch_bam_for_angsd_dohaplocall )
     ch_versions                              = ch_versions.mix(ANGSD_DOHAPLOCALL.out.versions)
@@ -26,7 +26,7 @@ workflow RANDOM_SAMPLING_BAM {
     PLINK_RECODE ( ANGSD_HAPLOTOPLINK.out.tfam, ANGSD_HAPLOTOPLINK.out.tped, reference )
     ch_versions                              = ch_versions.mix(PLINK_RECODE.out.versions)
 
-    HAPLOTOFASTA ( ANGSD_DOHAPLOCALL.out.haplo )
+    HAPLOTOFASTA ( ANGSD_DOHAPLOCALL.out.haplo, fai )
     ch_versions                              = ch_versions.mix(HAPLOTOFASTA.out.versions)
 
     emit:
