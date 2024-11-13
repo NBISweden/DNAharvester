@@ -20,10 +20,22 @@ process HAPLOTOFASTA {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    haplo2fasta.py \\
-        ${prefix}.haplo.gz \\
-        ${fai} \\
-        > ${prefix}.haplo.fasta &&
+    # Split the *.haplo.gz file per chromosome
+    zcat < ${prefix}.haplo.gz | \\
+        awk 'FNR == 1 {next}{print>(\$1".haplo")}' &&
+
+    # Loop through the chromosome *.haplo files and convert them to fasta format
+    # to avoid storing the genome-wide *.haplo.gz file into memory
+    for chr in \$(ls *.haplo); do 
+        gzip \${chr} &&
+        haplo2fasta.py \\
+            \${chr}.gz \\
+            ${fai} \\
+            > \${chr}.fasta
+    done &&
+
+    # Concatenate the chromosome *.haplo.fasta files 
+    cat *.haplo.fasta > ${prefix}.haplo.fasta &&
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
