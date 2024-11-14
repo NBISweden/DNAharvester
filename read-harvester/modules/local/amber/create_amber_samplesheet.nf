@@ -1,9 +1,9 @@
 process CREATE_AMBER_SAMPLESHEET {
 
-    conda "conda-forge::python=3.8.3"
+    conda "conda-forge::python=3.13.0"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/python:3.8.3' :
-        'quay.io/biocontainers/python:3.8.3' }"
+        'oras://community.wave.seqera.io/library/python:3.13.0--a8086dc1de1c4e39' :
+        'community.wave.seqera.io/library/python:3.13.0--a025ad9838d75455' }"
 
     input:
     tuple val(meta), path(bam)

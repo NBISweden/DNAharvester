@@ -4,10 +4,10 @@ process SAMREMOVEDUP {
     tag "$meta.id"
     label 'process_high'
 
-    conda "conda-forge::python=3.12.3 bioconda::samtools=1.20"
+    conda "conda-forge::python=3.13.0 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/samtools_python:929f6700378eb560' :
-        'community.wave.seqera.io/library/samtools_python:5a63b0fea55e7e34' }"
+        'oras://community.wave.seqera.io/library/samtools_python:e886d0f7a340b459' :
+        'community.wave.seqera.io/library/samtools_python:97109fdca4337830' }"
 
     input:
     tuple val(meta), path(bam)

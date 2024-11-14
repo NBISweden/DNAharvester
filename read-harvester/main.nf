@@ -89,7 +89,8 @@ workflow {
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
-            params.reference ? file( params.reference, checkIfExists: true ) : []
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            BAM_PROCESSING.out.fai
         ) 
     }
 
