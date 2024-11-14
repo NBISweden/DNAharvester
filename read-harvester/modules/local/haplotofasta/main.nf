@@ -11,7 +11,7 @@ process HAPLOTOFASTA {
 
     output:
     tuple val(meta), path("*.haplo.fasta") , emit: fasta
-    path "versions.yml"                    , emit: versions
+    path "versions.yml"                            , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -31,11 +31,11 @@ process HAPLOTOFASTA {
         haplo2fasta.py \\
             \${chr}.gz \\
             ${fai} \\
-            > \${chr}.fasta
+            > \${chr}.fa
     done &&
 
     # Concatenate the chromosome *.haplo.fasta files 
-    cat *.haplo.fasta > ${prefix}.haplo.fasta &&
+    cat *.fa > ${prefix}.haplo.fasta &&
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
