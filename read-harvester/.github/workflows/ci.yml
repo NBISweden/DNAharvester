@@ -1,0 +1,45 @@
+name: CI
+# This workflow runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
+on:
+  # push:
+  #   branches:
+  #     - dev
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.md'
+    branches:
+      - main
+  release:
+    types: [published]
+
+env:
+  NXF_ANSI_LOG: false
+
+concurrency:
+  group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Run pipeline with test data
+    # Only run on push if this is the dev branch
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/LTS-L_Dalen_2302') }}"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        NXF_VER:
+          - "23.04.0"
+          - "latest-everything"
+    steps:
+      - name: Check out pipeline code
+        uses: actions/checkout@v3
+
+      - name: Install Nextflow
+        uses: nf-core/setup-nextflow@v1
+        with:
+          version: "${{ matrix.NXF_VER }}"
+
+      - name: Run pipeline with test data
+        run: |
+          nextflow run ${GITHUB_WORKSPACE} -c ../test-eager_github.config -profile test,docker --outdir ./results
