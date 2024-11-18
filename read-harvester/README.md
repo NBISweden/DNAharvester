@@ -4,20 +4,38 @@ A novel pipeline for processing and analyzing extremely degraded DNA
 
 ## How to run read harvester
 
-### Rackham (HPC cluster)
+### Dardel (HPC cluster at PDC/KTH)
 
-- Clone this repository to a directory on Rackham
-
-- The conda environment from `environment.yaml` has 
-already been created in a directory accessible for 
-everyone in the storage project using the following 
-code:
+- Load the following modules:
 
 ```
-module load conda
-export CONDA_ENVS_PATH=/proj/sllstore2017093/b2016342/b2016342_nobackup/lts/conda_environments
-mamba env create -p /proj/sllstore2017093/b2016342/b2016342_nobackup/lts/conda_environments/read-harvester -f environment.yaml
+module load PDC bioinfo-tools conda apptainer tmux
 ```
+
+> Note that `tmux` is only available as a module on Dardel 
+but the equivalent tool `screen` is pre-installed and does 
+not need to be loaded. 
+
+> Apptainer (former singularity) can use your `scratch` for 
+caching, which is a temporary directory with unlimited space 
+by adding this row to your `~/.bashrc`: 
+`export NXF_SINGULARITY_CACHEDIR=$PDC_TMP`. 
+
+- Clone this repository to a directory on Dardel
+
+- Create the pipeline conda environment from `environment.yaml`. 
+Since home directories on Dardel are limited in storage space, 
+you need to create a directory in your storage project for the 
+conda environment to be installed in, and run the following 
+command: 
+
+```
+conda env create -f environment.yml -p /cfs/klemming/projects/supr/sllstore.../read-harvester
+```
+
+> Note that you can save storage space in your storage project 
+on Dardel by creating a common pipeline conda environment for 
+several people. 
 
 - Create a sample sheet, listing metadata information for 
 each sample, including the location of raw fastq files with 
@@ -28,11 +46,11 @@ Note that the pipeline currently only supports paired-end data.
 to input data, pipeline steps to be run, path to results 
 directory, and tool-specific parameters. `assets/custom.config` 
 is a template, a filled-out example is available here: 
-`assets/test-rackham.config`.
+`read-harvester/assets/test-dardel-eager_verena.config`. 
 
 - Add your UPPMAX compute project ID to the parameter 
-`process.clusterOptions` in line 54 of the custom config 
-file (see `assets/test-rackham.config`).
+`process.clusterOptions` in line 68 of the custom config 
+file (see `read-harvester/assets/test-dardel-eager_verena.config`). 
 
 - Read harvester runs AMBER, a tool that is not available 
 as container image or conda package yet. To run the pipeline, 
@@ -40,30 +58,30 @@ clone the AMBER Github repository (`https://github.com/tvandervalk/AMBER/`)
 into a different location and copy the file `AMBER` to 
 `read-harvester/bin`. 
 
-- Open a tmux or screen session on Rackham, e.g.: 
+- Open a tmux or screen session on Dardel, e.g.: 
 
 ```
 tmux new-session -s rh
 ```
 
-- Activate the conda environment in the tmux session: 
+- Activate the conda environment in the tmux session, replacing 
+the path to the directory where you created the conda environment: 
 
 ```
-module load conda
-export CONDA_ENVS_PATH=/proj/sllstore2017093/b2016342/b2016342_nobackup/lts/conda_environments
+export CONDA_ENVS_PATH=/cfs/klemming/projects/supr/sllstore.../conda_environments/
 conda activate read-harvester
 ```
 
 - Start the pipeline in the tmux session with the activated 
-conda environment as follows (replace `assets/test-rackham.config` 
+conda environment as follows (replace `assets/test-dardel.config` 
 with your custom config file): 
 
 ```
-nextflow run -c assets/test-rackham.config -profile uppmax main.nf &> YYMMDD_rh.out
+nextflow run -c assets/test-dardel.config -profile dardel main.nf &> YYMMDD_rh.out
 ```
 
-> The `uppmax` profile is set up to submit each process as 
-a job to the slurm queue, and to use singularity (apptainer) 
+> The `dardel` profile is set up to submit each process as 
+a job to the slurm queue, and to use Apptainer (former singularity) 
 to run each process in a container with the required software. 
 
 ### Locally (small test dataset)
@@ -87,7 +105,7 @@ only supports paired-end data.
 to input data, pipeline steps to be run, path to results 
 directory, and tool-specific parameters. `assets/custom.config` 
 is a template, a filled-out example is available here: 
-`assets/test-local.config`.
+`assets/test-local-eager_verena.config`.
 
 - Read harvester runs AMBER, a tool that is not available 
 as container image or conda package yet. To run the pipeline, 
@@ -118,6 +136,6 @@ nextflow run -c assets/test-local.config -profile docker main.nf &> YYMMDD_rh.ou
 > The `docker` profile is set up to to use Docker to run each 
 process in a container with the required software. It requires 
 Docker to be installed and running on your local machine.
-Since ANGSD is only available as conda package for Linux, 
-`-profile mamba` or `-profile conda` can only be used on Linux 
-machines to run the pipeline. 
+Currently, `-profile mamba` or `-profile conda` can only be 
+used on Linux machines to run the pipeline because the tool 
+ANGSD is only available as conda package for Linux. 
