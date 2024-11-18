@@ -1,9 +1,15 @@
 name: CI
 # This workflow runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on:
-  push:
+  # push:
+  #   branches:
+  #     - dev
+  pull_request:
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE.md'
     branches:
-      - dev
+      - main
   release:
     types: [published]
 
