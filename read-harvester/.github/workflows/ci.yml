@@ -1,10 +1,12 @@
-name: nf-core CI
+name: CI
 # This workflow runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on:
   push:
     branches:
       - dev
   pull_request:
+    branches:
+      - dev
   release:
     types: [published]
 
@@ -18,8 +20,8 @@ concurrency:
 jobs:
   test:
     name: Run pipeline with test data
-    # Only run on push if this is the nf-core dev branch (merged PRs)
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'nf-core/test') }}"
+    # Only run on push or on pull requests if this is the dev branch
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/LTS-L_Dalen_2302') }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -36,8 +38,5 @@ jobs:
           version: "${{ matrix.NXF_VER }}"
 
       - name: Run pipeline with test data
-        # TODO nf-core: You can customise CI pipeline run tests as required
-        # For example: adding multiple test runs with different parameters
-        # Remember that you can parallelise this by using strategy.matrix
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -profile test,docker --outdir ./results
+          nextflow run ${GITHUB_WORKSPACE} -c ../test-eager_github.config -profile test,docker --outdir ./results
