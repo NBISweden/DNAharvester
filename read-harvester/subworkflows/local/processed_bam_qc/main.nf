@@ -115,10 +115,11 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_REALIGNED.out.versions)
 
+    ch_bed_file                              = params.intervals ? Channel.fromPath(params.intervals) : Channel.value([])
     // Calculate mean genome-wide depth
     SAMTOOLS_DEPTH_MEAN ( 
         realigned, 
-        bed 
+        ch_bed_file 
     )
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
 
