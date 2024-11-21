@@ -4,10 +4,12 @@ This pipeline analyzes whole genome re-sequencing data and
 requires a compute system with at least 64 GB RAM to analyze 
 data for a species with a genome size of around 3 Gbp. 
 
-Conda/mamba has to be installed on the system to start a 
-pipeline run. The pipeline processes can be run with Docker, 
-Apptainer, or conda/mamba. Readharvester has been tested on 
-a HPC system with apptainer. 
+Nextflow has to be installed, e.g. in the conda environment 
+specified in `environment.yml`, to start a pipeline run. 
+The pipeline processes can be run with Docker, apptainer 
+(only on HPC clusters), or conda/mamba (currently only on 
+Linux systems). Readharvester has been tested on Dardel, an 
+HPC system with apptainer. 
 
 A terminal multiplexer like tmux or screen is useful to send 
 the Nextflow process to the background since it can take a 
@@ -30,6 +32,13 @@ environment contains Nextflow and nf-core:
 ```
 conda env create -f environment.yaml
 ````
+
+> Note that conda environments can also be created in 
+directories other than `/home/USER/` by running 
+`export CONDA_ENVS_PATH=/path/to/project/directory/conda_environments/` followed by 
+`conda env create -f environment.yml -p /path/to/project/directory/conda_environments/read-harvester`. 
+This is recommended if you run readharvester on the HPC 
+cluster Dardel (PDC/KTH). 
 
 Readharvester runs AMBER, a tool that is not available as 
 container image or conda package yet. To install AMBER, 
