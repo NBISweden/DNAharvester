@@ -33,8 +33,9 @@ the merged reads to the reference genome
 
 - Run samtools flagstat, mapDamage2 (without rescaling) and 
 MultiQC on the BAM files 
-- Run AMBER on a subset of mapped reads and identify a 
-minimum read length from the AMBER output 
+- Run AMBER on a subset of mapped reads 
+- Identify a minimum read length from the AMBER output per 
+BAM file
 
 ### BAM file processing
 
