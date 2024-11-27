@@ -104,9 +104,11 @@ workflow {
     // Output stats
     if ( 'output_stats' in workflow_steps ) {
         STATS_OUTPUT (
-            FASTQ_PROCESSING.out.json,
+            INPUT_CHECK.out.reads,
+            FASTQ_PROCESSING.out.fastp_log,
             RAW_BAM_QC.out.flagstat,
-            PROCESSED_BAM_QC.out.dedup_lib_flagstat
+            PROCESSED_BAM_QC.out.dedup_lib_flagstat,
+            BAM_PROCESSING.out.realigned
         )
     }
 
