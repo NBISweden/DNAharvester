@@ -13,11 +13,12 @@ include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
+include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam']
+    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','output_stats']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -97,6 +98,17 @@ workflow {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
             params.reference ? file( params.reference, checkIfExists: true ) : []
+        )
+    }
+
+    // Output stats
+    if ( 'output_stats' in workflow_steps ) {
+        STATS_OUTPUT (
+            INPUT_CHECK.out.reads,
+            FASTQ_PROCESSING.out.fastp_log,
+            RAW_BAM_QC.out.flagstat,
+            PROCESSED_BAM_QC.out.dedup_lib_flagstat,
+            BAM_PROCESSING.out.realigned
         )
     }
 
