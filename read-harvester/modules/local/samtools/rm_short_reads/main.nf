@@ -8,11 +8,10 @@ process RM_SHORT_READS {
         'community.wave.seqera.io/library/samtools:1.20--b5dfbd93de237464' }"
 
     input:
-    tuple val(meta), path(bam)
-    tuple val(meta), path(read_len)
+    tuple val(meta), path(bam), path(read_len)
 
     output:
-    tuple val(meta), path("${prefix}.bam")  , emit: bam
+    tuple val(meta), path("*.bam")          , emit: bam
     path "versions.yml"                     , emit: versions
 
     when:
@@ -24,9 +23,9 @@ process RM_SHORT_READS {
 
     """
     len=\$(head -n 1 $read_len | awk -F ': ' '{print \$2}')
-    samtools view -h --threads ${task.cpus-1} $bam | \\
-    awk -v len=\$len 'length(\$10) >= \$len || \$1 ~ /^@/' | \\
-    samtools view -bh --threads ${task.cpus-1} -o ${prefix}.bam
+    samtools view -h --threads ${task.cpus} $bam | \\
+    awk -v len=\$len 'length(\$10) >= len || \$1 ~ /^@/' | \\
+    samtools view -bh --threads ${task.cpus} -o ${prefix}-rl\${len}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

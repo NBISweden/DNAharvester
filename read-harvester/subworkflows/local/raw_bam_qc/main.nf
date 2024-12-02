@@ -5,7 +5,6 @@ include { MAPDAMAGE2                 } from '../../../modules/local/mapdamage2/m
 include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/view_subsample/main'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
-include { READ_LEN_CUTOFF            } from '../../../modules/local/amber/read_len_cutoff'
 include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/main'
 
 
@@ -52,12 +51,6 @@ workflow RAW_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(AMBER.out.versions)
 
-    READ_LEN_CUTOFF (
-        AMBER.out.txt
-    )
-    ch_versions                              = ch_versions.mix(READ_LEN_CUTOFF.out.versions)
-
-
     emit:
     mapdamage2_fragmisincorporation_plot     = MAPDAMAGE2.out.fragmisincorporation_plot     // channel: [ val(meta), path(fragmisincorporation_plot) ]
     mapdamage2_length_plot                   = MAPDAMAGE2.out.length_plot                   // channel: [ val(meta), path(length_plot) ]
@@ -78,7 +71,6 @@ workflow RAW_BAM_QC {
     subsampled_bam                           = SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam   // channel: [ val(meta), path(bam) ]
     amber_plot                               = AMBER.out.plot                               // channel: [ val(meta), path(plot) ]
     amber_txt                                = AMBER.out.txt                                // channel: [ val(meta), path(txt) ]
-    read_len_cutoff                          = READ_LEN_CUTOFF.out.read_len                 // channel: [ val(meta), path(read_len) ]
     multiqc_bam_report                       = MULTIQC_BAM.out.report.toList()              // channel: [ val(meta), path(report) ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
