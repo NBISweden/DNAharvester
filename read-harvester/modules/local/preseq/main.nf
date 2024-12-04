@@ -8,8 +8,7 @@ process PRESEQ {
         'community.wave.seqera.io/library/preseq:3.2.0--2789d8b704b33613' }"
 
     input:
-    tuple val(meta), path(bam)
-    path(index)
+    tuple val(meta), path(bam), path(index)
 
     output:
     tuple val(meta), path("*preseq.txt")    , emit: txt
