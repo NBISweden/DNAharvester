@@ -11,6 +11,8 @@ include { MULTIQC as MULTIQC_DEDUP_SAMPLE                 } from '../../../modul
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_REALIGNED         } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_REALIGNED                    } from '../../../modules/nf-core/multiqc/main'
 include { SAMTOOLS_DEPTH_MEAN                             } from '../../../modules/local/samtools/depth_mean/main'
+include { PRESEQ                                          } from '../../../modules/local/preseq/preseq'
+include { PLOT_PRESEQ                                     } from '../../../modules/local/preseq/plot_preseq'
 
 workflow PROCESSED_BAM_QC {
     take:
@@ -34,6 +36,15 @@ workflow PROCESSED_BAM_QC {
 
     FLAGSTAT_MERGED_BAM_LIB ( ch_flagstat_merged_bam_lib )
     ch_versions                              = ch_versions.mix(FLAGSTAT_MERGED_BAM_LIB.out.versions)
+
+    // PRESEQ
+    ch_preseq_merged_bam_lib_files           = merged_bam_lib.join(merged_bam_lib_index)
+
+    PRESEQ ( ch_preseq_merged_bam_lib_files )
+    ch_versions                              = ch_versions.mix(PRESEQ.out.versions)
+
+    PLOT_PRESEQ ( PRESEQ.out.preseq_txt )
+    ch_versions                              = ch_versions.mix(PLOT_PRESEQ.out.versions)
 
     // Run MultiQC on samtools flagstat output
     ch_multiqc_merged_bam_lib_files          = FLAGSTAT_MERGED_BAM_LIB.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
@@ -130,5 +141,7 @@ workflow PROCESSED_BAM_QC {
     multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()            // channel: [ val(meta), path(report) ]
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                  // channel: [ val(meta), path(dpstats) ]
     dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                  // channel: [ val(meta), path(flagstat) ]
+    preseq_txt                               = PRESEQ.out.preseq_txt                            // channel: [ val(meta), path(preseq_txt) ]
+    preseq_plot                              = PLOT_PRESEQ.out.preseq_plot                      // channel: [ val(meta), path(preseq_plot) ]
     versions                                 = ch_versions                                      // channel: [ versions.yml ]
 }
