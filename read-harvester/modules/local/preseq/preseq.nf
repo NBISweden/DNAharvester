@@ -11,7 +11,7 @@ process PRESEQ {
     tuple val(meta), path(bam), path(index)
 
     output:
-    tuple val(meta), path("*preseq.txt")    , emit: txt
+    tuple val(meta), path("*preseq.txt")    , emit: preseq_txt
     path "versions.yml"                     , emit: versions
 
 
