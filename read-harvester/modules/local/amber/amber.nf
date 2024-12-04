@@ -10,6 +10,7 @@ process AMBER {
 
     output:
     tuple val(meta), path("*.amber_plot.pdf"), emit: plot
+    tuple val(meta), path("*.amber_plot.txt"), emit: txt
     path "versions.yml"                      , emit: versions
 
     when:
