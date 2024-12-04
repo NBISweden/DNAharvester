@@ -3,6 +3,11 @@
 // Index the reference genome
 include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/faidx/main'
 
+// Read Length threshold
+include { ESTIMATE_READ_LEN_CUTOFF                      } from '../../../modules/local/amber/estimate_read_len_cutoff'
+include { RM_SHORT_READS                                } from '../../../modules/local/samtools/rm_short_reads/main'
+include { SAMTOOLS_INDEX as RM_SHORT_READS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
+
 // Merge BAM files per library index
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools/merge/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules/nf-core/samtools/index/main'
@@ -28,6 +33,7 @@ workflow BAM_PROCESSING {
     take:
     reference
     bam
+    amber_txt
 
     main:
     ch_versions = Channel.empty()
@@ -36,11 +42,31 @@ workflow BAM_PROCESSING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // Merge BAM files per library index
-    ch_bam_lib_to_merge = bam.map {
-        meta, bam -> [ ['id':meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
-        }
-        .groupTuple()
+    if (params.read_len_cutoff == "auto") {
+
+        // Estimate read length cutoff
+        ESTIMATE_READ_LEN_CUTOFF ( amber_txt )
+        ch_versions = ch_versions.mix ( ESTIMATE_READ_LEN_CUTOFF.out.versions )
+
+        // Remove short reads from BAM files
+        ch_bam_read_len_cutoff = bam.join ( ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
+        RM_SHORT_READS ( ch_bam_read_len_cutoff )
+        ch_versions = ch_versions.mix ( RM_SHORT_READS.out.versions )
+
+        RM_SHORT_READS_INDEX ( RM_SHORT_READS.out.bam )
+        ch_versions = ch_versions.mix ( RM_SHORT_READS_INDEX.out.versions )
+
+        // Prepare BAM files for merging
+        ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+        }.groupTuple()
+
+    } else {
+        // Directly provide BAM channel for merging
+        ch_bam_lib_to_merge = bam.map { meta, bam ->
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+        }.groupTuple()
+    }
 
     SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
@@ -81,10 +107,10 @@ workflow BAM_PROCESSING {
     ch_gatk_realignertargetcreator = SAMREMOVEDUP_SAMPLE.out.dedup.join(
         SAMREMOVEDUP_SAMPLE_INDEX.out.bai).groupTuple()
 
-    GATK_REALIGNERTARGETCREATOR ( 
-        ch_gatk_realignertargetcreator, 
-        reference, 
-        SAMTOOLS_FAIDX.out.fai, 
+    GATK_REALIGNERTARGETCREATOR (
+        ch_gatk_realignertargetcreator,
+        reference,
+        SAMTOOLS_FAIDX.out.fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
 
@@ -92,15 +118,17 @@ workflow BAM_PROCESSING {
         SAMREMOVEDUP_SAMPLE_INDEX.out.bai).join(
             GATK_REALIGNERTARGETCREATOR.out.intervals).groupTuple()
 
-    GATK_INDELREALIGNER ( 
-        ch_gatk_indelrealigner, 
-        reference, 
-        SAMTOOLS_FAIDX.out.fai, 
+    GATK_INDELREALIGNER (
+        ch_gatk_indelrealigner,
+        reference,
+        SAMTOOLS_FAIDX.out.fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai                             // channel: path(index)
+    rm_short_reads_bam      = params.read_len_cutoff == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()       // channel: [ val(meta), [ bam ] ]
+    rm_short_reads_index    = params.read_len_cutoff == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty() // channel: [ val(meta), [ bai ] ]
     merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                         // channel: [ val(meta), [ bam ] ]
     merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                   // channel: [ val(meta), [ bai ] ]
     dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                         // channel: [ val(meta), [ bam ] ]
