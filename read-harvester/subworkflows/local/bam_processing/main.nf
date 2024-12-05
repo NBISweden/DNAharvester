@@ -82,8 +82,6 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    ch_bam_lib_to_merge.view()
-
     SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
 
