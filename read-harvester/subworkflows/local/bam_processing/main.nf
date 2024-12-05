@@ -3,6 +3,10 @@
 // Index the reference genome
 include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/faidx/main'
 
+// Mapping quality filter
+include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_MQ             } from '../../../modules/nf-core/samtools/view/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_VIEW_MQ_INDEX      } from '../../../modules/nf-core/samtools/index/main'
+
 // Read Length threshold
 include { ESTIMATE_READ_LEN_CUTOFF                      } from '../../../modules/local/amber/estimate_read_len_cutoff'
 include { RM_SHORT_READS                                } from '../../../modules/local/samtools/rm_short_reads/main'
@@ -33,6 +37,7 @@ workflow BAM_PROCESSING {
     take:
     reference
     bam
+    bai
     amber_txt
 
     main:
@@ -42,6 +47,15 @@ workflow BAM_PROCESSING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
+    // Filter for mapping quality (provided in custom.config)
+    ch_samtools_view_mq = bam.join(bai)
+    SAMTOOLS_VIEW_MQ ( ch_samtools_view_mq, reference )
+    ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
+
+    SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )
+    ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ_INDEX.out.versions )
+
+    // Filter for minimum read length estimated from AMBER output
     if (params.read_len_cutoff == "auto") {
 
         // Estimate read length cutoff
@@ -49,7 +63,7 @@ workflow BAM_PROCESSING {
         ch_versions = ch_versions.mix ( ESTIMATE_READ_LEN_CUTOFF.out.versions )
 
         // Remove short reads from BAM files
-        ch_bam_read_len_cutoff = bam.join ( ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
+        ch_bam_read_len_cutoff = SAMTOOLS_VIEW_MQ.out.bam.join ( ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
         RM_SHORT_READS ( ch_bam_read_len_cutoff )
         ch_versions = ch_versions.mix ( RM_SHORT_READS.out.versions )
 
@@ -63,10 +77,12 @@ workflow BAM_PROCESSING {
 
     } else {
         // Directly provide BAM channel for merging
-        ch_bam_lib_to_merge = bam.map { meta, bam ->
+        ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
             [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
         }.groupTuple()
     }
+
+    ch_bam_lib_to_merge.view()
 
     SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
@@ -126,18 +142,19 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 
     emit:
-    fai                     = SAMTOOLS_FAIDX.out.fai                             // channel: path(index)
+    fai                     = SAMTOOLS_FAIDX.out.fai                                                            // channel: path(index)
+    mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
     rm_short_reads_bam      = params.read_len_cutoff == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()       // channel: [ val(meta), [ bam ] ]
     rm_short_reads_index    = params.read_len_cutoff == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty() // channel: [ val(meta), [ bai ] ]
-    merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                         // channel: [ val(meta), [ bam ] ]
-    merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                   // channel: [ val(meta), [ bai ] ]
-    dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                         // channel: [ val(meta), [ bam ] ]
-    dedup_lib_index         = SAMREMOVEDUP_LIB_INDEX.out.bai                     // channel: [ val(meta), [ bai ] ]
-    merged_bam_sample       = SAMTOOLS_MERGE_SAMPLE.out.bam                      // channel: [ val(meta), [ bam ] ]
-    merged_bam_sample_index = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                // channel: [ val(meta), [ bai ] ]
-    dedup_sample            = SAMREMOVEDUP_SAMPLE.out.dedup                      // channel: [ val(meta), [ bam ] ]
-    dedup_sample_index      = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                  // channel: [ val(meta), [ bai ] ]
-    reference_dict          = PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict // channel: path(reference_dict)
-    realigned               = GATK_INDELREALIGNER.out.bam                        // channel: [ val(meta), [ bam, bai ] ]
-    versions                = ch_versions                                        // channel: [ versions.yml ]
+    merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                                                        // channel: [ val(meta), [ bam ] ]
+    merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                  // channel: [ val(meta), [ bai ] ]
+    dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                                                        // channel: [ val(meta), [ bam ] ]
+    dedup_lib_index         = SAMREMOVEDUP_LIB_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
+    merged_bam_sample       = SAMTOOLS_MERGE_SAMPLE.out.bam                                                     // channel: [ val(meta), [ bam ] ]
+    merged_bam_sample_index = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                               // channel: [ val(meta), [ bai ] ]
+    dedup_sample            = SAMREMOVEDUP_SAMPLE.out.dedup                                                     // channel: [ val(meta), [ bam ] ]
+    dedup_sample_index      = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                 // channel: [ val(meta), [ bai ] ]
+    reference_dict          = PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict                                // channel: path(reference_dict)
+    realigned               = GATK_INDELREALIGNER.out.bam                                                       // channel: [ val(meta), [ bam, bai ] ]
+    versions                = ch_versions                                                                       // channel: [ versions.yml ]
 }

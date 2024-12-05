@@ -73,6 +73,7 @@ workflow {
         BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam,
+            MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
     }
