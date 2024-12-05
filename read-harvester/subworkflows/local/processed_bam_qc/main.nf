@@ -187,16 +187,16 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
 
     emit:
-    multiqc_rm_short_reads_report            = MULTIQC_RM_SHORT_READS_BAM.out.report.toList(), optional=True // channel: [ val(meta), path(report) ]
-    multiqc_mq_filtered_report               = MULTIQC_MQ_FILTERED_BAM.out.report.toList()                   // channel: [ val(meta), path(report) ]
-    multiqc_merged_bam_lib_report            = MULTIQC_MERGED_BAM_LIB.out.report.toList()                    // channel: [ val(meta), path(report) ]
-    multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()                         // channel: [ val(meta), path(report) ]
-    multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()                 // channel: [ val(meta), path(report) ]
-    multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()                      // channel: [ val(meta), path(report) ]
-    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()                         // channel: [ val(meta), path(report) ]
-    dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                               // channel: [ val(meta), path(dpstats) ]
-    dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                               // channel: [ val(meta), path(flagstat) ]
-    preseq_txt                               = PRESEQ.out.preseq_txt                                         // channel: [ val(meta), path(preseq_txt) ]
-    preseq_plot                              = PLOT_PRESEQ.out.preseq_plot                                   // channel: [ val(meta), path(preseq_plot) ]
-    versions                                 = ch_versions                                                   // channel: [ versions.yml ]
+    multiqc_rm_short_reads_report            = params.read_len_cutoff == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty() // channel: [ val(meta), path(report) ]
+    multiqc_mq_filtered_report               = MULTIQC_MQ_FILTERED_BAM.out.report.toList()                                                         // channel: [ val(meta), path(report) ]
+    multiqc_merged_bam_lib_report            = MULTIQC_MERGED_BAM_LIB.out.report.toList()                                                          // channel: [ val(meta), path(report) ]
+    multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
+    multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()                                                       // channel: [ val(meta), path(report) ]
+    multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
+    multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
+    dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
+    dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
+    preseq_txt                               = PRESEQ.out.preseq_txt                                                                               // channel: [ val(meta), path(preseq_txt) ]
+    preseq_plot                              = PLOT_PRESEQ.out.preseq_plot                                                                         // channel: [ val(meta), path(preseq_plot) ]
+    versions                                 = ch_versions                                                                                         // channel: [ versions.yml ]
 }
