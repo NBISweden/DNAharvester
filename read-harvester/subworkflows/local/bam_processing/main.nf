@@ -144,6 +144,7 @@ workflow BAM_PROCESSING {
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai                                                            // channel: path(index)
     mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
+    mq_filtered_index       = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
     rm_short_reads_bam      = params.read_len_cutoff == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()       // channel: [ val(meta), [ bam ] ]
     rm_short_reads_index    = params.read_len_cutoff == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty() // channel: [ val(meta), [ bai ] ]
     merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                                                        // channel: [ val(meta), [ bam ] ]
