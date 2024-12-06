@@ -6,7 +6,6 @@ process CONCATENATE_TARGET_DECOY_REFS {
 
     output:
     path "*.fasta"     , emit: fasta
-    path "versions.yml", emit: versions
 
     when:
     task.ext.when == null || task.ext.when
