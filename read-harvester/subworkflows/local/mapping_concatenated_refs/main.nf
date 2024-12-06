@@ -8,6 +8,7 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_CONCATENATED } from '../../../modules
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_DECOY        } from '../../../modules/local/samtools/faidx/main'
 include { FAI_TO_BED as FAI_TO_BED_DECOY                } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY  } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY        } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET       } from '../../../modules/local/samtools/faidx/main'
 include { FAI_TO_BED as FAI_TO_BED_TARGET               } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET } from '../../../modules/local/samtools/view_regions/main'
