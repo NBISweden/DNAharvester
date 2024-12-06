@@ -10,6 +10,7 @@ process SAMTOOLS_VIEW_REGIONS {
     input:
     tuple val(meta), path(input), path(index)
     path(fasta)
+    path(regions)
 
     output:
     tuple val(meta), path("*.bam"),                                    emit: bam
@@ -27,6 +28,7 @@ process SAMTOOLS_VIEW_REGIONS {
         view \\
         --threads ${task.cpus-1} \\
         ${reference} \\
+        -L ${regions} \\
         $args \\
         -o ${prefix}-regions.bam \\
         $input \\
