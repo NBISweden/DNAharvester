@@ -6,8 +6,10 @@ include { BWA_ALN as BWA_ALN_CONCATENATED               } from '../../../modules
 include { BWA_SAMSE as BWA_SAMSE_CONCATENATED           } from '../../../modules/local/bwa/samse.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_CONCATENATED } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_DECOY        } from '../../../modules/local/samtools/faidx/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET       } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_DECOY                } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY  } from '../../../modules/local/samtools/view_regions.nf'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET       } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_TARGET               } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET } from '../../../modules/local/samtools/view_regions.nf'
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY           } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_DECOY                      } from '../../../modules/nf-core/multiqc/main'
@@ -47,8 +49,10 @@ workflow MAPPING_CONCATENATED_REFS {
     // Generate *.fai index
     SAMTOOLS_FAIDX_DECOY ( decoy )
     ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_DECOY.out.versions)
+    // Convert to *.bed format
+    FAI_TO_BED_DECOY ( SAMTOOLS_FAIDX_DECOY.out.fai )
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, decoy, SAMTOOLS_FAIDX_DECOY.out.fai )
+    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, decoy, FAI_TO_BED_DECOY.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
 
     // Run samtools flagstat and MultiQC
@@ -69,8 +73,11 @@ workflow MAPPING_CONCATENATED_REFS {
     // Generate *.fai index
     SAMTOOLS_FAIDX_TARGET ( reference )
     ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_TARGET.out.versions)
+    // Convert to *.bed format
+    FAI_TO_BED_TARGET ( SAMTOOLS_FAIDX_TARGET.out.fai )
+
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, reference, SAMTOOLS_FAIDX_TARGET.out.fai )
+    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, reference, FAI_TO_BED_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
