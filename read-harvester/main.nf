@@ -76,7 +76,7 @@ workflow {
     if ( 'mapping_concatenated_refs' in workflow_steps ) {
         MAPPING_CONCATENATED_REFS (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            params.decoy,
+            params.decoy ? file( params.decoy, checkIfExists: true ) : [],
             FASTQ_PROCESSING.out.reads
         )
     }
