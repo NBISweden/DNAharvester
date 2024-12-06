@@ -46,6 +46,8 @@ workflow {
     INPUT_CHECK ( params.samplesheet )
     Channel.fromPath( params.reference, checkIfExists: true )
         .set{ reference }
+    Channel.fromPath( params.decoy, checkIfExists: true )
+        .set{ decoy }
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -74,7 +76,7 @@ workflow {
     if ( 'mapping_concatenated_refs' in workflow_steps ) {
         MAPPING_CONCATENATED_REFS (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            Channel.fromPath( params.decoy, checkIfExists: true ).set{ decoy },
+            params.decoy,
             FASTQ_PROCESSING.out.reads
         )
     }
