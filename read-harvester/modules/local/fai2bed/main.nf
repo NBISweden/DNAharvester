@@ -12,6 +12,6 @@ process FAI_TO_BED {
 
     script:
     """
-    awk -v OFS='\t' '{print $1, "0", $2}' ${fai} > genome.bed
+    awk -v OFS='\t' '{print \$1, "0", \$2}' ${fai} > genome.bed
     """
 }
