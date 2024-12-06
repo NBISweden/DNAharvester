@@ -53,9 +53,12 @@ workflow MAPPING_CONCATENATED_REFS {
     // Extract the region from the BAM file
     SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, decoy, FAI_TO_BED_DECOY.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
+     // Index the BAM file
+    SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
+    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_DECOY.out.versions)   
 
     // Run samtools flagstat and MultiQC
-    ch_flagstat_decoy                = decoy.join(decoy_index)
+    ch_flagstat_decoy                = SAMTOOLS_VIEW_DECOY.out.bam.join(SAMTOOLS_INDEX_DECOY.out.bai)
     FLAGSTAT_DECOY ( ch_flagstat_decoy )
     ch_versions                      = ch_versions.mix(FLAGSTAT_DECOY.out.versions)
 
