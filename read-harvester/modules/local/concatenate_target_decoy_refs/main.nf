@@ -13,6 +13,6 @@ process CONCATENATE_TARGET_DECOY_REFS {
 
     script:
     """
-    cat ${fasta} ${decoy} > ${fasta}-${decoy}.fasta
+    cat ${fasta} ${decoy} > concatenated.fasta
     """
 }
