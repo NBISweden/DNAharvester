@@ -18,7 +18,17 @@ include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stat
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','output_stats']
+    def recognized_workflow_stages = [
+        'fastq_processing',
+        'mapping',
+        'mapping_concatenated_refs',
+        'processed_fastq_qc',
+        'raw_bam_qc',
+        'bam_processing',
+        'processed_bam_qc',
+        'random_sampling_bam',
+        'output_stats'
+    ]
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -55,6 +65,15 @@ workflow {
     if ( 'mapping' in workflow_steps ) {
         MAPPING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
+            FASTQ_PROCESSING.out.reads
+        )
+    }
+
+    // Concatenate the reference genome with a decoy genome, index the concatenated fasta file, map with bwa-aln (aDNA parameters) and convert to bam
+    if ( 'mapping_concatenated_refs' in workflow_steps ) {
+        MAPPING_CONCATENATED_REFS (
+            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            Channel.fromPath( params.decoy, checkIfExists: true ).set{ decoy },
             FASTQ_PROCESSING.out.reads
         )
     }
