@@ -24,8 +24,7 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_versions = Channel.empty()
 
     // Concatenate the two references
-    ch_concatenate_target_decoy_refs = reference.mix(decoy)
-    CONCATENATE_TARGET_DECOY_REFS ( ch_concatenate_target_decoy_refs )
+    CONCATENATE_TARGET_DECOY_REFS ( reference, decoy )
 
     // Index the concatented fasta file
     BWA_INDEX_CONCATENATED ( CONCATENATE_TARGET_DECOY_REFS.out.fasta )
