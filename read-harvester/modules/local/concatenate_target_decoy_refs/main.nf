@@ -13,16 +13,14 @@ process CONCATENATE_TARGET_DECOY_REFS {
 
     script:
     """
-    if [[ ${fasta} == *.gz ]]; then
-        gunzip -c ${fasta} > ${fasta%.gz}
-        fasta=${fasta%.gz}
+    if [[ $fasta == *.gz ]]; then
+        gunzip -c $fasta > \${fasta%.gz}
     fi
 
-    if [[ ${decoy} == *.gz ]]; then
-        gunzip -c ${decoy} > ${decoy%.gz}
-        decoy=${decoy%.gz}
+    if [[ $decoy == *.gz ]]; then
+        gunzip -c $decoy > \${decoy%.gz}
     fi
 
-    cat ${fasta} ${decoy} > concatenated.fasta
+    cat \${fasta%.gz} \${decoy%.gz} > concatenated.fasta
     """
 }
