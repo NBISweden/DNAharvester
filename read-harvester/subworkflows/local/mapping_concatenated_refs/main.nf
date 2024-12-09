@@ -64,6 +64,10 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_versions                      = ch_versions.mix(FLAGSTAT_DECOY.out.versions)
 
     ch_multiqc_decoy_files           = FLAGSTAT_DECOY.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
+    ch_multiqc_config                = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
+    ch_multiqc_extra_config          = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                  = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
+
     MULTIQC_DECOY (
         ch_multiqc_decoy_files.collect(),
         ch_multiqc_config.toList(),
