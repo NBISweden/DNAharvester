@@ -40,7 +40,7 @@ process SAMTOOLS_FAIDX {
     def fastacmd = match[0] ? "touch ${match[0][1]}" : ''
     """
     ${fastacmd}
-    touch ${fasta}.fai
+    touch \${fasta%.gz}.fai
 
     cat <<-END_VERSIONS > versions.yml
 
