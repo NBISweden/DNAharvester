@@ -20,14 +20,13 @@ process SAMTOOLS_FAIDX {
     script:
     def args = task.ext.args ?: ''
     """
-    if [[ ${fasta} == *.gz ]]; then
-        gunzip -c ${fasta} > ${fasta%.gz}
-        fasta=${fasta%.gz}
+    if [[ $fasta == *.gz ]]; then
+        gunzip -c $fasta > ${fasta%.gz}
     fi
 
     samtools \\
         faidx \\
-        $fasta \\
+        \${fasta%.gz} \\
         $args
 
     cat <<-END_VERSIONS > versions.yml
