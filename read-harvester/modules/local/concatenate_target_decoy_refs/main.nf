@@ -3,8 +3,7 @@ process CONCATENATE_TARGET_DECOY_REFS {
     label 'process_single'
 
     input:
-    path fasta
-    path decoy
+    tuple path(fasta), path(decoy)
 
     output:
     path "concatenated.fasta", emit: concatenated
