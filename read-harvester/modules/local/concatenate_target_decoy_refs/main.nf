@@ -1,4 +1,5 @@
 process CONCATENATE_TARGET_DECOY_REFS {
+    tag "$fasta"
     label 'process_single'
 
     input:
@@ -6,7 +7,7 @@ process CONCATENATE_TARGET_DECOY_REFS {
     path(decoy)
 
     output:
-    path "*.fasta"     , emit: fasta
+    path "*.fasta"     , emit: concatenated
 
     when:
     task.ext.when == null || task.ext.when

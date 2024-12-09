@@ -29,7 +29,7 @@ workflow MAPPING_CONCATENATED_REFS {
     CONCATENATE_TARGET_DECOY_REFS ( reference, decoy )
 
     // Index the concatented fasta file
-    BWA_INDEX_CONCATENATED ( CONCATENATE_TARGET_DECOY_REFS.out.fasta )
+    BWA_INDEX_CONCATENATED ( CONCATENATE_TARGET_DECOY_REFS.out.concatenated )
     ch_versions                      = ch_versions.mix(BWA_INDEX_CONCATENATED.out.versions)
 
     // Map the reads to the concatenated fasta file
