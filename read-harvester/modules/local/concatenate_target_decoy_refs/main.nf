@@ -11,16 +11,22 @@ process CONCATENATE_TARGET_DECOY_REFS {
     when:
     task.ext.when == null || task.ext.when
 
-    script:
+    shell:
     """
-    if [[ $fasta == *.gz ]]; then
-        gunzip -c $fasta > \${fasta%.gz}
+    if [[ !{fasta} == *.gz ]]; then
+        gunzip -c !{fasta} > ${fasta%.gz} &&
+        fasta=${fasta%.gz}
+    else
+        fasta=!{fasta}
     fi
 
-    if [[ $decoy == *.gz ]]; then
-        gunzip -c $decoy > \${decoy%.gz}
+    if [[ !{decoy} == *.gz ]]; then
+        gunzip -c !{decoy} > ${decoy%.gz} &&
+        decoy=${decoy%.gz}
+    else
+        decoy=!{decoy}
     fi
 
-    cat \${fasta%.gz} \${decoy%.gz} > concatenated.fasta
+    cat ${fasta} ${decoy} > concatenated.fasta
     """
 }
