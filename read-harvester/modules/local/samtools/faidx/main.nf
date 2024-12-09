@@ -21,7 +21,7 @@ process SAMTOOLS_FAIDX {
     def args = task.ext.args ?: ''
     """
     if [[ $fasta == *.gz ]]; then
-        gunzip -c $fasta > ${fasta%.gz}
+        gunzip -c $fasta > \${fasta%.gz}
     fi
 
     samtools \\
