@@ -3,11 +3,11 @@ process CONCATENATE_TARGET_DECOY_REFS {
     label 'process_single'
 
     input:
-    path(fasta)
-    path(decoy)
+    path fasta
+    path decoy
 
     output:
-    path "*.fasta"     , emit: concatenated
+    path "concatenated.fasta", emit: concatenated
 
     when:
     task.ext.when == null || task.ext.when
