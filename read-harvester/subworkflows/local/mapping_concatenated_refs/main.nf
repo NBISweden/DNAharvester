@@ -12,6 +12,7 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY        } from '../../../modules
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET       } from '../../../modules/local/samtools/faidx/main'
 include { FAI_TO_BED as FAI_TO_BED_TARGET               } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET       } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY           } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_DECOY                      } from '../../../modules/nf-core/multiqc/main'
 
@@ -88,7 +89,7 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
-    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_CONCATENATED.out.versions)
+    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
     multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]
