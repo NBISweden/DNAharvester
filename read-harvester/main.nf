@@ -44,10 +44,8 @@ workflow {
 
     // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
-    Channel.fromPath( params.reference, checkIfExists: true )
-        .set{ reference }
-    Channel.fromPath( params.decoy, checkIfExists: true )
-        .set{ decoy }
+    reference = Channel.fromPath( params.reference, checkIfExists: true )
+    decoy = Channel.fromPath( params.decoy, checkIfExists: true )
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -67,7 +65,7 @@ workflow {
     // Index the reference genome, map with bwa-aln (aDNA parameters) and convert to bam
     if ( 'mapping' in workflow_steps ) {
         MAPPING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            reference,
             FASTQ_PROCESSING.out.reads
         )
     }
@@ -75,8 +73,8 @@ workflow {
     // Concatenate the reference genome with a decoy genome, index the concatenated fasta file, map with bwa-aln (aDNA parameters) and convert to bam
     if ( 'mapping_concatenated_refs' in workflow_steps ) {
         MAPPING_CONCATENATED_REFS (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            params.decoy ? file( params.decoy, checkIfExists: true ) : [],
+            reference,
+            decoy,
             FASTQ_PROCESSING.out.reads
         )
     }
@@ -84,7 +82,7 @@ workflow {
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            reference,
             MAPPING.out.bam,
             MAPPING.out.bai
         )
@@ -93,7 +91,7 @@ workflow {
     // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            reference,
             MAPPING.out.bam,
             RAW_BAM_QC.out.amber_txt
         )
@@ -102,7 +100,7 @@ workflow {
     // Run QualiMap and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            reference,
             BAM_PROCESSING.out.merged_bam_lib,
             BAM_PROCESSING.out.merged_bam_lib_index,
             BAM_PROCESSING.out.dedup_lib,
@@ -120,7 +118,7 @@ workflow {
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            reference,
             BAM_PROCESSING.out.fai
         )
     }
