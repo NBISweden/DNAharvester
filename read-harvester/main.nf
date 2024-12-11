@@ -38,7 +38,6 @@ workflow {
         .set{ reference }
     Channel.fromPath( params.competitive_reference + ".*", checkIfExists: true)
         .set{ competitive_reference_index }
-    competitive_reference_index.view()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {

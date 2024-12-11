@@ -10,8 +10,8 @@ process BEDTOOLS_SUBTRACT {
     tuple path(intervals1), path(intervals2)
 
     output:
-    tuple path("*.bed")           , emit: bed
-    path "versions.yml"           , emit: versions
+    path("*.bed")           , emit: bed
+    path "versions.yml"     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
