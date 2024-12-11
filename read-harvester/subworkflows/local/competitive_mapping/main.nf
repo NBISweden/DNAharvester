@@ -1,19 +1,19 @@
 #! /usr/bin/env nextflow
 
 include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE BWA_SAMSE_COMPETITIVE                } from '../../../modules/local/bwa/samse.nf'
+include { BWA_SAMSE as BWA_SAMSE_COMPETITIVE             } from '../../../modules/local/bwa/samse.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE   } from '../../../modules/local/samtools/faidx/main'
 include { FAI_TO_BED as FAI_TO_BED_COMPETITIVE           } from '../../../modules/local/fai2bed/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET         } from '../../../modules/local/samtools/faidx/main'
-include { FAI_TO_BED as FAI_TO_BED_TARGET                 } from '../../../modules/local/fai2bed/main'
-include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET   } from '../../../modules/local/bedtools/intersect/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY    } from '../../../modules/local/samtools/view_regions/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY          } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY             } from '../../../modules/nf-core/samtools/flagstat/main'
-include { MULTIQC as MULTIQC_DECOY                        } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET   } from '../../../modules/local/samtools/view_regions/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET         } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET        } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_TARGET                } from '../../../modules/local/fai2bed/main'
+include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET  } from '../../../modules/local/bedtools/intersect/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY         } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/nf-core/samtools/flagstat/main'
+include { MULTIQC as MULTIQC_DECOY                       } from '../../../modules/nf-core/multiqc/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../modules/nf-core/samtools/index/main'
 
 workflow COMPETITIVE_MAPPING {
     take:
