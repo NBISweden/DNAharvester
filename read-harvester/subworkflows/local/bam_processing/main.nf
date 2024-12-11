@@ -1,8 +1,5 @@
 #! /usr/bin/env nextflow
 
-// Index the reference genome
-include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/faidx/main'
-
 // Mapping quality filter
 include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_MQ             } from '../../../modules/local/samtools/view_mq/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_VIEW_MQ_INDEX      } from '../../../modules/nf-core/samtools/index/main'
@@ -36,16 +33,13 @@ include { GATK_INDELREALIGNER                           } from '../../../modules
 workflow BAM_PROCESSING {
     take:
     reference
+    fai
     bam
     bai
     amber_txt
 
     main:
     ch_versions = Channel.empty()
-
-    // Index the reference genome
-    SAMTOOLS_FAIDX ( reference )
-    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // Filter for mapping quality (provided in custom.config)
     ch_samtools_view_mq = bam.join(bai)
@@ -82,7 +76,7 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
+    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
 
     SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
@@ -101,7 +95,7 @@ workflow BAM_PROCESSING {
         }
         .groupTuple()
 
-    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference, SAMTOOLS_FAIDX.out.fai )
+    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference, fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
 
     SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
@@ -124,7 +118,7 @@ workflow BAM_PROCESSING {
     GATK_REALIGNERTARGETCREATOR (
         ch_gatk_realignertargetcreator,
         reference,
-        SAMTOOLS_FAIDX.out.fai,
+        fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
 
@@ -135,12 +129,11 @@ workflow BAM_PROCESSING {
     GATK_INDELREALIGNER (
         ch_gatk_indelrealigner,
         reference,
-        SAMTOOLS_FAIDX.out.fai,
+        fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 
     emit:
-    fai                     = SAMTOOLS_FAIDX.out.fai                                                            // channel: path(index)
     mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
     mq_filtered_index       = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
     rm_short_reads_bam      = params.read_len_cutoff == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()       // channel: [ val(meta), [ bam ] ]
