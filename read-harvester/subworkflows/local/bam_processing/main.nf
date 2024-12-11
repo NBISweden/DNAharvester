@@ -49,7 +49,7 @@ workflow BAM_PROCESSING {
 
     // Filter for mapping quality (provided in custom.config)
     ch_samtools_view_mq = bam.join(bai)
-    SAMTOOLS_VIEW_MQ ( ch_samtools_view_mq, reference )
+    SAMTOOLS_VIEW_MQ ( ch_samtools_view_mq )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
 
     SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )

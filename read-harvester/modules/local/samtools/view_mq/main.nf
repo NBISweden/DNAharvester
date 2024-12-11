@@ -9,7 +9,6 @@ process SAMTOOLS_VIEW {
 
     input:
     tuple val(meta), path(input), path(index)
-    path(fasta)
 
     output:
     tuple val(meta), path("*.bam"),                                    emit: bam
@@ -21,12 +20,10 @@ process SAMTOOLS_VIEW {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    def reference = fasta ? "--reference ${fasta}" : ""
     """
     samtools \\
         view \\
         --threads ${task.cpus-1} \\
-        ${reference} \\
         $args \\
         -o ${prefix}-mq.bam \\
         $input \\
