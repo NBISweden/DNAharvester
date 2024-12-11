@@ -1,7 +1,7 @@
 #! /usr/bin/env nextflow
 
 // Mapping quality filter
-include { SAMTOOLS_VIEW as SAMTOOLS_VIEW_MQ             } from '../../../modules/local/samtools/view_mq/main'
+include { SAMTOOLS_VIEW_MQ                              } from '../../../modules/local/samtools/view_mq/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_VIEW_MQ_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 
 // Read Length threshold
