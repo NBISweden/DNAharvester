@@ -73,6 +73,7 @@ workflow {
         BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
             MAPPING.out.bam,
+            MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
     }
@@ -81,6 +82,10 @@ workflow {
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
+            BAM_PROCESSING.out.mq_filtered_bam,
+            BAM_PROCESSING.out.mq_filtered_index,
+            BAM_PROCESSING.out.rm_short_reads_bam,
+            BAM_PROCESSING.out.rm_short_reads_index,
             BAM_PROCESSING.out.merged_bam_lib,
             BAM_PROCESSING.out.merged_bam_lib_index,
             BAM_PROCESSING.out.dedup_lib,
