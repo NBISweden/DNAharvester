@@ -10,13 +10,14 @@ include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY  } from '../../../modules
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY        } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY           } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_DECOY                      } from '../../../modules/nf-core/multiqc/main'
+include { FILTER_BED as FILTER_BED_TARGET               } from '../../../modules/local/filter_bed/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET } from '../../../modules/local/samtools/view_regions/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET       } from '../../../modules/nf-core/samtools/index/main'
 
 workflow MAPPING_CONCATENATED_REFS {
     take:
     bwa_index
-    reference
+    concatenated_reference
     decoy_chr
     reads
 
@@ -38,7 +39,7 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_concatenated_bam_index        = BWA_SAMSE_CONCATENATED.out.bam.mix( SAMTOOLS_INDEX_CONCATENATED.out.bai )
 
     // Generate *.fai index for the concatenated reference
-    SAMTOOLS_FAIDX_CONCATENATED ( reference )
+    SAMTOOLS_FAIDX_CONCATENATED ( concatenated_reference )
     ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_CONCATENATED.out.versions)
 
     // Convert to *.bed format
@@ -49,7 +50,7 @@ workflow MAPPING_CONCATENATED_REFS {
 
     // Decoy genome
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, decoy, FILTER_BED_DECOY.out.bed )
+    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, concatenated_reference, FILTER_BED_DECOY.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file
     SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
@@ -74,8 +75,11 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_versions                      = ch_versions.mix(MULTIQC_DECOY.out.versions)
 
     // Target genome
+    // Extract target chromosomes from BED file
+    FILTER_BED_TARGET ( FAI_TO_BED_CONCATENATED.out.bed, decoy_chr )
+
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, reference, FILTER_BED_DECOY.out.bed )
+    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, concatenated_reference, FILTER_BED_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
