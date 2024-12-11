@@ -1,24 +1,25 @@
 #! /usr/bin/env nextflow
 
-include { BWA_ALN as BWA_ALN_CONCATENATED               } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE BWA_SAMSE_CONCATENATED              } from '../../../modules/local/bwa/samse.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_CONCATENATED } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_CONCATENATED } from '../../../modules/local/samtools/faidx/main'
-include { FAI_TO_BED as FAI_TO_BED_CONCATENATED         } from '../../../modules/local/fai2bed/main'
-include { FILTER_BED as FILTER_BED_DECOY                } from '../../../modules/local/filter_bed/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY  } from '../../../modules/local/samtools/view_regions/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY        } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY           } from '../../../modules/nf-core/samtools/flagstat/main'
-include { MULTIQC as MULTIQC_DECOY                      } from '../../../modules/nf-core/multiqc/main'
-include { FILTER_BED as FILTER_BED_TARGET               } from '../../../modules/local/filter_bed/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET } from '../../../modules/local/samtools/view_regions/main'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET       } from '../../../modules/nf-core/samtools/index/main'
+include { BWA_ALN as BWA_ALN_CONCATENATED                 } from '../../../modules/local/bwa/aln.nf'
+include { BWA_SAMSE BWA_SAMSE_CONCATENATED                } from '../../../modules/local/bwa/samse.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_CONCATENATED   } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_CONCATENATED   } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_CONCATENATED           } from '../../../modules/local/fai2bed/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET         } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_TARGET                 } from '../../../modules/local/fai2bed/main'
+include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET   } from '../../../modules/local/bedtools/intersect/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY    } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY          } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY             } from '../../../modules/nf-core/samtools/flagstat/main'
+include { MULTIQC as MULTIQC_DECOY                        } from '../../../modules/nf-core/multiqc/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET   } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET         } from '../../../modules/nf-core/samtools/index/main'
 
 workflow MAPPING_CONCATENATED_REFS {
     take:
     bwa_index
     concatenated_reference
-    decoy_chr
+    reference
     reads
 
     main:
@@ -45,12 +46,20 @@ workflow MAPPING_CONCATENATED_REFS {
     // Convert to *.bed format
     FAI_TO_BED_CONCATENATED ( SAMTOOLS_FAIDX_CONCATENATED.out.fai )
 
-    // Extract decoy chromosomes from BED file
-    FILTER_BED_DECOY ( FAI_TO_BED_CONCATENATED.out.bed, decoy_chr )
+    // Generate *.fai index for the target reference genome
+    SAMTOOLS_FAIDX_TARGET ( reference )
+    ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_TARGET.out.versions)
 
+    // Convert to *.bed format
+    FAI_TO_BED_TARGET ( SAMTOOLS_FAIDX_TARGET.out.fai )
+   
     // Decoy genome
+    // Extract the decoy genome chromosomes from the concatenated genome BED file
+    ch_bedtools_subtract_target_intervals  = FAI_TO_BED_CONCATENATED.out.bed.combine( FAI_TO_BED_TARGET.out.bed )
+    BEDTOOLS_SUBTRACT_TARGET ( ch_bedtools_subtract_target_intervals )
+
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, concatenated_reference, FILTER_BED_DECOY.out.bed )
+    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, concatenated_reference, BEDTOOLS_SUBTRACT_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file
     SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
@@ -75,11 +84,8 @@ workflow MAPPING_CONCATENATED_REFS {
     ch_versions                      = ch_versions.mix(MULTIQC_DECOY.out.versions)
 
     // Target genome
-    // Extract target chromosomes from BED file
-    FILTER_BED_TARGET ( FAI_TO_BED_CONCATENATED.out.bed, decoy_chr )
-
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, concatenated_reference, FILTER_BED_TARGET.out.bed )
+    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, concatenated_reference, FAI_TO_BED_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
