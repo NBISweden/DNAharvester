@@ -36,6 +36,9 @@ workflow {
     INPUT_CHECK ( params.samplesheet )
     Channel.fromPath( params.reference, checkIfExists: true )
         .set{ reference }
+    Channel.fromPath( params.competitive_reference + ".*", checkIfExists: true)
+        .set{ competitive_reference_index }
+    competitive_reference_index.view()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -58,6 +61,7 @@ workflow {
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
                     file(params.competitive_reference),
+                    competitive_reference_index,
                     params.reference ? file( params.reference, checkIfExists: true ) : [],
                     FASTQ_PROCESSING.out.reads
             )

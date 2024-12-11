@@ -18,20 +18,18 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../module
 workflow COMPETITIVE_MAPPING {
     take:
     competitive_reference
+    bwa_index_competitive
     reference
     reads
 
     main:
     ch_versions = Channel.empty()
 
-    // Create channel for bwa index files
-    ch_bwa_index_competitive         = 
-
     // Map the reads to the concatenated fasta file
-    BWA_ALN_COMPETITIVE ( reads, ch_bwa_index_competitive )
+    BWA_ALN_COMPETITIVE ( reads, bwa_index_competitive )
     ch_versions                      = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
 
-    BWA_SAMSE_COMPETITIVE ( BWA_ALN_COMPETITIVE.out.reads, BWA_ALN_COMPETITIVE.out.sai, ch_bwa_index_competitive )
+    BWA_SAMSE_COMPETITIVE ( BWA_ALN_COMPETITIVE.out.reads, BWA_ALN_COMPETITIVE.out.sai, bwa_index_competitive )
     ch_versions                      = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
 
     // Index the BAM file
