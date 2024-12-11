@@ -37,7 +37,7 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_COMPETITIVE.out.versions)
 
     // Split the BAM file into target genome and decoy genome
-    ch_concatenated_bam_index        = BWA_SAMSE_COMPETITIVE.out.bam.mix( SAMTOOLS_INDEX_COMPETITIVE.out.bai )
+    ch_concatenated_bam_index        = BWA_SAMSE_COMPETITIVE.out.bam.join( SAMTOOLS_INDEX_COMPETITIVE.out.bai )
 
     // Generate *.fai index for the concatenated reference
     SAMTOOLS_FAIDX_COMPETITIVE ( competitive_reference )
@@ -59,7 +59,8 @@ workflow COMPETITIVE_MAPPING {
     BEDTOOLS_SUBTRACT_TARGET ( ch_bedtools_subtract_target_intervals )
 
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, competitive_reference, BEDTOOLS_SUBTRACT_TARGET.out.bed )
+    ch_samtools_view_decoy           = 
+    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, BEDTOOLS_SUBTRACT_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file
     SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
@@ -85,7 +86,7 @@ workflow COMPETITIVE_MAPPING {
 
     // Target genome
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, competitive_reference, FAI_TO_BED_TARGET.out.bed )
+    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, FAI_TO_BED_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
