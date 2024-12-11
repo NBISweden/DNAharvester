@@ -1,4 +1,4 @@
-process RM_SHORT_READS {
+process SAMTOOLS_VIEW {
     tag "$meta.id"
     label 'process_low'
 
@@ -8,29 +8,29 @@ process RM_SHORT_READS {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta), path(bam), path(read_len)
+    tuple val(meta), path(input), path(index)
 
     output:
-    tuple val(meta), path("*.bam")          , emit: bam
-    path "versions.yml"                     , emit: versions
+    tuple val(meta), path("*.bam"),                                    emit: bam
+    path  "versions.yml",                                              emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-
+    prefix = task.ext.prefix ?: "${meta.id}"
     """
-    len=\$(head -n 1 $read_len | awk -F ': ' '{print \$2}')
-    samtools view -h --threads ${task.cpus} $bam | \\
-    awk -v len=\$len 'length(\$10) >= len || \$1 ~ /^@/' | \\
-    samtools view -bh --threads ${task.cpus} -o ${prefix}-rl\${len}.bam
+    samtools \\
+        view \\
+        --threads ${task.cpus-1} \\
+        $args \\
+        -o ${prefix}-mq.bam \\
+        $input \\
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        awk: \$(echo \$(awk --version 2>&1) | sed 's/^.*awk //; s/Using.*\$//')
     END_VERSIONS
     """
 }
