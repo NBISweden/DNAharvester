@@ -51,34 +51,44 @@ workflow {
         )
     }
 
-    // Index the reference genome, map with bwa-aln (aDNA parameters) and convert to bam
+    // Map with bwa-aln (aDNA parameters) and convert to bam
     if ( 'mapping' in workflow_steps ) {
-        MAPPING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            FASTQ_PROCESSING.out.reads
-        )
+        // Competitive mapping to a concatenated reference (target plus decoy)
+        if (params.competitive_reference && file( params.competitive_reference ).exists()) {
+            COMPETITIVE_MAPPING (
+                    file(params.competitive_reference),
+                    params.reference ? file( params.reference, checkIfExists: true ) : [],
+                    FASTQ_PROCESSING.out.reads
+            )
+        // Map to the reference genome assembly
+        } else {
+            MAPPING (
+                params.reference ? file( params.reference, checkIfExists: true ) : [],
+                FASTQ_PROCESSING.out.reads
+            )
+        }
     }
 
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MAPPING.out.bam,
-            MAPPING.out.bai
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
     }
-
-    // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
+    // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MAPPING.out.bam,
-            MAPPING.out.bai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
     }
 
-    // Run QualiMap and MultiQC on processed bam files
+    // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
             params.reference ? file( params.reference, checkIfExists: true ) : [],
@@ -104,7 +114,7 @@ workflow {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
             params.reference ? file( params.reference, checkIfExists: true ) : [],
-            BAM_PROCESSING.out.fai
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai
         )
     }
 
