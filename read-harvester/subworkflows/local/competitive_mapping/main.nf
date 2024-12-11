@@ -1,10 +1,10 @@
 #! /usr/bin/env nextflow
 
-include { BWA_ALN as BWA_ALN_CONCATENATED                 } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE BWA_SAMSE_CONCATENATED                } from '../../../modules/local/bwa/samse.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_CONCATENATED   } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_CONCATENATED   } from '../../../modules/local/samtools/faidx/main'
-include { FAI_TO_BED as FAI_TO_BED_CONCATENATED           } from '../../../modules/local/fai2bed/main'
+include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/aln.nf'
+include { BWA_SAMSE BWA_SAMSE_COMPETITIVE                } from '../../../modules/local/bwa/samse.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE   } from '../../../modules/local/samtools/faidx/main'
+include { FAI_TO_BED as FAI_TO_BED_COMPETITIVE           } from '../../../modules/local/fai2bed/main'
 include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET         } from '../../../modules/local/samtools/faidx/main'
 include { FAI_TO_BED as FAI_TO_BED_TARGET                 } from '../../../modules/local/fai2bed/main'
 include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET   } from '../../../modules/local/bedtools/intersect/main'
@@ -15,36 +15,38 @@ include { MULTIQC as MULTIQC_DECOY                        } from '../../../modul
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET   } from '../../../modules/local/samtools/view_regions/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET         } from '../../../modules/nf-core/samtools/index/main'
 
-workflow MAPPING_CONCATENATED_REFS {
+workflow COMPETITIVE_MAPPING {
     take:
-    bwa_index
-    concatenated_reference
+    competitive_reference
     reference
     reads
 
     main:
     ch_versions = Channel.empty()
 
-    // Map the reads to the concatenated fasta file
-    BWA_ALN_CONCATENATED ( reads, bwa_index )
-    ch_versions                      = ch_versions.mix(BWA_ALN_CONCATENATED.out.versions)
+    // Create channel for bwa index files
+    ch_bwa_index_competitive         = 
 
-    BWA_SAMSE_CONCATENATED ( BWA_ALN_CONCATENATED.out.reads, BWA_ALN_CONCATENATED.out.sai, bwa_index )
-    ch_versions                      = ch_versions.mix(BWA_SAMSE_CONCATENATED.out.versions)
+    // Map the reads to the concatenated fasta file
+    BWA_ALN_COMPETITIVE ( reads, ch_bwa_index_competitive )
+    ch_versions                      = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
+
+    BWA_SAMSE_COMPETITIVE ( BWA_ALN_COMPETITIVE.out.reads, BWA_ALN_COMPETITIVE.out.sai, ch_bwa_index_competitive )
+    ch_versions                      = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
 
     // Index the BAM file
-    SAMTOOLS_INDEX_CONCATENATED ( BWA_SAMSE_CONCATENATED.out.bam )
-    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_CONCATENATED.out.versions)
+    SAMTOOLS_INDEX_COMPETITIVE ( BWA_SAMSE_COMPETITIVE.out.bam )
+    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_COMPETITIVE.out.versions)
 
     // Split the BAM file into target genome and decoy genome
-    ch_concatenated_bam_index        = BWA_SAMSE_CONCATENATED.out.bam.mix( SAMTOOLS_INDEX_CONCATENATED.out.bai )
+    ch_concatenated_bam_index        = BWA_SAMSE_COMPETITIVE.out.bam.mix( SAMTOOLS_INDEX_COMPETITIVE.out.bai )
 
     // Generate *.fai index for the concatenated reference
-    SAMTOOLS_FAIDX_CONCATENATED ( concatenated_reference )
-    ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_CONCATENATED.out.versions)
+    SAMTOOLS_FAIDX_COMPETITIVE ( competitive_reference )
+    ch_versions                      = ch_versions.mix(SAMTOOLS_FAIDX_COMPETITIVE.out.versions)
 
     // Convert to *.bed format
-    FAI_TO_BED_CONCATENATED ( SAMTOOLS_FAIDX_CONCATENATED.out.fai )
+    FAI_TO_BED_COMPETITIVE ( SAMTOOLS_FAIDX_COMPETITIVE.out.fai )
 
     // Generate *.fai index for the target reference genome
     SAMTOOLS_FAIDX_TARGET ( reference )
@@ -55,11 +57,11 @@ workflow MAPPING_CONCATENATED_REFS {
    
     // Decoy genome
     // Extract the decoy genome chromosomes from the concatenated genome BED file
-    ch_bedtools_subtract_target_intervals  = FAI_TO_BED_CONCATENATED.out.bed.combine( FAI_TO_BED_TARGET.out.bed )
+    ch_bedtools_subtract_target_intervals  = FAI_TO_BED_COMPETITIVE.out.bed.combine( FAI_TO_BED_TARGET.out.bed )
     BEDTOOLS_SUBTRACT_TARGET ( ch_bedtools_subtract_target_intervals )
 
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, concatenated_reference, BEDTOOLS_SUBTRACT_TARGET.out.bed )
+    SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, competitive_reference, BEDTOOLS_SUBTRACT_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file
     SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
@@ -85,13 +87,14 @@ workflow MAPPING_CONCATENATED_REFS {
 
     // Target genome
     // Extract the region from the BAM file
-    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, concatenated_reference, FAI_TO_BED_TARGET.out.bed )
+    SAMTOOLS_VIEW_TARGET ( ch_concatenated_bam_index, competitive_reference, FAI_TO_BED_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_TARGET.out.versions)
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
+    fai                              = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
     multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]
     bam                              = SAMTOOLS_VIEW_TARGET.out.bam          // channel: [ val(meta), [ bam ] ]
     bai                              = SAMTOOLS_INDEX_TARGET.out.bai         // channel: [ val(meta), [ bai ] ]
