@@ -5,6 +5,11 @@
     "https://github.com/nf-core/modules.git": {
       "modules": {
         "nf-core": {
+          "bedtools/intersect": {
+            "branch": "master",
+            "git_sha": "666652151335353eef2fcd58880bcef5bc2928e1",
+            "installed_by": ["modules"]
+          },
           "fastqc": {
             "branch": "master",
             "git_sha": "9a4517e720bc812e95b56d23d15a1653b6db4f53",
@@ -25,11 +30,6 @@
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
             "installed_by": ["modules"]
           },
-          "samtools/view": {
-            "branch": "master",
-            "git_sha": "2d20463181b1c38981a02e90d3084b5f9fa8d540",
-            "installed_by": ["modules"]
-          }
         }
       }
     }
