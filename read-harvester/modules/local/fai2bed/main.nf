@@ -6,13 +6,13 @@ process FAI_TO_BED {
     tuple val(meta2), path(fai)
 
     output:
-    tuple val(meta2), path "*.bed"     , emit: bed
+    tuple val(meta2), path("*.bed"), emit: bed
 
     when:
     task.ext.when == null || task.ext.when
-    def prefix = task.ext.prefix ?: "${meta2.id}"
 
     script:
+    def prefix = task.ext.prefix ?: "${meta2.id}"
     """
     awk -v OFS='\t' '{print \$1, "0", \$2}' ${fai} > ${prefix}.bed
     """
