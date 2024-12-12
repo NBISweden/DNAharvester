@@ -55,8 +55,7 @@ workflow COMPETITIVE_MAPPING {
    
     // Decoy genome
     // Extract the decoy genome chromosomes from the concatenated genome BED file
-    ch_bedtools_subtract_target_intervals  = FAI_TO_BED_COMPETITIVE.out.bed.combine( FAI_TO_BED_TARGET.out.bed )
-    BEDTOOLS_SUBTRACT_TARGET ( ch_bedtools_subtract_target_intervals )
+    BEDTOOLS_SUBTRACT_TARGET ( FAI_TO_BED_COMPETITIVE.out.bed, FAI_TO_BED_TARGET.out.bed )
 
     // Extract the region from the BAM file
     SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, BEDTOOLS_SUBTRACT_TARGET.out.bed )
