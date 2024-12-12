@@ -9,7 +9,7 @@ process SAMTOOLS_VIEW_REGIONS {
 
     input:
     tuple val(meta), path(input), path(index)
-    path(intervals)
+    tuple val(meta2), path(intervals)
 
     output:
     tuple val(meta), path("*.bam"),                                    emit: bam
@@ -21,6 +21,7 @@ process SAMTOOLS_VIEW_REGIONS {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
+    prefix2 = task.ext.prefix2 ?: "${meta2.id}"
     def positions = intervals ? "-L ${intervals}" : ""
     """
     samtools \\
@@ -28,7 +29,7 @@ process SAMTOOLS_VIEW_REGIONS {
         --threads ${task.cpus-1} \\
         $args \\
         $positions \\
-        -o ${prefix}-regions.bam \\
+        -o ${prefix}-${prefix2}-regions.bam \\
         $input \\
 
     cat <<-END_VERSIONS > versions.yml

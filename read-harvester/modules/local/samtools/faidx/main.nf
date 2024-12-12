@@ -8,10 +8,10 @@ process SAMTOOLS_FAIDX {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
-    path ("*.fai")                         , emit: fai, optional: true
+    tuple val(meta2), path ("*.fai")       , emit: fai, optional: true
     path "versions.yml"                    , emit: versions
 
     when:

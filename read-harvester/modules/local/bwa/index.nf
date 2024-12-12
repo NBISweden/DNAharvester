@@ -8,11 +8,11 @@ process BWA_INDEX {
         'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
     input:
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
-    path(bwa)                  , emit: index
-    path "versions.yml"        , emit: versions
+    tuple val(meta2), path(bwa) , emit: index
+    path "versions.yml"         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
