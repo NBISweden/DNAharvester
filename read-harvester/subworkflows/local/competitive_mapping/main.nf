@@ -59,7 +59,6 @@ workflow COMPETITIVE_MAPPING {
     BEDTOOLS_SUBTRACT_TARGET ( ch_bedtools_subtract_target_intervals )
 
     // Extract the region from the BAM file
-    ch_samtools_view_decoy           = 
     SAMTOOLS_VIEW_DECOY ( ch_concatenated_bam_index, BEDTOOLS_SUBTRACT_TARGET.out.bed )
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file

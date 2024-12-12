@@ -7,24 +7,27 @@ process BEDTOOLS_SUBTRACT {
         'biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
     input:
-    tuple path(intervals1), path(intervals2)
+    tuple val(meta2), path(intervals1)
+    tuple val(meta3), path(intervals2)
 
     output:
-    path("*.bed")           , emit: bed
-    path "versions.yml"     , emit: versions
+    tuple val(meta2), path("*.bed") , emit: bed
+    path "versions.yml"             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+    def prefix1 = task.ext.prefix1 ?: "${meta2.id}"
+    def prefix2 = task.ext.prefix2 ?: "${meta3.id}"
     """
     bedtools \\
         subtract \\
         -a $intervals1 \\
         -b $intervals2 \\
         $args \\
-        > subtracted.bed
+        > ${prefix1}.subtract-${prefix2}.bed
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

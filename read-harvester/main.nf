@@ -34,10 +34,14 @@ workflow {
 
     // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
-    Channel.fromPath( params.reference, checkIfExists: true )
-        .set{ reference }
-    Channel.fromPath( params.competitive_reference + ".*", checkIfExists: true)
-        .set{ competitive_reference_index }
+    ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect()
+    ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+    ch_competitive_reference_index = params.competitive_reference ? Channel.fromPath( params.competitive_reference + ".*", checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+    ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -59,15 +63,15 @@ workflow {
         // Competitive mapping to a concatenated reference (target plus decoy)
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
-                    file(params.competitive_reference),
-                    competitive_reference_index,
-                    params.reference ? file( params.reference, checkIfExists: true ) : [],
+                    ch_competitive_reference,
+                    ch_competitive_reference_index,
+                    ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
         // Map to the reference genome assembly
         } else {
             MAPPING (
-                params.reference ? file( params.reference, checkIfExists: true ) : [],
+                ch_reference,
                 FASTQ_PROCESSING.out.reads
             )
         }
@@ -76,7 +80,7 @@ workflow {
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
@@ -84,7 +88,7 @@ workflow {
     // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
@@ -95,7 +99,7 @@ workflow {
     // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            ch_reference,
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,
@@ -109,7 +113,7 @@ workflow {
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.dedup_sample_index,
             BAM_PROCESSING.out.realigned,
-            params.intervals
+            ch_intervals
         )
     }
 
@@ -117,7 +121,7 @@ workflow {
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.realigned,
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
+            ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai
         )
     }
