@@ -41,7 +41,7 @@ workflow {
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_competitive_reference_index = params.competitive_reference ? Channel.fromPath( params.competitive_reference + ".*", checkIfExists: true )
+    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs( params.competitive_reference + "*.{amb,ann,bwt,pac,sa}", checkIfExists: true )
         .map { file -> 
             def baseName = file.baseName
             [baseName, file] }
