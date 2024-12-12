@@ -60,7 +60,7 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_MQ_FILTERED_BAM.out.versions)
 
     // rm_short_reads_bam
-    if (params.read_len_cutoff == "auto") {
+    if (params.readlength == "auto") {
 
         ch_flagstat_rm_short_reads_bam           = rm_short_reads_bam.join(rm_short_reads_bam_index)
 
@@ -187,7 +187,7 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
 
     emit:
-    multiqc_rm_short_reads_report            = params.read_len_cutoff == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty() // channel: [ val(meta), path(report) ]
+    multiqc_rm_short_reads_report            = params.readlength == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty()      // channel: [ val(meta), path(report) ]
     multiqc_mq_filtered_report               = MULTIQC_MQ_FILTERED_BAM.out.report.toList()                                                         // channel: [ val(meta), path(report) ]
     multiqc_merged_bam_lib_report            = MULTIQC_MERGED_BAM_LIB.out.report.toList()                                                          // channel: [ val(meta), path(report) ]
     multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
