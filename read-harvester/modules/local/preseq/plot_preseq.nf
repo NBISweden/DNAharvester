@@ -24,6 +24,7 @@ process PLOT_PRESEQ {
     """
     plot_preseq.py \\
         ${preseq_txt} \\
+        ${args} \\
         ${prefix}_preseq.png
 
     cat <<-END_VERSIONS > versions.yml
