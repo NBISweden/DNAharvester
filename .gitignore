@@ -3,3 +3,4 @@ read-harvester/work/*
 read-harvester/results/*
 read-harvester/bin/AMBER*
 read-harvester/assets/test-*.config
+read-harvester/assets/samplesheet-*.csv
