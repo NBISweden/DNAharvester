@@ -56,7 +56,7 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ_INDEX.out.versions )
 
     // Filter for minimum read length estimated from AMBER output
-    if (params.read_len_cutoff == "auto") {
+    if (params.readlength == "auto") {
 
         // Estimate read length cutoff
         ESTIMATE_READ_LEN_CUTOFF ( amber_txt )
@@ -143,8 +143,8 @@ workflow BAM_PROCESSING {
     fai                     = SAMTOOLS_FAIDX.out.fai                                                            // channel: path(index)
     mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
     mq_filtered_index       = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
-    rm_short_reads_bam      = params.read_len_cutoff == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()       // channel: [ val(meta), [ bam ] ]
-    rm_short_reads_index    = params.read_len_cutoff == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty() // channel: [ val(meta), [ bai ] ]
+    rm_short_reads_bam      = params.readlength == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()            // channel: [ val(meta), [ bam ] ]
+    rm_short_reads_index    = params.readlength == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty()      // channel: [ val(meta), [ bai ] ]
     merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                                                        // channel: [ val(meta), [ bam ] ]
     merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                  // channel: [ val(meta), [ bai ] ]
     dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                                                        // channel: [ val(meta), [ bam ] ]
