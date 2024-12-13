@@ -20,7 +20,6 @@ include { SAMTOOLS_DEPTH_MEAN                              } from '../../../modu
 
 workflow PROCESSED_BAM_QC {
     take:
-    reference
     mq_filtered_bam
     mq_filtered_index
     rm_short_reads_bam
