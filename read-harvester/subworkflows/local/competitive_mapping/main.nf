@@ -29,7 +29,9 @@ workflow COMPETITIVE_MAPPING {
     BWA_ALN_COMPETITIVE ( reads, bwa_index_competitive )
     ch_versions                      = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
 
-    BWA_SAMSE_COMPETITIVE ( BWA_ALN_COMPETITIVE.out.reads, BWA_ALN_COMPETITIVE.out.sai, bwa_index_competitive )
+    ch_bwa_samse_competitive         = reads.join(BWA_ALN_COMPETITIVE.out.sai)
+
+    BWA_SAMSE_COMPETITIVE ( ch_bwa_samse_competitive, bwa_index_competitive )
     ch_versions                      = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
 
     // Index the BAM file
