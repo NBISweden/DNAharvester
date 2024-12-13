@@ -44,7 +44,7 @@ workflow {
     ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
         .map { id, files ->
             def parentDir = files[0].getParent()
-            return [[id:id], [parentDir]] } : Channel.empty()
+            return [[id:id], parentDir] } : Channel.empty()
 
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
