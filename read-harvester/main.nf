@@ -37,12 +37,14 @@ workflow {
 
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect()
-
+    
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_competitive_reference_index = (params.competitive_reference  + "*.{amb,ann,bwt,pac,sa}") ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
-        .map { it -> [[id:it.baseName], it.getParent()] }.groupTuple() : Channel.empty()
+    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
+        .map { id, files ->
+            def parentDir = files[0].getParent()
+            return [[id:id], [parentDir]] } : Channel.empty()
 
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
