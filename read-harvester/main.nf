@@ -105,7 +105,6 @@ workflow {
     // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
-            ch_reference,
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,

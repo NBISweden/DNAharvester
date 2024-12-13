@@ -7,10 +7,10 @@ process PICARD_CREATESEQUENCEDICTIONARY {
         'quay.io/biocontainers/picard:3.1.1--hdfd78af_0' }"
 
     input:
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
-    path("*.dict")                 , emit: reference_dict
+    tuple val(meta2), path("*.dict")                 , emit: reference_dict
     path "versions.yml"            , emit: versions
 
     when:

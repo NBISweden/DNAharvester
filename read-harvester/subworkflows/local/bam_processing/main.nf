@@ -41,8 +41,11 @@ workflow BAM_PROCESSING {
     main:
     ch_versions = Channel.empty()
 
-    // Filter for mapping quality (provided in custom.config)
+    // Create channels
+    ch_reference_fai = reference.join(fai)
     ch_samtools_view_mq = bam.join(bai)
+
+    // Filter for mapping quality (provided in custom.config)
     SAMTOOLS_VIEW_MQ ( ch_samtools_view_mq )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
 
@@ -76,7 +79,7 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference, fai )
+    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
 
     SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
@@ -95,7 +98,7 @@ workflow BAM_PROCESSING {
         }
         .groupTuple()
 
-    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference, fai )
+    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
 
     SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
@@ -117,8 +120,7 @@ workflow BAM_PROCESSING {
 
     GATK_REALIGNERTARGETCREATOR (
         ch_gatk_realignertargetcreator,
-        reference,
-        fai,
+        ch_reference_fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
 
@@ -128,8 +130,7 @@ workflow BAM_PROCESSING {
 
     GATK_INDELREALIGNER (
         ch_gatk_indelrealigner,
-        reference,
-        fai,
+        ch_reference_fai,
         PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
     ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 

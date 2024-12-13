@@ -9,7 +9,7 @@ process MAPDAMAGE2 {
 
     input:
     tuple val(meta), path(bam)
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
     tuple val(meta), path("${prefix}/Runtime_log.txt")                                    ,emit: runtime_log
