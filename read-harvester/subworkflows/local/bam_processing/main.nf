@@ -42,7 +42,7 @@ workflow BAM_PROCESSING {
     ch_versions = Channel.empty()
 
     // Create channels
-    ch_reference_fai = reference.join(fai)
+    ch_reference_fai = reference.join(fai).collect()
     ch_samtools_view_mq = bam.join(bai)
 
     // Filter for mapping quality (provided in custom.config)
@@ -75,7 +75,8 @@ workflow BAM_PROCESSING {
     } else {
         // Directly provide BAM channel for merging
         ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+            def id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1]
+            return [[id:id], bam]
         }.groupTuple()
     }
 
@@ -93,8 +94,9 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
 
 // Merge BAM files per sample
-    ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map {
-        meta, bam -> [ ['id':meta.id.split("_")[0]], bam ]
+    ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
+        def id = meta.id.split("_")[0]
+        return [[id:id], bam]
         }
         .groupTuple()
 
