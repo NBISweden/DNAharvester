@@ -87,6 +87,7 @@ workflow {
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
+            ch_competitive_reference,
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
@@ -118,7 +119,7 @@ workflow {
             BAM_PROCESSING.out.merged_bam_sample_index,
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.dedup_sample_index,
-            BAM_PROCESSING.out.realigned,
+            //BAM_PROCESSING.out.realigned,
             ch_intervals
         )
     }
@@ -126,7 +127,8 @@ workflow {
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
-            BAM_PROCESSING.out.realigned,
+            //BAM_PROCESSING.out.realigned,
+            BAM_PROCESSING.out.dedup_sample,
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai
         )
@@ -139,7 +141,8 @@ workflow {
             FASTQ_PROCESSING.out.fastp_log,
             RAW_BAM_QC.out.flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
-            BAM_PROCESSING.out.realigned
+            //BAM_PROCESSING.out.realigned
+            BAM_PROCESSING.out.dedup_sample
         )
     }
 
