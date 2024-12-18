@@ -5,7 +5,7 @@ process SAMREMOVEDUP {
     label 'process_high'
 
     conda "conda-forge::python=3.13.0 bioconda::samtools=1.21"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/samtools_python:3740ccb1c28d345d' :
         'community.wave.seqera.io/library/samtools_python:44d9e6d118af41a9' }"
 
