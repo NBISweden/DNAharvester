@@ -8,9 +8,8 @@ process BWA_SAMSE {
         'community.wave.seqera.io/library/bwa_samtools:3938c84206f62975' }"
 
     input:
-    tuple val(meta), path(reads)
-    tuple val(meta), path(sai)
-    path(index)
+    tuple val(meta), path(reads), path(sai)
+    tuple val(meta2), path(index)
 
     output:
     tuple val(meta), path("*.bam"), emit: bam
