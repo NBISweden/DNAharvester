@@ -87,8 +87,8 @@ workflow {
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
-            ch_competitive_reference,
             ch_reference,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )

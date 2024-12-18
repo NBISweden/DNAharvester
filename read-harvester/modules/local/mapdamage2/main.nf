@@ -8,8 +8,8 @@ process MAPDAMAGE2 {
         'quay.io/biocontainers/mapdamage2:2.2.2--pyr43hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam)
-    tuple val(meta2), path(fasta)
+    tuple val(meta), path(bam), path(bai)
+    tuple val(meta2), path(fasta), path(fai)
 
     output:
     tuple val(meta), path("${prefix}/Runtime_log.txt")                                    ,emit: runtime_log
