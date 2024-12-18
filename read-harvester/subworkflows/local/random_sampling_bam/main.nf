@@ -14,10 +14,7 @@ workflow RANDOM_SAMPLING_BAM {
     main:
     ch_versions                              = Channel.empty()
 
-    // Remove *.bai from input channel
-    ch_bam_for_angsd_dohaplocall             = bam.map {meta, bam, bai -> [ meta, bam ] }
-
-    ANGSD_DOHAPLOCALL ( ch_bam_for_angsd_dohaplocall )
+    ANGSD_DOHAPLOCALL ( bam )
     ch_versions                              = ch_versions.mix(ANGSD_DOHAPLOCALL.out.versions)
 
     ANGSD_HAPLOTOPLINK ( ANGSD_DOHAPLOCALL.out.haplo )

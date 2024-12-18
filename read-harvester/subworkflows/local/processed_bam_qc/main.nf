@@ -14,8 +14,6 @@ include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MERGED_BAM_SAMPLE  } from '../../../modu
 include { MULTIQC as MULTIQC_MERGED_BAM_SAMPLE             } from '../../../modules/nf-core/multiqc/main'
 include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_SAMPLE       } from '../../../modules/nf-core/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_DEDUP_SAMPLE                  } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_REALIGNED          } from '../../../modules/nf-core/samtools/flagstat/main'
-include { MULTIQC as MULTIQC_REALIGNED                     } from '../../../modules/nf-core/multiqc/main'
 include { SAMTOOLS_DEPTH_MEAN                              } from '../../../modules/local/samtools/depth_mean/main'
 
 workflow PROCESSED_BAM_QC {
@@ -32,7 +30,6 @@ workflow PROCESSED_BAM_QC {
     merged_bam_sample_index
     dedup_sample
     dedup_sample_index
-    //realigned
     bed
 
     main:
@@ -162,25 +159,9 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_DEDUP_SAMPLE.out.versions)
 
-    // realigned
-    //FLAGSTAT_REALIGNED ( realigned )
-    //ch_versions                              = ch_versions.mix(FLAGSTAT_REALIGNED.out.versions)
-
-    // Run MultiQC on QualiMap output
-    //ch_multiqc_realigned_files               = FLAGSTAT_REALIGNED.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
-
-    //MULTIQC_REALIGNED (
-    //    ch_multiqc_realigned_files.collect(),
-    //    ch_multiqc_config.toList(),
-    //    ch_multiqc_extra_config.toList(),
-    //    ch_multiqc_logo.toList()
-    //)
-    //ch_versions                              = ch_versions.mix(MULTIQC_REALIGNED.out.versions)
-
     ch_bed_file                              = params.intervals ? Channel.fromPath(params.intervals) : Channel.value([])
     // Calculate mean genome-wide depth
     SAMTOOLS_DEPTH_MEAN (
-    //    realigned,
         ch_dedup_sample_bam_bai,
         ch_bed_file
     )
@@ -193,7 +174,6 @@ workflow PROCESSED_BAM_QC {
     multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
     multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()                                                       // channel: [ val(meta), path(report) ]
     multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
-    //multiqc_realigned_report                 = MULTIQC_REALIGNED.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
     dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
     preseq_txt                               = PRESEQ.out.preseq_txt                                                                               // channel: [ val(meta), path(preseq_txt) ]

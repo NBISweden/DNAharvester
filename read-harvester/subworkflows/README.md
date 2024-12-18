@@ -29,9 +29,6 @@ bam_processing
 - samtools merge to merge bam files per sample (sample_index.bam --> sample.bam)
 - samremovedup on merged bam files
 - samtools index
-- picard createsequencedictionary
-- GATK realignertargetcreator
-- GATK indelrealigner
 
 processed_bam_qc
 - QualiMap after each processing stage
