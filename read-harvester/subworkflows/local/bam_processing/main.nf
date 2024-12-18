@@ -25,10 +25,6 @@ include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_SAMPLE_INDEX } from '../../../modules
 include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE           } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as SAMREMOVEDUP_SAMPLE_INDEX   } from '../../../modules/nf-core/samtools/index/main'
 
-// Realign indels
-include { PICARD_CREATESEQUENCEDICTIONARY               } from '../../../modules/local/picard/createsequencedictionary/main'
-include { GATK_REALIGNERTARGETCREATOR                   } from '../../../modules/local/gatk/realignertargetcreator/main'
-include { GATK_INDELREALIGNER                           } from '../../../modules/local/gatk/indelrealigner/main'
 
 workflow BAM_PROCESSING {
     take:
@@ -113,28 +109,6 @@ workflow BAM_PROCESSING {
     SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
 
-// Realign indels
-    //PICARD_CREATESEQUENCEDICTIONARY ( reference )
-    //ch_versions = ch_versions.mix(PICARD_CREATESEQUENCEDICTIONARY.out.versions)
-
-    //ch_gatk_realignertargetcreator = SAMREMOVEDUP_SAMPLE.out.dedup.join(
-    //    SAMREMOVEDUP_SAMPLE_INDEX.out.bai).groupTuple()
-
-    //GATK_REALIGNERTARGETCREATOR (
-    //    ch_gatk_realignertargetcreator,
-    //    ch_reference_fai,
-    //    PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
-    //ch_versions = ch_versions.mix(GATK_REALIGNERTARGETCREATOR.out.versions)
-
-    //ch_gatk_indelrealigner = SAMREMOVEDUP_SAMPLE.out.dedup.join(
-    //    SAMREMOVEDUP_SAMPLE_INDEX.out.bai).join(
-    //        GATK_REALIGNERTARGETCREATOR.out.intervals).groupTuple()
-
-    //GATK_INDELREALIGNER (
-    //    ch_gatk_indelrealigner,
-    //    ch_reference_fai,
-    //    PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict )
-    //ch_versions = ch_versions.mix(GATK_INDELREALIGNER.out.versions)
 
     emit:
     mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
@@ -149,7 +123,5 @@ workflow BAM_PROCESSING {
     merged_bam_sample_index = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                               // channel: [ val(meta), [ bai ] ]
     dedup_sample            = SAMREMOVEDUP_SAMPLE.out.dedup                                                     // channel: [ val(meta), [ bam ] ]
     dedup_sample_index      = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                 // channel: [ val(meta), [ bai ] ]
-    //reference_dict          = PICARD_CREATESEQUENCEDICTIONARY.out.reference_dict                                // channel: path(reference_dict)
-    //realigned               = GATK_INDELREALIGNER.out.bam                                                       // channel: [ val(meta), [ bam, bai ] ]
     versions                = ch_versions                                                                       // channel: [ versions.yml ]
 }

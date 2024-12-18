@@ -8,7 +8,6 @@ workflow STATS_OUTPUT {
     fastp_log
     raw_bam_flagstat
     dedup_lib_flagstat
-    //realigned
     dedup_sample
 
     main:
@@ -32,7 +31,6 @@ workflow STATS_OUTPUT {
         .join(ch_fastp_log)
         .join(ch_raw_bam_flagstat)
         .join(ch_dedup_lib_flagstat)
-        //.join(realigned)
         .join(dedup_sample)
 
     // run the SEQ_STATS process
