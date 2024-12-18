@@ -4,7 +4,7 @@ process ANGSD_DOHAPLOCALL {
 
     conda "bioconda::angsd=0.939"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/apptainer/angsd:0.939--h468462d_0':
+        'https://depot.galaxyproject.org/singularity/angsd:0.939--h468462d_0':
         'quay.io/biocontainers/angsd:0.939--h468462d_0' }"
 
     input:

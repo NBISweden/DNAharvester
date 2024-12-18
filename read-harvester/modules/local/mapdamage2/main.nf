@@ -4,7 +4,7 @@ process MAPDAMAGE2 {
 
     conda "bioconda::mapdamage2=2.2.2"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/apptainer/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
+        'https://depot.galaxyproject.org/singularity/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
         'quay.io/biocontainers/mapdamage2:2.2.2--pyr43hdfd78af_0' }"
 
     input:
