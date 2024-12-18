@@ -1,6 +1,6 @@
-process SAMTOOLS_FAIDX {
-    tag "$fasta"
-    label 'process_single'
+process SAMTOOLS_VIEW_REGIONS {
+    tag "$meta.id"
+    label 'process_low'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -8,38 +8,31 @@ process SAMTOOLS_FAIDX {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta2), path(fasta)
+    tuple val(meta), path(input), path(index)
+    tuple val(meta2), path(intervals)
 
     output:
-    tuple val(meta2), path ("*.fai")       , emit: fai, optional: true
-    path "versions.yml"                    , emit: versions
+    tuple val(meta), path("*.bam"),                                    emit: bam
+    path  "versions.yml",                                              emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${meta.id}"
+    prefix2 = task.ext.prefix2 ?: "${meta2.id}"
+    def positions = intervals ? "-L ${intervals}" : ""
     """
     samtools \\
-        faidx \\
-        $fasta \\
-        $args
+        view \\
+        --threads ${task.cpus-1} \\
+        $args \\
+        $positions \\
+        -o ${prefix}-${prefix2}-regions.bam \\
+        $input \\
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-    END_VERSIONS
-    """
-
-    stub:
-    def match = (task.ext.args =~ /-o(?:utput)?\s(.*)\s?/).findAll()
-    def fastacmd = match[0] ? "touch ${match[0][1]}" : ''
-    """
-    ${fastacmd}
-    touch ${fasta}.fai
-
-    cat <<-END_VERSIONS > versions.yml
-
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
     END_VERSIONS

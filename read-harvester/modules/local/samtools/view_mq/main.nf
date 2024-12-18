@@ -1,4 +1,4 @@
-process SAMTOOLS_VIEW {
+process SAMTOOLS_VIEW_MQ {
     tag "$meta.id"
     label 'process_low'
 

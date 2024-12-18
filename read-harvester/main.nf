@@ -9,6 +9,7 @@ include { INPUT_CHECK                } from "$projectDir/subworkflows/local/inpu
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
+include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
@@ -33,8 +34,21 @@ workflow {
 
     // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
-    Channel.fromPath( params.reference, checkIfExists: true )
-        .set{ reference }
+
+    ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect()
+    
+    ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+
+    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
+        .map { id, files ->
+            def parentDir = files[0].getParent()
+            return [[id:id], parentDir] }
+        .collect() : Channel.empty()
+
+    ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -51,37 +65,48 @@ workflow {
         )
     }
 
-    // Index the reference genome, map with bwa-aln (aDNA parameters) and convert to bam
+    // Map with bwa-aln (aDNA parameters) and convert to bam
     if ( 'mapping' in workflow_steps ) {
-        MAPPING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            FASTQ_PROCESSING.out.reads
-        )
+        // Competitive mapping to a concatenated reference (target plus decoy)
+        if (params.competitive_reference && file( params.competitive_reference ).exists()) {
+            COMPETITIVE_MAPPING (
+                    ch_competitive_reference,
+                    ch_competitive_reference_index,
+                    ch_reference,
+                    FASTQ_PROCESSING.out.reads
+            )
+        // Map to the reference genome assembly
+        } else {
+            MAPPING (
+                ch_reference,
+                FASTQ_PROCESSING.out.reads
+            )
+        }
     }
 
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MAPPING.out.bam,
-            MAPPING.out.bai
+            params.competitive_reference ? ch_competitive_reference : ch_reference,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
     }
-
-    // Index the reference genome, merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates, realign indels
+    // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            MAPPING.out.bam,
-            MAPPING.out.bai,
+            ch_reference,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
     }
 
-    // Run QualiMap and MultiQC on processed bam files
+    // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,
@@ -94,17 +119,16 @@ workflow {
             BAM_PROCESSING.out.merged_bam_sample_index,
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.dedup_sample_index,
-            BAM_PROCESSING.out.realigned,
-            params.intervals
+            ch_intervals
         )
     }
 
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
     if ( 'random_sampling_bam' in workflow_steps ) {
         RANDOM_SAMPLING_BAM (
-            BAM_PROCESSING.out.realigned,
-            params.reference ? file( params.reference, checkIfExists: true ) : [],
-            BAM_PROCESSING.out.fai
+            BAM_PROCESSING.out.dedup_sample,
+            ch_reference,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
     }
 
@@ -115,7 +139,7 @@ workflow {
             FASTQ_PROCESSING.out.fastp_log,
             RAW_BAM_QC.out.flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
-            BAM_PROCESSING.out.realigned
+            BAM_PROCESSING.out.dedup_sample
         )
     }
 

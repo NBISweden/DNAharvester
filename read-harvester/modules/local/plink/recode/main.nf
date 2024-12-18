@@ -10,7 +10,7 @@ process PLINK_RECODE {
     input:
     tuple val(meta), path(tfam)
     tuple val(meta), path(tped)
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
     tuple val(meta), path("*.vcf.gz")                 , emit: vcf

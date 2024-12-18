@@ -7,10 +7,10 @@ process HAPLOTOFASTA {
 
     input:
     tuple val(meta), path(haplo)
-    path(fai)
+    tuple val(meta2), path(fai)
 
     output:
-    tuple val(meta), path("*.haplo.fasta") , emit: fasta
+    tuple val(meta), path("*.haplo.fasta")         , emit: fasta
     path "versions.yml"                            , emit: versions
 
     when:
