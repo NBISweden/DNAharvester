@@ -19,7 +19,7 @@ not need to be loaded.
 > Apptainer (former singularity) can use your `scratch` for 
 caching, which is a temporary directory with unlimited space 
 by adding this row to your `~/.bashrc`: 
-`export NXF_SINGULARITY_CACHEDIR=$PDC_TMP`. 
+`export NXF_APPTAINER_CACHEDIR=$PDC_TMP`. 
 
 - Clone this repository to a directory on Dardel
 
@@ -81,7 +81,7 @@ nextflow run -c assets/test-dardel.config -profile dardel main.nf &> YYMMDD_rh.o
 ```
 
 > The `dardel` profile is set up to submit each process as 
-a job to the slurm queue, and to use Apptainer (former singularity) 
+a job to the slurm queue, and to use Apptainer (former apptainer) 
 to run each process in a container with the required software. 
 
 ### Locally (small test dataset)

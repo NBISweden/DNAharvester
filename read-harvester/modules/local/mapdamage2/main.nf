@@ -3,8 +3,8 @@ process MAPDAMAGE2 {
     label 'process_medium'
 
     conda "bioconda::mapdamage2=2.2.2"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+        'https://depot.galaxyproject.org/apptainer/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
         'quay.io/biocontainers/mapdamage2:2.2.2--pyr43hdfd78af_0' }"
 
     input:

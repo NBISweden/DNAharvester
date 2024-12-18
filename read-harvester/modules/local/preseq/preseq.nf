@@ -3,7 +3,7 @@ process PRESEQ {
     label 'process_low'
 
     conda "bioconda::preseq=3.2.0"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/preseq:79160ee386f5eed6' :
         'community.wave.seqera.io/library/preseq:3.2.0--2789d8b704b33613' }"
 
