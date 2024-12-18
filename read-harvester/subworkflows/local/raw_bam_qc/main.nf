@@ -24,7 +24,6 @@ workflow RAW_BAM_QC {
     ch_versions                              = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
     ch_reference_fai                         = reference.join(fai).collect()
-    ch_reference_fai.view()
     MAPDAMAGE2 ( ch_bam_bai, ch_reference_fai )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
