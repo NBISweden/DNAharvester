@@ -3,13 +3,13 @@ process MAPDAMAGE2 {
     label 'process_medium'
 
     conda "bioconda::mapdamage2=2.2.2"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/mapdamage2%3A2.2.2--pyr43hdfd78af_0' :
         'quay.io/biocontainers/mapdamage2:2.2.2--pyr43hdfd78af_0' }"
 
     input:
-    tuple val(meta), path(bam)
-    path(fasta)
+    tuple val(meta), path(bam), path(bai)
+    tuple val(meta2), path(fasta), path(fai)
 
     output:
     tuple val(meta), path("${prefix}/Runtime_log.txt")                                    ,emit: runtime_log

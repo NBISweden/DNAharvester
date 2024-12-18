@@ -15,11 +15,6 @@
             "git_sha": "a6e11ac655e744f7ebc724be669dd568ffdc0e80",
             "installed_by": ["modules"]
           },
-          "samtools/depth": {
-            "branch": "master",
-            "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
-            "installed_by": ["modules"]
-          },
           "samtools/flagstat": {
             "branch": "master",
             "git_sha": "f4596fe0bdc096cf53ec4497e83defdb3a94ff62",
@@ -29,7 +24,7 @@
             "branch": "master",
             "git_sha": "a64788f5ad388f1d2ac5bd5f1f3f8fc81476148c",
             "installed_by": ["modules"]
-          }
+          },
         }
       }
     }

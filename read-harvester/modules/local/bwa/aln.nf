@@ -3,16 +3,15 @@ process BWA_ALN {
     label 'process_high'
 
     conda "bioconda::bwa=0.7.18"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
         'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
     input:
     tuple val(meta) , path(reads)
-    path(index)
+    tuple val(meta2), path(index)
 
     output:
-    tuple val(meta), path(reads)  , emit: reads
     tuple val(meta), path("*.sai"), emit: sai
     path "versions.yml"           , emit: versions
 

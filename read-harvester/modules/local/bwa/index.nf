@@ -3,16 +3,16 @@ process BWA_INDEX {
     label 'process_medium'
 
     conda "bioconda::bwa=0.7.18"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
         'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
     input:
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
-    path(bwa)                  , emit: index
-    path "versions.yml"        , emit: versions
+    tuple val(meta2), path(bwa) , emit: index
+    path "versions.yml"         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when

@@ -2,16 +2,16 @@ process SAMTOOLS_FAIDX {
     tag "$fasta"
     label 'process_single'
 
-    conda "bioconda::samtools=1.20"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/samtools:1.20--ad906e74fde1812b' :
-        'community.wave.seqera.io/library/samtools:1.20--b5dfbd93de237464' }"
+    conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+        'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/9e/9edc2564215d5cd137a8b25ca8a311600987186d406b092022444adf3c4447f7/data' :
+        'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    path(fasta)
+    tuple val(meta2), path(fasta)
 
     output:
-    path ("*.fai")                         , emit: fai, optional: true
+    tuple val(meta2), path ("*.fai")       , emit: fai, optional: true
     path "versions.yml"                    , emit: versions
 
     when:
