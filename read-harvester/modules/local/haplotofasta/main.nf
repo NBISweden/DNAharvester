@@ -1,16 +1,16 @@
 process HAPLOTOFASTA {
 
     conda "conda-forge::python=3.13.0 conda-forge::pandas=2.2.3"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pandas_python:b56517cc205d1f0a' :
         'community.wave.seqera.io/library/pandas_python:fd8290c2da2fd6ae' }"
 
     input:
     tuple val(meta), path(haplo)
-    path(fai)
+    tuple val(meta2), path(fai)
 
     output:
-    tuple val(meta), path("*.haplo.fasta") , emit: fasta
+    tuple val(meta), path("*.haplo.fasta")         , emit: fasta
     path "versions.yml"                            , emit: versions
 
     when:

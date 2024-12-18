@@ -3,7 +3,7 @@ process ANGSD_HAPLOTOPLINK {
     label 'process_low'
 
     conda "bioconda::angsd=0.939"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/angsd:0.939--h468462d_0':
         'quay.io/biocontainers/angsd:0.939--h468462d_0' }"
 

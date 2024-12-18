@@ -2,14 +2,17 @@ process AMBER {
     tag "$meta.id"
     label 'process_single'
 
-    conda "conda-forge::matplotlib=3.8.0 bioconda::pysam=0.21.0"
-    container "quay.io/biocontainers/mulled-v2-ecefa487ac2b5705c340ca872c9bb191102f0000:ce2ab207ce57b290cf5fa5816192018e1caa9fb4-0" // mulled image from Biocontainers including the required packages and more
+    conda "conda-forge::matplotlib=3.9.3 bioconda::pysam=0.22.1"
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+        'oras://community.wave.seqera.io/library/pysam_matplotlib:9a83292e6b804598' :
+        'community.wave.seqera.io/library/pysam_matplotlib:58a92b14d0d8ded9' }"
 
     input:
     tuple val(meta), path(bam), path(tsv)
 
     output:
     tuple val(meta), path("*.amber_plot.pdf"), emit: plot
+    tuple val(meta), path("*.amber_plot.txt"), emit: txt
     path "versions.yml"                      , emit: versions
 
     when:
