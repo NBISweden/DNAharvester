@@ -93,7 +93,8 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
-    fai                              = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
+    competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai    // channel: path(index)
+    target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
     multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]
     bam                              = SAMTOOLS_VIEW_TARGET.out.bam          // channel: [ val(meta), [ bam ] ]
     bai                              = SAMTOOLS_INDEX_TARGET.out.bai         // channel: [ val(meta), [ bai ] ]

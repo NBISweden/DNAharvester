@@ -87,8 +87,8 @@ workflow {
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
-            ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai,
+            params.competitive_reference ? ch_competitive_reference : ch_reference,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
@@ -97,7 +97,7 @@ workflow {
     if ( 'bam_processing' in workflow_steps ) {
         BAM_PROCESSING (
             ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
@@ -128,7 +128,7 @@ workflow {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.dedup_sample,
             ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.fai : MAPPING.out.fai
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
     }
 
