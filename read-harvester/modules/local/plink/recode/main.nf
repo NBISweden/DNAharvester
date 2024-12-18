@@ -4,7 +4,7 @@ process PLINK_RECODE {
 
     conda "bioconda::plink2=2.00a5.10"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/apptainer/plink2:2.00a5.10--h4ac6f70_0' :
+        'https://depot.galaxyproject.org/singularity/plink2:2.00a5.10--h4ac6f70_0' :
         'quay.io/biocontainers/plink2:2.00a5.10--h4ac6f70_0' }"
 
     input:

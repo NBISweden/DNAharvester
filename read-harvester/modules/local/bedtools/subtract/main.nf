@@ -3,7 +3,7 @@ process BEDTOOLS_SUBTRACT {
 
     conda "bioconda::bedtools=2.31.1"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/apptainer/bedtools:2.31.1--hf5e1c6e_0' :
+        'https://depot.galaxyproject.org/singularity/bedtools:2.31.1--hf5e1c6e_0' :
         'quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
     input:

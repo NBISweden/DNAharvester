@@ -4,7 +4,7 @@ process FASTQC {
 
     conda "bioconda::fastqc=0.11.9"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/apptainer/fastqc:0.11.9--0' :
+        'https://depot.galaxyproject.org/singularity/fastqc:0.11.9--0' :
         'quay.io/biocontainers/fastqc:0.11.9--0' }"
 
     input:
