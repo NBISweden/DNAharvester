@@ -10,20 +10,21 @@ include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/ma
 
 workflow RAW_BAM_QC {
     take:
-    competitive_reference
     reference
+    fai
     bam             // bam file from mapping subworkflow
     bai             // bam index file
 
     main:
     ch_versions                              = Channel.empty()
 
-    ch_samtools_flagstat                     = bam.join(bai)
+    ch_bam_bai                               = bam.join(bai)
 
-    SAMTOOLS_FLAGSTAT ( ch_samtools_flagstat )
+    SAMTOOLS_FLAGSTAT ( ch_bam_bai )
     ch_versions                              = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
 
-    MAPDAMAGE2 ( bam, competitive_reference )
+    ch_reference_fai                         = reference.join(fai)
+    MAPDAMAGE2 ( ch_bam_bai, ch_reference_fai )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
 
     // Run MultiQC on MapDamage and samtools flagstat output
