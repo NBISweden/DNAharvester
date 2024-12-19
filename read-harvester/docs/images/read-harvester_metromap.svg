@@ -19,15 +19,33 @@
      inkscape:pageopacity="0.0"
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.4062978"
-     inkscape:cx="441.58499"
-     inkscape:cy="227.19228"
-     inkscape:window-width="1392"
+     inkscape:zoom="1.1476306"
+     inkscape:cx="453.54316"
+     inkscape:cy="222.63262"
+     inkscape:window-width="1680"
      inkscape:window-height="942"
-     inkscape:window-x="0"
+     inkscape:window-x="212"
      inkscape:window-y="25"
      inkscape:window-maximized="0"
-     inkscape:current-layer="Layer_1" />
+     inkscape:current-layer="Layer_1"
+     showgrid="true">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="0.99999999"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       dotted="false"
+       gridanglex="30"
+       gridanglez="30"
+       visible="true" />
+  </sodipodi:namedview>
   <defs
      id="defs1">
     <style
@@ -239,10 +257,10 @@
   </defs>
   <rect
      class="cls-38"
-     x="549.7"
-     y="259.16"
-     width="96.65"
-     height="98.95"
+     x="549.70001"
+     y="209.16"
+     width="96.650002"
+     height="98.949997"
      id="rect1" />
   <polyline
      class="cls-19"
@@ -268,107 +286,77 @@
   </g>
   <rect
      class="cls-38"
-     x="650.42"
-     y="259.16"
+     x="650.41998"
+     y="209.16"
      width="208.03"
-     height="98.95"
+     height="98.949997"
      id="rect3" />
   <rect
      class="cls-38"
-     x="462.07"
-     y="41.51"
-     width="411.51"
-     height="116.59"
-     id="rect4" />
+     x="494.50525"
+     y="41.509998"
+     width="385.65579"
+     height="70.052467"
+     id="rect4"
+     style="stroke-width:0.750397" />
   <rect
      class="cls-38"
-     x="461.82"
-     y="160.19"
-     width="396.43"
-     height="75.46"
-     id="rect5" />
+     x="561.47614"
+     y="114.59262"
+     width="301.9447"
+     height="75.459999"
+     id="rect5"
+     style="stroke-width:0.872731" />
   <path
      class="cls-31"
-     d="M871.82,282.43v-110.37c0-2.63-.51-4.36-2.39-6.2l-68.05-66.58"
-     id="path5" />
+     d="M 871.82,230.43 V 120.06 c 0,-2.63 -20.80881,-19.31702 -22.68881,-21.157017"
+     id="path5"
+     sodipodi:nodetypes="csc" />
   <path
      class="cls-32"
-     d="M869.37,282.31v-107.96c-.01-2.83,.24-4.8-1.45-6.46l-68.71-67.04"
-     id="path6" />
+     d="M 869.37,230.31 V 122.35 c -0.01,-2.83 -18.63433,-17.97642 -20.32433,-19.63642"
+     id="path6"
+     sodipodi:nodetypes="ccc" />
   <path
      class="cls-34"
-     d="M866.74,277.18v-103.5c0-2.83-2.32-4.97-4.02-6.61l-66.04-63.92"
-     id="path7" />
-  <line
-     class="cls-34"
-     x1="672.61"
-     y1="190.69"
-     x2="672.61"
-     y2="101.05"
-     id="line7" />
+     d="m 866.74,227.18 v -103.5 c 0,-2.83 -17.63314,-17.43418 -19.33314,-19.07418"
+     id="path7"
+     sodipodi:nodetypes="csc" />
   <line
      class="cls-39"
-     x1="675.28"
-     y1="191.02"
-     x2="675.14"
-     y2="104.14"
+     x1="704.0799"
+     y1="152.93394"
+     x2="703.86676"
+     y2="103.68224"
      id="line8" />
   <line
-     class="cls-34"
-     x1="609.19"
-     y1="190.69"
-     x2="609.19"
-     y2="101.05"
-     id="line9" />
-  <line
      class="cls-32"
-     x1="611.85"
-     y1="191.02"
-     x2="611.71"
-     y2="104.14"
+     x1="636.74731"
+     y1="153.87222"
+     x2="636.5047"
+     y2="104.61941"
      id="line10" />
   <line
-     class="cls-34"
-     x1="547.17"
-     y1="190.69"
-     x2="547.17"
-     y2="101.05"
-     id="line11" />
-  <line
-     class="cls-32"
-     x1="549.84"
-     y1="191.02"
-     x2="549.7"
-     y2="104.14"
-     id="line12" />
-  <line
      class="cls-16"
-     x1="741.8"
-     y1="171.85"
-     x2="732.33"
-     y2="171.85"
+     x1="767.79999"
+     y1="137.85001"
+     x2="758.33002"
+     y2="137.85001"
      id="line13" />
   <line
      class="cls-16"
-     x1="682.61"
-     y1="171.85"
-     x2="673.14"
-     y2="171.85"
+     x1="700.60999"
+     y1="137.85001"
+     x2="691.14001"
+     y2="137.85001"
      id="line14" />
   <line
      class="cls-16"
-     x1="619.18"
-     y1="171.85"
-     x2="609.72"
-     y2="171.85"
+     x1="633.17999"
+     y1="137.85001"
+     x2="623.71997"
+     y2="137.85001"
      id="line15" />
-  <line
-     class="cls-16"
-     x1="557.84"
-     y1="173.87"
-     x2="550.75"
-     y2="173.87"
-     id="line16" />
   <rect
      class="cls-38"
      x="309.28"
@@ -376,13 +364,6 @@
      width="149.6"
      height="171.83"
      id="rect16" />
-  <line
-     class="cls-35"
-     x1="541.98"
-     y1="190.77"
-     x2="554.66"
-     y2="190.77"
-     id="line17" />
   <rect
      class="cls-38"
      x="95.67"
@@ -410,15 +391,16 @@
      width="64.71"
      height="16.04"
      id="rect20" />
-  <polyline
+  <path
+     id="polyline20"
      class="cls-34"
-     points="43.92 98.24 195.1 98.24 216.8 98.23 802.13 98.23"
-     id="polyline20" />
+     style="fill:none;stroke:#d55e00;stroke-width:3.08407px"
+     d="m 43.92,98.24 h 159.77183 l 22.93326,-0.01 h 618.59536" />
   <line
      class="cls-32"
-     x1="43.92"
+     x1="43.919998"
      y1="101.06"
-     x2="802.63"
+     x2="845.36432"
      y2="101.06"
      id="line20" />
   <text
@@ -484,17 +466,19 @@
        id="tspan31">A samse</tspan></text>
   <text
      class="cls-7"
-     transform="translate(462.9 121.85)"
-     id="text32"><tspan
-       x="0"
-       y="0"
-       id="tspan32">Samtools </tspan></text>
+     id="text32"
+     x="502.2341"
+     y="74.842392"><tspan
+       x="502.2341"
+       y="74.842392"
+       id="tspan32">Samtools</tspan></text>
   <text
      class="cls-7"
-     transform="translate(474.97 133.6)"
-     id="text33"><tspan
-       x="0"
-       y="0"
+     id="text33"
+     x="514.30402"
+     y="86.5924"><tspan
+       x="514.30402"
+       y="86.5924"
        id="tspan33">faidx</tspan></text>
   <text
      class="cls-7"
@@ -592,91 +576,95 @@
      d="M228.21,32.55h-22.18v-6.47h22.18v6.47ZM206.03,1.33h15.57v6.87c0,.37,.3,.68,.67,.68h5.93v3.37h-22.18V1.33Z"
      id="path49" />
   <path
-     d="M618.05,35.88h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.88c0,.37,.3,.67,.67,.67h5.94v3.37h-22.18V4.65Zm24.34,10.92h-.82v-3.97s0-.05,0-.07c0-.16-.05-.31-.16-.44l-6.61-7.55s0,0,0,0c-.04-.04-.08-.08-.14-.11-.02-.01-.03-.02-.04-.03-.04-.02-.08-.04-.13-.06-.01,0-.02,0-.04-.01-.05-.01-.1-.02-.16-.02h-16.24c-.75,0-1.35,.6-1.35,1.34V15.57h-.82c-1.06,0-1.92,.86-1.92,1.92v9.99c0,1.06,.86,1.92,1.92,1.92h.82v6.84c0,.74,.6,1.34,1.35,1.34h22.18c.74,0,1.34-.6,1.34-1.34v-6.84h.82c1.06,0,1.92-.86,1.92-1.92v-9.99c0-1.06-.86-1.92-1.92-1.92Z"
+     d="m 664.05,35.88 h -22.18 v -6.47 h 22.18 z M 641.87,4.66 h 15.57 v 6.88 c 0,0.37 0.3,0.67 0.67,0.67 h 5.94 v 3.37 H 641.87 V 4.65 Z m 24.34,10.92 h -0.82 v -3.97 c 0,0 0,-0.05 0,-0.07 0,-0.16 -0.05,-0.31 -0.16,-0.44 l -6.61,-7.55 c 0,0 0,0 0,0 -0.04,-0.04 -0.08,-0.08 -0.14,-0.11 -0.02,-0.01 -0.03,-0.02 -0.04,-0.03 -0.04,-0.02 -0.08,-0.04 -0.13,-0.06 -0.01,0 -0.02,0 -0.04,-0.01 -0.05,-0.01 -0.1,-0.02 -0.16,-0.02 h -16.24 c -0.75,0 -1.35,0.6 -1.35,1.34 v 10.91 h -0.82 c -1.06,0 -1.92,0.86 -1.92,1.92 v 9.99 c 0,1.06 0.86,1.92 1.92,1.92 h 0.82 v 6.84 c 0,0.74 0.6,1.34 1.35,1.34 h 22.18 c 0.74,0 1.34,-0.6 1.34,-1.34 V 29.4 h 0.82 c 1.06,0 1.92,-0.86 1.92,-1.92 v -9.99 c 0,-1.06 -0.86,-1.92 -1.92,-1.92 z"
      id="path50" />
   <text
      class="cls-2"
-     transform="translate(595.65 25.28)"
-     id="text50"><tspan
-       x="0"
-       y="0"
+     id="text50"
+     x="641.65002"
+     y="25.280001"><tspan
+       x="641.65002"
+       y="25.280001"
        id="tspan50">bed</tspan></text>
   <path
      class="cls-3"
-     d="M618.05,35.86h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.88c0,.37,.3,.67,.67,.67h5.94v3.37h-22.18V4.64Z"
+     d="m 664.05,35.86 h -22.18 v -6.47 h 22.18 z M 641.87,4.64 h 15.57 v 6.88 c 0,0.37 0.3,0.67 0.67,0.67 h 5.94 v 3.37 h -22.18 z"
      id="path51" />
   <g
-     id="g53">
+     id="g53"
+     transform="translate(0,-50)">
     <path
-       d="M615.08,351.72h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.87c0,.37,.3,.68,.67,.68h5.94v3.37h-22.18v-10.92Zm24.34,10.92h-.82v-3.97s0-.05,0-.08c0-.15-.05-.31-.16-.43l-6.61-7.55s0,0,0,0c-.04-.04-.09-.08-.14-.11-.02,0-.03-.01-.04-.03-.04-.02-.08-.04-.13-.05-.01,0-.02,0-.04-.01-.05-.01-.1-.02-.15-.02h-16.24c-.74,0-1.34,.6-1.34,1.34v10.92h-.82c-1.06,0-1.92,.86-1.92,1.92v9.99c0,1.06,.86,1.92,1.92,1.92h.82v6.84c0,.74,.6,1.34,1.34,1.34h22.18c.74,0,1.34-.61,1.34-1.34v-6.84h.82c1.06,0,1.92-.86,1.92-1.92v-9.99c0-1.06-.86-1.92-1.92-1.92Z"
+       d="M 615.08,351.72 H 592.9 v -6.47 h 22.18 z M 592.9,320.5 h 15.57 v 6.87 c 0,0.37 0.3,0.68 0.67,0.68 h 5.94 v 3.37 H 592.9 Z m 24.34,10.92 h -0.82 v -3.97 c 0,0 0,-0.05 0,-0.08 0,-0.15 -0.05,-0.31 -0.16,-0.43 l -6.61,-7.55 c 0,0 0,0 0,0 -0.04,-0.04 -0.09,-0.08 -0.14,-0.11 -0.02,0 -0.03,-0.01 -0.04,-0.03 -0.04,-0.02 -0.08,-0.04 -0.13,-0.05 -0.01,0 -0.02,0 -0.04,-0.01 -0.05,-0.01 -0.1,-0.02 -0.15,-0.02 h -16.24 c -0.74,0 -1.34,0.6 -1.34,1.34 v 10.92 h -0.82 c -1.06,0 -1.92,0.86 -1.92,1.92 v 9.99 c 0,1.06 0.86,1.92 1.92,1.92 h 0.82 v 6.84 c 0,0.74 0.6,1.34 1.34,1.34 h 22.18 c 0.74,0 1.34,-0.61 1.34,-1.34 v -6.84 h 0.82 c 1.06,0 1.92,-0.86 1.92,-1.92 v -9.99 c 0,-1.06 -0.86,-1.92 -1.92,-1.92 z"
        id="path52" />
     <text
        class="cls-2"
-       transform="translate(592.69 341.12)"
+       transform="translate(592.69,341.12)"
        id="text52"><tspan
          x="0"
          y="0"
          id="tspan52">csv</tspan></text>
     <path
        class="cls-3"
-       d="M615.08,351.71h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.87c0,.37,.3,.68,.67,.68h5.94v3.37h-22.18v-10.92Z"
+       d="M 615.08,351.71 H 592.9 v -6.47 h 22.18 z M 592.9,320.49 h 15.57 v 6.87 c 0,0.37 0.3,0.68 0.67,0.68 h 5.94 v 3.37 H 592.9 Z"
        id="path53" />
   </g>
   <g
-     id="g55">
+     id="g55"
+     transform="translate(0,-50)">
     <path
-       d="M764.49,351.72h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.88c0,.37,.3,.67,.67,.67h5.93v3.37h-22.18v-10.92Zm24.35,10.92h-.83v-3.97s0-.05,0-.07c0-.16-.05-.31-.16-.44l-6.61-7.55s0,0,0,0c-.04-.04-.08-.08-.13-.11-.01-.01-.03-.02-.04-.03-.04-.02-.09-.04-.13-.06-.02,0-.03-.01-.04-.01-.05-.01-.1-.02-.15-.02h-16.24c-.74,0-1.34,.6-1.34,1.34v10.92h-.83c-1.06,0-1.92,.86-1.92,1.92v9.99c0,1.06,.86,1.92,1.92,1.92h.83v6.84c0,.74,.6,1.34,1.34,1.34h22.18c.74,0,1.34-.6,1.34-1.34v-6.84h.83c1.06,0,1.92-.86,1.92-1.92v-9.99c0-1.06-.86-1.92-1.92-1.92Z"
+       d="m 764.49,351.72 h -22.18 v -6.47 h 22.18 z M 742.31,320.5 h 15.57 v 6.88 c 0,0.37 0.3,0.67 0.67,0.67 h 5.93 v 3.37 H 742.3 V 320.5 Z m 24.35,10.92 h -0.83 v -3.97 c 0,0 0,-0.05 0,-0.07 0,-0.16 -0.05,-0.31 -0.16,-0.44 l -6.61,-7.55 c 0,0 0,0 0,0 -0.04,-0.04 -0.08,-0.08 -0.13,-0.11 -0.01,-0.01 -0.03,-0.02 -0.04,-0.03 -0.04,-0.02 -0.09,-0.04 -0.13,-0.06 -0.02,0 -0.03,-0.01 -0.04,-0.01 -0.05,-0.01 -0.1,-0.02 -0.15,-0.02 h -16.24 c -0.74,0 -1.34,0.6 -1.34,1.34 v 10.92 h -0.83 c -1.06,0 -1.92,0.86 -1.92,1.92 v 9.99 c 0,1.06 0.86,1.92 1.92,1.92 h 0.83 v 6.84 c 0,0.74 0.6,1.34 1.34,1.34 h 22.18 c 0.74,0 1.34,-0.6 1.34,-1.34 v -6.84 h 0.83 c 1.06,0 1.92,-0.86 1.92,-1.92 v -9.99 c 0,-1.06 -0.86,-1.92 -1.92,-1.92 z"
        id="path54" />
     <text
        class="cls-2"
-       transform="translate(739.28 341.12)"
+       transform="translate(739.28,341.12)"
        id="text54"><tspan
          x="0"
          y="0"
          id="tspan54">fasta</tspan></text>
     <path
        class="cls-3"
-       d="M764.49,351.71h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.88c0,.37,.3,.67,.67,.67h5.93v3.37h-22.18v-10.92Z"
+       d="m 764.49,351.71 h -22.18 v -6.47 h 22.18 z m -22.18,-31.22 h 15.57 v 6.88 c 0,0.37 0.3,0.67 0.67,0.67 h 5.93 v 3.37 H 742.3 v -10.92 z"
        id="path55" />
   </g>
   <g
-     id="g57">
+     id="g57"
+     transform="translate(0,-50)">
     <path
-       d="M697.04,351.72h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.87c0,.37,.3,.67,.67,.67h5.94v3.37h-22.18v-10.92Zm24.34,10.92h-.82v-3.97s0-.05,0-.08c0-.16-.05-.31-.16-.43l-6.61-7.55s0,0,0,0c-.04-.04-.09-.08-.14-.11-.02,0-.03-.02-.04-.03-.04-.02-.08-.04-.13-.05-.01,0-.02,0-.04-.01-.05-.02-.1-.02-.15-.02h-16.24c-.74,0-1.34,.61-1.34,1.35v10.92h-.82c-1.06,0-1.92,.86-1.92,1.92v9.99c0,1.06,.86,1.92,1.92,1.92h.82v6.84c0,.74,.6,1.35,1.34,1.35h22.18c.74,0,1.34-.61,1.34-1.35v-6.84h.82c1.06,0,1.92-.86,1.92-1.92v-9.99c0-1.06-.86-1.92-1.92-1.92Z"
+       d="m 697.04,351.72 h -22.18 v -6.47 h 22.18 z M 674.86,320.5 h 15.57 v 6.87 c 0,0.37 0.3,0.67 0.67,0.67 h 5.94 v 3.37 h -22.18 v -10.92 z m 24.34,10.92 h -0.82 v -3.97 c 0,0 0,-0.05 0,-0.08 0,-0.16 -0.05,-0.31 -0.16,-0.43 l -6.61,-7.55 c 0,0 0,0 0,0 -0.04,-0.04 -0.09,-0.08 -0.14,-0.11 -0.02,0 -0.03,-0.02 -0.04,-0.03 -0.04,-0.02 -0.08,-0.04 -0.13,-0.05 -0.01,0 -0.02,0 -0.04,-0.01 -0.05,-0.02 -0.1,-0.02 -0.15,-0.02 h -16.24 c -0.74,0 -1.34,0.61 -1.34,1.35 v 10.92 h -0.82 c -1.06,0 -1.92,0.86 -1.92,1.92 v 9.99 c 0,1.06 0.86,1.92 1.92,1.92 h 0.82 v 6.84 c 0,0.74 0.6,1.35 1.34,1.35 h 22.18 c 0.74,0 1.34,-0.61 1.34,-1.35 v -6.84 h 0.82 c 1.06,0 1.92,-0.86 1.92,-1.92 v -9.99 c 0,-1.06 -0.86,-1.92 -1.92,-1.92 z"
        id="path56" />
     <text
        class="cls-2"
-       transform="translate(674.65 342.53)"
+       transform="translate(674.65,342.53)"
        id="text56"><tspan
          x="0"
          y="0"
          id="tspan56">VCF</tspan></text>
     <path
        class="cls-3"
-       d="M697.04,351.71h-22.18v-6.47h22.18v6.47Zm-22.18-31.22h15.57v6.87c0,.37,.3,.67,.67,.67h5.94v3.37h-22.18v-10.92Z"
+       d="m 697.04,351.71 h -22.18 v -6.47 h 22.18 z m -22.18,-31.22 h 15.57 v 6.87 c 0,0.37 0.3,0.67 0.67,0.67 h 5.94 v 3.37 h -22.18 v -10.92 z"
        id="path57" />
   </g>
   <path
      class="cls-15"
-     d="M798.99,101.28l-6.38-5.45c-2-1.71-3.52-4.42-3.52-7.05V28.88c0-3.32-3.73-7.05-7.05-7.05h-7.05"
+     d="m 844.99,101.28 -6.38,-5.45 c -2,-1.71 -3.52,-4.42 -3.52,-7.05 v -59.9 c 0,-3.32 -3.73,-7.05 -7.05,-7.05 h -7.05"
      id="path58" />
   <line
      class="cls-15"
-     x1="641.1"
+     x1="687.09998"
      y1="21.84"
-     x2="775.96"
+     x2="821.96002"
      y2="21.84"
      id="line58" />
   <circle
-     cx="635.46"
+     cx="681.46002"
      cy="21.84"
-     r="5.64"
+     r="5.6399999"
      id="circle58" />
   <circle
      class="cls-18"
-     cx="635.46"
+     cx="681.46002"
      cy="21.84"
-     r="5.64"
+     r="5.6399999"
      id="circle59" />
   <text
      class="cls-7"
@@ -1372,48 +1360,26 @@
        id="tspan152">c</tspan></text>
   <line
      class="cls-31"
-     x1="264.1"
+     x1="264.10001"
      y1="103.88"
-     x2="802.48"
+     x2="844.50208"
      y2="103.88"
      id="line152" />
-  <line
-     class="cls-22"
-     x1="731.81"
-     y1="190.69"
-     x2="731.81"
-     y2="101.05"
-     id="line153" />
-  <line
-     class="cls-21"
-     x1="734.47"
-     y1="191.02"
-     x2="734.33"
-     y2="104.14"
-     id="line154" />
-  <polyline
-     class="cls-25"
-     points="559.04 94.76 569.61 94.76 566.08 91.24"
-     id="polyline154" />
   <polyline
      class="cls-25"
      points="684.44 94.77 695.01 94.77 691.48 91.25"
-     id="polyline155" />
+     id="polyline155"
+     transform="translate(28)" />
   <polyline
      class="cls-25"
      points="743.82 94.78 754.39 94.78 750.87 91.25"
-     id="polyline156" />
+     id="polyline156"
+     transform="translate(36)" />
   <polyline
      class="cls-25"
      points="620.2 94.77 630.77 94.77 627.24 91.25"
-     id="polyline157" />
-  <line
-     class="cls-24"
-     x1="485.63"
-     y1="109.56"
-     x2="485.58"
-     y2="103.92"
-     id="line157" />
+     id="polyline157"
+     transform="translate(24)" />
   <line
      class="cls-16"
      x1="417.66"
@@ -1423,84 +1389,94 @@
      id="line158" />
   <text
      class="cls-7"
-     transform="translate(525.42 50.42)"
-     id="text158"><tspan
-       x="0"
-       y="0"
-       id="tspan158">Samtools </tspan></text>
+     id="text158"
+     x="609.41998"
+     y="50.419998"><tspan
+       x="609.41998"
+       y="50.419998"
+       id="tspan158">Samtools</tspan></text>
   <text
      class="cls-7"
-     transform="translate(533.87 62.17)"
-     id="text159"><tspan
-       x="0"
-       y="0"
+     id="text159"
+     x="617.87"
+     y="62.169998"><tspan
+       x="617.87"
+       y="62.169998"
        id="tspan159">merge</tspan></text>
   <text
      class="cls-7"
-     transform="translate(528.07 73.91)"
-     id="text160"><tspan
-       x="0"
-       y="0"
+     id="text160"
+     x="612.07001"
+     y="73.910004"><tspan
+       x="612.07001"
+       y="73.910004"
        id="tspan160">(per PCR</tspan></text>
   <text
      class="cls-7"
-     transform="translate(534.06 85.65)"
-     id="text161"><tspan
-       x="0"
-       y="0"
+     id="text161"
+     x="618.06"
+     y="85.650002"><tspan
+       x="618.06"
+       y="85.650002"
        id="tspan161">index)</tspan></text>
   <text
      class="cls-7"
-     transform="translate(650.42 61.95)"
-     id="text162"><tspan
-       x="0"
-       y="0"
-       id="tspan162">Samtools </tspan></text>
+     id="text162"
+     x="746.41998"
+     y="61.950001"><tspan
+       x="746.41998"
+       y="61.950001"
+       id="tspan162">Samtools</tspan></text>
   <text
      class="cls-7"
-     transform="translate(658.87 73.7)"
-     id="text163"><tspan
-       x="0"
-       y="0"
+     id="text163"
+     x="754.87"
+     y="73.699997"><tspan
+       x="754.87"
+       y="73.699997"
        id="tspan163">merge</tspan></text>
   <text
      class="cls-7"
-     transform="translate(643.46 85.44)"
-     id="text164"><tspan
-       x="0"
-       y="0"
+     id="text164"
+     x="739.46002"
+     y="85.440002"><tspan
+       x="739.46002"
+       y="85.440002"
        id="tspan164">(per sample)</tspan></text>
   <text
      class="cls-7"
-     transform="translate(597.34 63.37)"
-     id="text165"><tspan
-       x="0"
-       y="0"
+     id="text165"
+     x="685.34003"
+     y="63.369999"><tspan
+       x="685.34003"
+       y="63.369999"
        id="tspan165">Sam-</tspan></text>
   <text
      class="cls-7"
-     transform="translate(590.21 75.12)"
-     id="text169"><tspan
-       x="0"
-       y="0"
+     id="text169"
+     x="678.21002"
+     y="75.120003"><tspan
+       x="678.21002"
+       y="75.120003"
        id="tspan166">rem</tspan><tspan
        class="cls-43"
-       x="18.75"
-       y="0"
+       x="696.96002"
+       y="75.120003"
        id="tspan167">o</tspan><tspan
        class="cls-44"
-       x="24.39"
-       y="0"
+       x="702.59998"
+       y="75.120003"
        id="tspan168">v</tspan><tspan
-       x="29.87"
-       y="0"
+       x="708.08002"
+       y="75.120003"
        id="tspan169">e-</tspan></text>
   <text
      class="cls-7"
-     transform="translate(601.25 86.86)"
-     id="text170"><tspan
-       x="0"
-       y="0"
+     id="text170"
+     x="689.25"
+     y="86.860001"><tspan
+       x="689.25"
+       y="86.860001"
        id="tspan170">dup</tspan></text>
   <text
      class="cls-4"
@@ -1511,242 +1487,162 @@
        id="tspan171" /></text>
   <text
      class="cls-5"
-     transform="translate(669.05 303.91)"
-     id="text172"><tspan
-       x="0"
-       y="0"
+     id="text172"
+     x="669.04999"
+     y="253.91"><tspan
+       x="669.04999"
+       y="253.91"
        id="tspan172">ANGSD</tspan></text>
   <text
      class="cls-5"
-     transform="translate(659.14 313.66)"
-     id="text173"><tspan
-       x="0"
-       y="0"
+     id="text173"
+     x="659.14001"
+     y="263.66"><tspan
+       x="659.14001"
+       y="263.66"
        id="tspan173">haplo2plink</tspan></text>
   <text
      class="cls-7"
-     transform="translate(817.54 53.53)"
-     id="text176"><tspan
-       x="0"
-       y="0"
-       id="tspan174">G</tspan><tspan
-       class="cls-47"
-       x="7.29"
-       y="0"
-       id="tspan175">A</tspan><tspan
-       x="13.15"
-       y="0"
-       id="tspan176">TK</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(806.13 65.28)"
-     id="text180"><tspan
-       class="cls-48"
-       x="0"
-       y="0"
-       id="tspan177">R</tspan><tspan
-       x="6.32"
-       y="0"
-       id="tspan178">ealigne</tspan><tspan
-       class="cls-44"
-       x="40.11"
-       y="0"
-       id="tspan179">r</tspan><tspan
-       x="44.04"
-       y="0"
-       id="tspan180">-</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(797.91 77.02)"
-     id="text182"><tspan
-       class="cls-52"
-       x="0"
-       y="0"
-       id="tspan181">T</tspan><tspan
-       x="4.7"
-       y="0"
-       id="tspan182">argetCreator</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(796.25 88.77)"
-     id="text185"><tspan
-       x="0"
-       y="0"
-       id="tspan183">Indel</tspan><tspan
-       class="cls-48"
-       x="23.93"
-       y="0"
-       id="tspan184">R</tspan><tspan
-       x="30.25"
-       y="0"
-       id="tspan185">ealigner</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(798.84 303.76)"
-     id="text186"><tspan
-       x="0"
-       y="0"
+     id="text186"
+     x="798.84003"
+     y="253.76001"><tspan
+       x="798.84003"
+       y="253.76001"
        id="tspan186">ANGSD</tspan></text>
   <text
      class="cls-7"
-     transform="translate(790.31 312.89)"
-     id="text187"><tspan
-       x="0"
-       y="0"
+     id="text187"
+     x="790.31"
+     y="262.89001"><tspan
+       x="790.31"
+       y="262.89001"
        id="tspan187">doHaploCall 1</tspan></text>
   <text
      class="cls-7"
-     transform="translate(722.27 308.63)"
-     id="text190"><tspan
-       x="0"
-       y="0"
+     id="text190"
+     x="722.27002"
+     y="258.63"><tspan
+       x="722.27002"
+       y="258.63"
        id="tspan188">Haplo2</tspan><tspan
        class="cls-41"
-       x="32.81"
-       y="0"
+       x="755.08002"
+       y="258.63"
        id="tspan189">F</tspan><tspan
-       x="37.75"
-       y="0"
+       x="760.02002"
+       y="258.63"
        id="tspan190">asta</tspan></text>
   <text
-     class="cls-7"
-     transform="translate(751.64 119.25)"
-     id="text191"><tspan
-       x="0"
-       y="0"
-       id="tspan191">Picard </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(749.93 131)"
-     id="text192"><tspan
-       x="0"
-       y="0"
-       id="tspan192">Create-</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(742.56 142.74)"
-     id="text193"><tspan
-       x="0"
-       y="0"
-       id="tspan193">Sequence-</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(743.69 154.49)"
-     id="text194"><tspan
-       x="0"
-       y="0"
-       id="tspan194">Dictionary</tspan></text>
-  <line
-     class="cls-35"
-     x1="726.61"
-     y1="190.77"
-     x2="739.29"
-     y2="190.77"
-     id="line194" />
-  <line
-     class="cls-24"
-     x1="765.54"
-     y1="109.7"
-     x2="765.49"
-     y2="104.06"
-     id="line195" />
-  <text
      class="cls-9"
-     transform="translate(463.56 154)"
-     id="text195"><tspan
-       x="0"
-       y="0"
+     id="text195"
+     x="498.1846"
+     y="50.583263"><tspan
+       x="498.1846"
+       y="50.583263"
        id="tspan195">b</tspan></text>
   <text
      class="cls-9"
-     transform="translate(467.66 154)"
-     id="text196"><tspan
-       x="0"
-       y="0"
+     id="text196"
+     x="502.28464"
+     y="50.583263"><tspan
+       x="502.28464"
+       y="50.583263"
        id="tspan196">a</tspan></text>
   <text
      class="cls-9"
-     transform="translate(471.61 154)"
-     id="text197"><tspan
-       x="0"
-       y="0"
+     id="text197"
+     x="506.23459"
+     y="50.583263"><tspan
+       x="506.23459"
+       y="50.583263"
        id="tspan197">m</tspan></text>
   <text
      class="cls-9"
-     transform="translate(478.01 154)"
-     id="text198"><tspan
-       x="0"
-       y="0"
+     id="text198"
+     x="512.63464"
+     y="50.583263"><tspan
+       x="512.63464"
+       y="50.583263"
        id="tspan198">_</tspan></text>
   <text
      class="cls-9"
-     transform="translate(482.19 154)"
-     id="text199"><tspan
-       x="0"
-       y="0"
+     id="text199"
+     x="516.81464"
+     y="50.583263"><tspan
+       x="516.81464"
+       y="50.583263"
        id="tspan199">p</tspan></text>
   <text
      class="cls-9"
-     transform="translate(486.28 154)"
-     id="text200"><tspan
-       x="0"
-       y="0"
+     id="text200"
+     x="520.90466"
+     y="50.583263"><tspan
+       x="520.90466"
+       y="50.583263"
        id="tspan200">r</tspan></text>
   <text
      class="cls-9"
-     transform="translate(489.09 154)"
-     id="text201"><tspan
-       x="0"
-       y="0"
+     id="text201"
+     x="523.7146"
+     y="50.583263"><tspan
+       x="523.7146"
+       y="50.583263"
        id="tspan201">o</tspan></text>
   <text
      class="cls-9"
-     transform="translate(493.08 154)"
-     id="text202"><tspan
-       x="0"
-       y="0"
+     id="text202"
+     x="527.70459"
+     y="50.583263"><tspan
+       x="527.70459"
+       y="50.583263"
        id="tspan202">c</tspan></text>
   <text
      class="cls-9"
-     transform="translate(496.51 154)"
-     id="text203"><tspan
-       x="0"
-       y="0"
+     id="text203"
+     x="531.13464"
+     y="50.583263"><tspan
+       x="531.13464"
+       y="50.583263"
        id="tspan203">e</tspan></text>
   <text
      class="cls-9"
-     transform="translate(500.43 154)"
-     id="text204"><tspan
-       x="0"
-       y="0"
+     id="text204"
+     x="535.05463"
+     y="50.583263"><tspan
+       x="535.05463"
+       y="50.583263"
        id="tspan204">s</tspan></text>
   <text
      class="cls-9"
-     transform="translate(503.85 154)"
-     id="text205"><tspan
-       x="0"
-       y="0"
+     id="text205"
+     x="538.47461"
+     y="50.583263"><tspan
+       x="538.47461"
+       y="50.583263"
        id="tspan205">s</tspan></text>
   <text
      class="cls-9"
-     transform="translate(507.28 154)"
-     id="text206"><tspan
-       x="0"
-       y="0"
+     id="text206"
+     x="541.90466"
+     y="50.583263"><tspan
+       x="541.90466"
+       y="50.583263"
        id="tspan206">i</tspan></text>
   <text
      class="cls-9"
-     transform="translate(509.09 154)"
-     id="text207"><tspan
-       x="0"
-       y="0"
+     id="text207"
+     x="543.7146"
+     y="50.583263"><tspan
+       x="543.7146"
+       y="50.583263"
        id="tspan207">n</tspan></text>
   <text
      class="cls-9"
-     transform="translate(513.25 154)"
-     id="text208"><tspan
-       x="0"
-       y="0"
+     id="text208"
+     x="547.87463"
+     y="50.583263"><tspan
+       x="547.87463"
+       y="50.583263"
        id="tspan208">g</tspan></text>
   <text
      class="cls-9"
@@ -1827,353 +1723,360 @@
        id="tspan219">w</tspan></text>
   <text
      class="cls-7"
-     transform="translate(530.73 204.28)"
-     id="text220"><tspan
-       x="0"
-       y="0"
-       id="tspan220">MultiQC</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(780.05 222.09)"
-     id="text221"><tspan
-       x="0"
-       y="0"
+     id="text221"
+     x="826.04999"
+     y="184.09"><tspan
+       x="826.04999"
+       y="184.09"
        id="tspan221">MultiQC</tspan></text>
   <text
      class="cls-9"
-     transform="translate(463.69 231.15)"
-     id="text222"><tspan
-       x="0"
-       y="0"
+     id="text222"
+     x="565.22644"
+     y="185.21095"><tspan
+       x="565.22644"
+       y="185.21095"
        id="tspan222">p</tspan></text>
   <text
      class="cls-9"
-     transform="translate(467.79 231.15)"
-     id="text223"><tspan
-       x="0"
-       y="0"
+     id="text223"
+     x="569.32648"
+     y="185.21095"><tspan
+       x="569.32648"
+       y="185.21095"
        id="tspan223">r</tspan></text>
   <text
      class="cls-9"
-     transform="translate(470.59 231.15)"
-     id="text224"><tspan
-       x="0"
-       y="0"
+     id="text224"
+     x="572.12646"
+     y="185.21095"><tspan
+       x="572.12646"
+       y="185.21095"
        id="tspan224">o</tspan></text>
   <text
      class="cls-9"
-     transform="translate(474.59 231.15)"
-     id="text225"><tspan
-       x="0"
-       y="0"
+     id="text225"
+     x="576.12646"
+     y="185.21095"><tspan
+       x="576.12646"
+       y="185.21095"
        id="tspan225">c</tspan></text>
   <text
      class="cls-9"
-     transform="translate(478.01 231.15)"
-     id="text226"><tspan
-       x="0"
-       y="0"
+     id="text226"
+     x="579.54645"
+     y="185.21095"><tspan
+       x="579.54645"
+       y="185.21095"
        id="tspan226">e</tspan></text>
   <text
      class="cls-9"
-     transform="translate(481.93 231.15)"
-     id="text227"><tspan
-       x="0"
-       y="0"
+     id="text227"
+     x="583.46643"
+     y="185.21095"><tspan
+       x="583.46643"
+       y="185.21095"
        id="tspan227">s</tspan></text>
   <text
      class="cls-9"
-     transform="translate(485.36 231.15)"
-     id="text228"><tspan
-       x="0"
-       y="0"
+     id="text228"
+     x="586.89648"
+     y="185.21095"><tspan
+       x="586.89648"
+       y="185.21095"
        id="tspan228">s</tspan></text>
   <text
      class="cls-9"
-     transform="translate(488.78 231.15)"
-     id="text229"><tspan
-       x="0"
-       y="0"
+     id="text229"
+     x="590.31647"
+     y="185.21095"><tspan
+       x="590.31647"
+       y="185.21095"
        id="tspan229">e</tspan></text>
   <text
      class="cls-9"
-     transform="translate(492.7 231.15)"
-     id="text230"><tspan
-       x="0"
-       y="0"
+     id="text230"
+     x="594.23645"
+     y="185.21095"><tspan
+       x="594.23645"
+       y="185.21095"
        id="tspan230">d</tspan></text>
   <text
      class="cls-9"
-     transform="translate(496.8 231.15)"
-     id="text231"><tspan
-       x="0"
-       y="0"
+     id="text231"
+     x="598.33649"
+     y="185.21095"><tspan
+       x="598.33649"
+       y="185.21095"
        id="tspan231">_</tspan></text>
   <text
      class="cls-9"
-     transform="translate(500.98 231.15)"
-     id="text232"><tspan
-       x="0"
-       y="0"
+     id="text232"
+     x="602.51648"
+     y="185.21095"><tspan
+       x="602.51648"
+       y="185.21095"
        id="tspan232">b</tspan></text>
   <text
      class="cls-9"
-     transform="translate(505.08 231.15)"
-     id="text233"><tspan
-       x="0"
-       y="0"
+     id="text233"
+     x="606.61646"
+     y="185.21095"><tspan
+       x="606.61646"
+       y="185.21095"
        id="tspan233">a</tspan></text>
   <text
      class="cls-9"
-     transform="translate(509.03 231.15)"
-     id="text234"><tspan
-       x="0"
-       y="0"
+     id="text234"
+     x="610.56647"
+     y="185.21095"><tspan
+       x="610.56647"
+       y="185.21095"
        id="tspan234">m</tspan></text>
   <text
      class="cls-9"
-     transform="translate(515.43 231.15)"
-     id="text235"><tspan
-       x="0"
-       y="0"
+     id="text235"
+     x="616.96643"
+     y="185.21095"><tspan
+       x="616.96643"
+       y="185.21095"
        id="tspan235">_</tspan></text>
   <text
      class="cls-9"
-     transform="translate(519.61 231.15)"
-     id="text236"><tspan
-       x="0"
-       y="0"
+     id="text236"
+     x="621.14648"
+     y="185.21095"><tspan
+       x="621.14648"
+       y="185.21095"
        id="tspan236">q</tspan></text>
   <text
      class="cls-9"
-     transform="translate(523.71 231.15)"
-     id="text237"><tspan
-       x="0"
-       y="0"
+     id="text237"
+     x="625.24646"
+     y="185.21095"><tspan
+       x="625.24646"
+       y="185.21095"
        id="tspan237">c</tspan></text>
   <text
      class="cls-9"
-     transform="translate(653.5 266.85)"
-     id="text238"><tspan
-       x="0"
-       y="0"
+     id="text238"
+     x="653.5"
+     y="216.85001"><tspan
+       x="653.5"
+       y="216.85001"
        id="tspan238">r</tspan></text>
   <text
      class="cls-9"
-     transform="translate(656.19 266.85)"
-     id="text239"><tspan
-       x="0"
-       y="0"
+     id="text239"
+     x="656.19"
+     y="216.85001"><tspan
+       x="656.19"
+       y="216.85001"
        id="tspan239">a</tspan></text>
   <text
      class="cls-9"
-     transform="translate(660.14 266.85)"
-     id="text240"><tspan
-       x="0"
-       y="0"
+     id="text240"
+     x="660.14001"
+     y="216.85001"><tspan
+       x="660.14001"
+       y="216.85001"
        id="tspan240">n</tspan></text>
   <text
      class="cls-9"
-     transform="translate(664.3 266.85)"
-     id="text241"><tspan
-       x="0"
-       y="0"
+     id="text241"
+     x="664.29999"
+     y="216.85001"><tspan
+       x="664.29999"
+       y="216.85001"
        id="tspan241">d</tspan></text>
   <text
      class="cls-9"
-     transform="translate(668.4 266.85)"
-     id="text242"><tspan
-       x="0"
-       y="0"
+     id="text242"
+     x="668.40002"
+     y="216.85001"><tspan
+       x="668.40002"
+       y="216.85001"
        id="tspan242">o</tspan></text>
   <text
      class="cls-9"
-     transform="translate(672.39 266.85)"
-     id="text243"><tspan
-       x="0"
-       y="0"
+     id="text243"
+     x="672.39001"
+     y="216.85001"><tspan
+       x="672.39001"
+       y="216.85001"
        id="tspan243">m</tspan></text>
   <text
      class="cls-9"
-     transform="translate(678.79 266.85)"
-     id="text244"><tspan
-       x="0"
-       y="0"
+     id="text244"
+     x="678.78998"
+     y="216.85001"><tspan
+       x="678.78998"
+       y="216.85001"
        id="tspan244">_</tspan></text>
   <text
      class="cls-9"
-     transform="translate(682.97 266.85)"
-     id="text245"><tspan
-       x="0"
-       y="0"
+     id="text245"
+     x="682.96997"
+     y="216.85001"><tspan
+       x="682.96997"
+       y="216.85001"
        id="tspan245">s</tspan></text>
   <text
      class="cls-9"
-     transform="translate(686.4 266.85)"
-     id="text246"><tspan
-       x="0"
-       y="0"
+     id="text246"
+     x="686.40002"
+     y="216.85001"><tspan
+       x="686.40002"
+       y="216.85001"
        id="tspan246">a</tspan></text>
   <text
      class="cls-9"
-     transform="translate(690.35 266.85)"
-     id="text247"><tspan
-       x="0"
-       y="0"
+     id="text247"
+     x="690.34998"
+     y="216.85001"><tspan
+       x="690.34998"
+       y="216.85001"
        id="tspan247">m</tspan></text>
   <text
      class="cls-9"
-     transform="translate(696.75 266.85)"
-     id="text248"><tspan
-       x="0"
-       y="0"
+     id="text248"
+     x="696.75"
+     y="216.85001"><tspan
+       x="696.75"
+       y="216.85001"
        id="tspan248">p</tspan></text>
   <text
      class="cls-9"
-     transform="translate(700.84 266.85)"
-     id="text249"><tspan
-       x="0"
-       y="0"
+     id="text249"
+     x="700.84003"
+     y="216.85001"><tspan
+       x="700.84003"
+       y="216.85001"
        id="tspan249">l</tspan></text>
   <text
      class="cls-9"
-     transform="translate(702.65 266.85)"
-     id="text250"><tspan
-       x="0"
-       y="0"
+     id="text250"
+     x="702.65002"
+     y="216.85001"><tspan
+       x="702.65002"
+       y="216.85001"
        id="tspan250">i</tspan></text>
   <text
      class="cls-9"
-     transform="translate(704.45 266.85)"
-     id="text251"><tspan
-       x="0"
-       y="0"
+     id="text251"
+     x="704.45001"
+     y="216.85001"><tspan
+       x="704.45001"
+       y="216.85001"
        id="tspan251">n</tspan></text>
   <text
      class="cls-9"
-     transform="translate(708.62 266.85)"
-     id="text252"><tspan
-       x="0"
-       y="0"
+     id="text252"
+     x="708.62"
+     y="216.85001"><tspan
+       x="708.62"
+       y="216.85001"
        id="tspan252">g</tspan></text>
   <text
      class="cls-9"
-     transform="translate(712.71 266.85)"
-     id="text253"><tspan
-       x="0"
-       y="0"
+     id="text253"
+     x="712.71002"
+     y="216.85001"><tspan
+       x="712.71002"
+       y="216.85001"
        id="tspan253">_</tspan></text>
   <text
      class="cls-9"
-     transform="translate(716.9 266.85)"
-     id="text254"><tspan
-       x="0"
-       y="0"
+     id="text254"
+     x="716.90002"
+     y="216.85001"><tspan
+       x="716.90002"
+       y="216.85001"
        id="tspan254">b</tspan></text>
   <text
      class="cls-9"
-     transform="translate(720.99 266.85)"
-     id="text255"><tspan
-       x="0"
-       y="0"
+     id="text255"
+     x="720.98999"
+     y="216.85001"><tspan
+       x="720.98999"
+       y="216.85001"
        id="tspan255">a</tspan></text>
   <text
      class="cls-9"
-     transform="translate(724.94 266.85)"
-     id="text256"><tspan
-       x="0"
-       y="0"
+     id="text256"
+     x="724.94"
+     y="216.85001"><tspan
+       x="724.94"
+       y="216.85001"
        id="tspan256">m</tspan></text>
   <line
      class="cls-36"
-     x1="821.36"
-     y1="282.31"
-     x2="821.36"
-     y2="295"
+     x1="821.35999"
+     y1="232.31"
+     x2="821.35999"
+     y2="245"
      id="line256" />
-  <polyline
-     class="cls-25"
-     points="811.79 101.02 819.16 108.6 819.23 103.62"
-     id="polyline256" />
   <circle
      class="cls-3"
-     cx="548.33"
-     cy="99.93"
-     r="7.05"
-     id="circle256" />
-  <circle
-     class="cls-16"
-     cx="548.33"
-     cy="99.93"
-     r="7.05"
-     id="circle257" />
-  <circle
-     class="cls-3"
-     cx="610.72"
+     cx="634.71997"
      cy="100.42"
-     r="7.05"
+     r="7.0500002"
      id="circle258" />
   <circle
-     class="cls-16"
-     cx="610.72"
-     cy="100.42"
-     r="7.05"
-     id="circle259" />
-  <circle
      class="cls-3"
-     cx="673.84"
+     cx="701.84003"
      cy="100.06"
-     r="7.05"
+     r="7.0500002"
      id="circle260" />
-  <circle
-     class="cls-16"
-     cx="673.84"
-     cy="100.06"
-     r="7.05"
-     id="circle261" />
   <polyline
      class="cls-26"
      points="739.72 112.13 739.72 122.7 743.25 119.18"
-     id="polyline261" />
+     id="polyline261"
+     transform="translate(36)" />
   <circle
      class="cls-3"
-     cx="733.34"
+     cx="769.34003"
      cy="99.93"
-     r="7.05"
+     r="7.0500002"
      id="circle262" />
-  <circle
-     class="cls-16"
-     cx="733.34"
-     cy="99.93"
-     r="7.05"
-     id="circle263" />
   <line
      class="cls-16"
-     x1="497.91"
-     y1="89.37"
-     x2="497.91"
-     y2="96.42"
+     x1="573.91003"
+     y1="89.370003"
+     x2="573.91003"
+     y2="96.419998"
      id="line263" />
+  <line
+     class="cls-16"
+     x1="524.42938"
+     y1="89.460449"
+     x2="524.42938"
+     y2="96.510437"
+     id="line263-6"
+     style="fill:none;stroke:#009e73;stroke-width:2.83px;stroke-opacity:1" />
   <text
      class="cls-5"
-     transform="translate(476.28 63.02)"
-     id="text263"><tspan
-       x="0"
-       y="0"
+     id="text263"
+     x="552.28003"
+     y="63.02"><tspan
+       x="552.28003"
+       y="63.02"
        id="tspan263">Samtools</tspan></text>
   <text
      class="cls-5"
-     transform="translate(487.46 74.77)"
-     id="text264"><tspan
-       x="0"
-       y="0"
+     id="text264"
+     x="563.45996"
+     y="74.769997"><tspan
+       x="563.45996"
+       y="74.769997"
        id="tspan264">view</tspan></text>
   <text
      class="cls-5"
-     transform="translate(472.59 86.51)"
-     id="text265"><tspan
-       x="0"
-       y="0"
+     id="text265"
+     x="548.58997"
+     y="86.510002"><tspan
+       x="548.58997"
+       y="86.510002"
        id="tspan265">(MQ&gt;=25)</tspan></text>
   <circle
      class="cls-3"
@@ -2395,7 +2298,8 @@
   <polyline
      class="cls-26"
      points="804.56 120.59 804.56 131.16 808.08 127.64"
-     id="polyline293" />
+     id="polyline293"
+     transform="translate(46)" />
   <circle
      class="cls-3"
      cx="141.69"
@@ -2457,79 +2361,86 @@
      id="polyline298" />
   <text
      class="cls-7"
-     transform="translate(719.95 63.37)"
-     id="text298"><tspan
-       x="0"
-       y="0"
+     id="text298"
+     x="845.81329"
+     y="66.575073"><tspan
+       x="845.81329"
+       y="66.575073"
        id="tspan298">Sam-</tspan></text>
   <text
      class="cls-7"
-     transform="translate(712.83 75.12)"
-     id="text302"><tspan
-       x="0"
-       y="0"
+     id="text302"
+     x="838.6933"
+     y="78.325081"><tspan
+       x="838.6933"
+       y="78.325081"
        id="tspan299">rem</tspan><tspan
        class="cls-43"
-       x="18.75"
-       y="0"
+       x="857.4433"
+       y="78.325081"
        id="tspan300">o</tspan><tspan
        class="cls-44"
-       x="24.39"
-       y="0"
+       x="863.08325"
+       y="78.325081"
        id="tspan301">v</tspan><tspan
-       x="29.87"
-       y="0"
+       x="868.56329"
+       y="78.325081"
        id="tspan302">e-</tspan></text>
   <text
      class="cls-7"
-     transform="translate(723.86 86.86)"
-     id="text303"><tspan
-       x="0"
-       y="0"
+     id="text303"
+     x="849.72327"
+     y="90.065079"><tspan
+       x="849.72327"
+       y="90.065079"
        id="tspan303">dup</tspan></text>
   <polyline
      class="cls-25"
      points="463.59 94.36 474.16 94.36 470.64 90.84"
-     id="polyline303" />
+     id="polyline303"
+     transform="translate(36.753001)" />
   <line
      class="cls-34"
-     x1="795.02"
-     y1="209.14"
-     x2="795.02"
-     y2="99.64"
-     id="line303" />
+     x1="845.02002"
+     y1="172.4597"
+     x2="845.02002"
+     y2="99.639999"
+     id="line303"
+     style="stroke-width:3;stroke-dasharray:none" />
   <line
      class="cls-32"
-     x1="797.69"
-     y1="209.46"
-     x2="797.55"
-     y2="102.73"
-     id="line304" />
+     x1="847.69049"
+     y1="172.4157"
+     x2="847.5495"
+     y2="102.7379"
+     id="line304"
+     style="stroke-width:3;stroke-dasharray:none" />
   <line
      class="cls-30"
-     x1="800.18"
-     y1="170.08"
-     x2="800.37"
-     y2="104.13"
-     id="line305" />
+     x1="842.1781"
+     y1="129.46558"
+     x2="842.37189"
+     y2="104.1468"
+     id="line305"
+     style="stroke-width:3;stroke-dasharray:none" />
   <circle
      class="cls-3"
-     cx="799.01"
+     cx="845.01001"
      cy="100.51"
-     r="7.05"
+     r="7.0500002"
      id="circle305" />
   <circle
      class="cls-16"
-     cx="799.01"
+     cx="845.01001"
      cy="100.51"
-     r="7.05"
+     r="7.0500002"
      id="circle306" />
   <line
      class="cls-35"
-     x1="789.83"
-     y1="209.1"
-     x2="802.51"
-     y2="209.1"
+     x1="839.83002"
+     y1="171.10001"
+     x2="852.51001"
+     y2="171.10001"
      id="line306" />
   <polyline
      class="cls-26"
@@ -2538,40 +2449,26 @@
   <polyline
      class="cls-25"
      points="648.42 16.84 658.99 16.84 655.47 13.32"
-     id="polyline307" />
-  <polyline
-     class="cls-26"
-     points="553.68 112.13 553.68 122.7 557.21 119.18"
-     id="polyline308" />
-  <line
-     class="cls-35"
-     x1="603.99"
-     y1="190.77"
-     x2="616.68"
-     y2="190.77"
-     id="line308" />
+     id="polyline307"
+     transform="translate(46)" />
   <polyline
      class="cls-26"
      points="615.7 112.13 615.7 122.7 619.22 119.18"
-     id="polyline309" />
-  <line
-     class="cls-35"
-     x1="667.42"
-     y1="190.77"
-     x2="680.1"
-     y2="190.77"
-     id="line309" />
+     id="polyline309"
+     transform="translate(24)" />
   <text
      class="cls-7"
-     transform="translate(593.87 204.12)"
-     id="text309"><tspan
-       x="0"
-       y="0"
+     id="text309"
+     x="617.87"
+     y="166.12"><tspan
+       x="617.87"
+       y="166.12"
        id="tspan309">MultiQC</tspan></text>
   <polyline
      class="cls-26"
      points="680.53 112.13 680.53 122.7 684.05 119.18"
-     id="polyline310" />
+     id="polyline310"
+     transform="translate(28)" />
   <line
      class="cls-16"
      x1="70.06"
@@ -2623,148 +2520,175 @@
      id="line316" />
   <text
      class="cls-7"
-     transform="translate(559.05 174.9)"
-     id="text316"><tspan
-       x="0"
-       y="0"
-       id="tspan316">Samtools </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(559.05 186.65)"
-     id="text317"><tspan
-       x="0"
-       y="0"
-       id="tspan317">flagstat</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(505.82 177.45)"
-     id="text318"><tspan
-       x="0"
-       y="0"
+     id="text318"
+     x="586.80823"
+     y="123.60385"><tspan
+       x="586.80823"
+       y="123.60385"
        id="tspan318">preseq</tspan></text>
   <text
      class="cls-7"
-     transform="translate(621.8 172.89)"
-     id="text319"><tspan
-       x="0"
-       y="0"
-       id="tspan319">Samtools </tspan></text>
+     id="text319"
+     x="623.35388"
+     y="134.89"><tspan
+       sodipodi:role="line"
+       id="tspan1"
+       x="601.79999"
+       y="134.89"
+       style="text-align:center;text-anchor:middle"><tspan
+         x="601.79999"
+         y="134.89"
+         id="tspan319"
+         style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan2"
+       x="601.79999"
+       y="146.64"
+       style="text-align:center;text-anchor:middle">flagstat</tspan></text>
   <text
      class="cls-7"
-     transform="translate(621.8 184.63)"
-     id="text320"><tspan
-       x="0"
-       y="0"
-       id="tspan320">flagstat</tspan></text>
+     id="text319-1"
+     x="691.98035"
+     y="134.83041"
+     style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
+       sodipodi:role="line"
+       id="tspan1-0"
+       x="670.42645"
+       y="134.83041"
+       style="text-align:center;text-anchor:middle"><tspan
+         x="670.42645"
+         y="134.83041"
+         id="tspan319-1"
+         style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan2-8"
+       x="670.42645"
+       y="146.58041"
+       style="text-align:center;text-anchor:middle">flagstat</tspan></text>
   <text
      class="cls-7"
-     transform="translate(657.29 204.12)"
-     id="text321"><tspan
-       x="0"
-       y="0"
+     id="text319-5"
+     x="756.84161"
+     y="134.1418"
+     style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
+       sodipodi:role="line"
+       id="tspan1-9"
+       x="735.28772"
+       y="134.1418"
+       style="text-align:center;text-anchor:middle"><tspan
+         x="735.28772"
+         y="134.1418"
+         id="tspan319-4"
+         style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan2-3"
+       x="735.28772"
+       y="145.8918"
+       style="text-align:center;text-anchor:middle">flagstat</tspan></text>
+  <text
+     class="cls-7"
+     id="text319-4"
+     x="834.84161"
+     y="150.1418"
+     style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
+       sodipodi:role="line"
+       id="tspan1-04"
+       x="813.28772"
+       y="150.1418"
+       style="text-align:center;text-anchor:middle"><tspan
+         x="813.28772"
+         y="150.1418"
+         id="tspan319-6"
+         style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan2-4"
+       x="813.28772"
+       y="161.8918"
+       style="text-align:center;text-anchor:middle">flagstat</tspan></text>
+  <text
+     class="cls-7"
+     id="text319-4-7"
+     x="834.90387"
+     y="124.07953"
+     style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
+       sodipodi:role="line"
+       id="tspan1-04-5"
+       x="813.34998"
+       y="124.07953"
+       style="text-align:center;text-anchor:middle"><tspan
+         x="813.34998"
+         y="124.07953"
+         id="tspan319-6-0"
+         style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
+       sodipodi:role="line"
+       id="tspan2-4-2"
+       x="813.34998"
+       y="135.82953"
+       style="text-align:center;text-anchor:middle">depth</tspan></text>
+  <text
+     class="cls-7"
+     id="text320"
+     x="593.79999"
+     y="146.63"><tspan
+       x="593.79999"
+       y="146.63"
+       id="tspan320" /></text>
+  <text
+     class="cls-7"
+     id="text321"
+     x="685.28998"
+     y="166.12"><tspan
+       x="685.28998"
+       y="166.12"
        id="tspan321">MultiQC</tspan></text>
   <text
      class="cls-7"
-     transform="translate(685.22 172.89)"
-     id="text322"><tspan
-       x="0"
-       y="0"
-       id="tspan322">Samtools </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(685.22 184.63)"
-     id="text323"><tspan
-       x="0"
-       y="0"
-       id="tspan323">flagstat</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(716.49 204.12)"
-     id="text324"><tspan
-       x="0"
-       y="0"
+     id="text324"
+     x="752.48999"
+     y="166.12"><tspan
+       x="752.48999"
+       y="166.12"
        id="tspan324">MultiQC</tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(744.42 172.89)"
-     id="text325"><tspan
-       x="0"
-       y="0"
-       id="tspan325">Samtools </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(744.42 184.63)"
-     id="text326"><tspan
-       x="0"
-       y="0"
-       id="tspan326">flagstat</tspan></text>
   <line
      class="cls-16"
-     x1="807.43"
-     y1="195.04"
-     x2="797.96"
-     y2="195.04"
+     x1="843.42999"
+     y1="153.03999"
+     x2="833.96002"
+     y2="153.03999"
      id="line326" />
-  <text
-     class="cls-7"
-     transform="translate(810.05 196.08)"
-     id="text327"><tspan
-       x="0"
-       y="0"
-       id="tspan327">Samtools </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(810.05 207.82)"
-     id="text328"><tspan
-       x="0"
-       y="0"
-       id="tspan328">flagstat</tspan></text>
   <line
      class="cls-16"
-     x1="807.84"
-     y1="169.98"
-     x2="798.37"
-     y2="169.98"
+     x1="843.84003"
+     y1="127.98001"
+     x2="834.37"
+     y2="127.98001"
      id="line328" />
-  <text
-     class="cls-7"
-     transform="translate(810.45 171.02)"
-     id="text329"><tspan
-       x="0"
-       y="0"
-       id="tspan329">Samtools </tspan></text>
-  <text
-     class="cls-7"
-     transform="translate(810.45 182.76)"
-     id="text330"><tspan
-       x="0"
-       y="0"
-       id="tspan330">depth</tspan></text>
   <line
      class="cls-31"
-     x1="557.84"
-     y1="281.07"
-     x2="871.96"
-     y2="281.07"
+     x1="557.84003"
+     y1="231.07001"
+     x2="871.96002"
+     y2="231.07001"
      id="line330" />
   <line
      class="cls-32"
-     x1="557.84"
-     y1="278.35"
-     x2="869.82"
-     y2="278.32"
+     x1="557.84003"
+     y1="228.35001"
+     x2="869.82001"
+     y2="228.32001"
      id="line331" />
   <line
      class="cls-34"
-     x1="557.84"
-     y1="275.63"
-     x2="866.07"
-     y2="275.6"
+     x1="557.84003"
+     y1="225.63"
+     x2="866.07001"
+     y2="225.60001"
      id="line332" />
   <polyline
      class="cls-25"
      points="854.29 270.88 843.72 270.88 847.25 267.36"
-     id="polyline332" />
+     id="polyline332"
+     transform="translate(0,-50)" />
   <line
      class="cls-31"
      x1="339.61"
@@ -2951,13 +2875,6 @@
      points="363.86 100.83 370.03 92.02 393.23 92.02 399.35 100.75"
      id="polyline357" />
   <line
-     class="cls-16"
-     x1="546.44"
-     y1="173.87"
-     x2="539.34"
-     y2="173.87"
-     id="line357" />
-  <line
      class="cls-28"
      x1="586.52"
      y1="448.6"
@@ -2974,50 +2891,126 @@
   <line
      class="cls-36"
      x1="751.62"
-     y1="282.31"
+     y1="232.31"
      x2="751.62"
-     y2="295"
+     y2="245"
      id="line359" />
   <line
      class="cls-36"
-     x1="685.22"
-     y1="282.31"
-     x2="685.22"
-     y2="295"
+     x1="685.21997"
+     y1="232.31"
+     x2="685.21997"
+     y2="245"
      id="line360" />
   <line
      class="cls-36"
      x1="603.63"
-     y1="282.31"
+     y1="232.31"
      x2="603.63"
-     y2="295"
+     y2="245"
      id="line361" />
   <text
      class="cls-5"
-     transform="translate(592.9 306.52)"
-     id="text361"><tspan
-       x="0"
-       y="0"
+     id="text361"
+     x="592.90002"
+     y="256.51999"><tspan
+       x="592.90002"
+       y="256.51999"
        id="tspan361">Stats</tspan></text>
   <text
      class="cls-45"
-     transform="translate(552.44 266.85)"
-     id="text364"><tspan
-       x="0"
-       y="0"
+     id="text364"
+     x="552.44"
+     y="216.85001"><tspan
+       x="552.44"
+       y="216.85001"
        id="tspan362">st</tspan><tspan
        class="cls-51"
-       x="5.09"
-       y="0"
+       x="557.53003"
+       y="216.85001"
        id="tspan363">a</tspan><tspan
-       x="8.43"
-       y="0"
+       x="560.87"
+       y="216.85001"
        id="tspan364">ts_output</tspan></text>
   <line
      class="cls-36"
-     x1="557.84"
-     y1="271.81"
-     x2="557.84"
-     y2="284.5"
+     x1="557.84003"
+     y1="221.81"
+     x2="557.84003"
+     y2="234.5"
      id="line364" />
+  <line
+     class="cls-32"
+     x1="633.56146"
+     y1="153.78952"
+     x2="633.31885"
+     y2="104.53671"
+     id="line10-3"
+     style="fill:none;stroke:#d55e00;stroke-width:2.75741px;stroke-opacity:1" />
+  <line
+     class="cls-32"
+     x1="700.50049"
+     y1="153.45656"
+     x2="700.25787"
+     y2="104.20375"
+     id="line10-3-8"
+     style="fill:none;stroke:#d55e00;stroke-width:2.75741px;stroke-opacity:1" />
+  <line
+     class="cls-39"
+     x1="771.25073"
+     y1="153.20659"
+     x2="771.0376"
+     y2="103.95489"
+     id="line8-6"
+     style="fill:#f2f2f2;stroke:#ffcc00;stroke-width:2.78689px" />
+  <line
+     class="cls-32"
+     x1="768.14142"
+     y1="153.7292"
+     x2="767.8988"
+     y2="104.4764"
+     id="line10-3-8-0"
+     style="fill:none;stroke:#d55e00;stroke-width:2.75741px;stroke-opacity:1" />
+  <line
+     class="cls-35"
+     x1="627.98999"
+     y1="152.77"
+     x2="640.67999"
+     y2="152.77"
+     id="line308" />
+  <line
+     class="cls-35"
+     x1="695.41998"
+     y1="152.77"
+     x2="708.09998"
+     y2="152.77"
+     id="line309" />
+  <circle
+     class="cls-16"
+     cx="634.71997"
+     cy="100.42"
+     r="7.0500002"
+     id="circle259"
+     style="fill:#ffffff;fill-opacity:1" />
+  <circle
+     class="cls-16"
+     cx="701.84003"
+     cy="100.06"
+     r="7.0500002"
+     id="circle261"
+     style="fill:#ffffff;fill-opacity:1" />
+  <circle
+     class="cls-16"
+     cx="769.34003"
+     cy="99.93"
+     r="7.0500002"
+     id="circle263"
+     style="fill:#f2f2f2;fill-opacity:1" />
+  <line
+     class="cls-35"
+     x1="762.60999"
+     y1="152.77"
+     x2="775.28998"
+     y2="152.77"
+     id="line194" />
 </svg>
