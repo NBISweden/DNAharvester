@@ -2,50 +2,12 @@
 <svg
    id="Layer_1"
    data-name="Layer 1"
-   viewBox="0 0 883.17 454.1"
+   viewBox="0 0 793.70079 1122.5196"
    version="1.1"
-   sodipodi:docname="read-harvester_metromap.svg"
-   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   width="210mm"
+   height="297mm"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
-  <sodipodi:namedview
-     id="namedview364"
-     pagecolor="#ffffff"
-     bordercolor="#000000"
-     borderopacity="0.25"
-     inkscape:showpageshadow="2"
-     inkscape:pageopacity="0.0"
-     inkscape:pagecheckerboard="0"
-     inkscape:deskcolor="#d1d1d1"
-     inkscape:zoom="1.3249068"
-     inkscape:cx="429.84154"
-     inkscape:cy="188.31513"
-     inkscape:window-width="1680"
-     inkscape:window-height="872"
-     inkscape:window-x="249"
-     inkscape:window-y="63"
-     inkscape:window-maximized="0"
-     inkscape:current-layer="Layer_1"
-     showgrid="true">
-    <inkscape:grid
-       id="grid1"
-       units="px"
-       originx="0"
-       originy="0"
-       spacingx="1"
-       spacingy="0.99999999"
-       empcolor="#0099e5"
-       empopacity="0.30196078"
-       color="#0099e5"
-       opacity="0.14902"
-       empspacing="5"
-       dotted="false"
-       gridanglex="30"
-       gridanglez="30"
-       visible="true" />
-  </sodipodi:namedview>
   <defs
      id="defs1">
     <style
@@ -345,11 +307,9 @@
        id="text56"
        x="674.65002"
        y="338.53"><tspan
-         sodipodi:role="line"
          id="tspan36"
          x="674.65002"
          y="338.53" /><tspan
-         sodipodi:role="line"
          id="tspan37"
          x="674.65002"
          y="351.63" /></text>
@@ -373,95 +333,79 @@
   <path
      class="cls-31"
      d="M 857.9519,208.07244 V 127.0905 c 0,-2.63 -24.22725,-21.93112 -26.10725,-23.77112"
-     id="path5"
-     sodipodi:nodetypes="csc" />
+     id="path5" />
   <path
      class="cls-32"
      d="m 860.98664,209.08173 v -82.42224 c -0.01,-2.83 -26.25564,-25.13583 -27.94564,-26.795832"
-     id="path6"
-     sodipodi:nodetypes="ccc" />
+     id="path6" />
   <path
      class="cls-34"
      d="m 864.12919,207.31136 v -81.38068 c 0,-2.83 -27.10204,-26.441182 -28.80204,-28.081182"
-     id="path7"
-     sodipodi:nodetypes="csc" />
+     id="path7" />
   <path
      class="cls-31"
      d="m 857.86266,175.69545 v 78.56893 c 0,2.63 -20.00447,18.3116 -21.88447,20.1516"
      id="path5-3"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#009e73;stroke-width:3px" />
   <path
      class="cls-32"
      d="m 860.95543,178.75824 v 75.98753 c -0.01,2.83 -18.63433,17.97642 -20.32433,19.63642"
      id="path6-5"
-     sodipodi:nodetypes="ccc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px" />
   <path
      class="cls-34"
      d="m 863.8682,180.40698 v 75.54923 c 0,2.83 -20.63548,19.74367 -22.33548,21.38367"
      id="path7-9"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px" />
   <path
      class="cls-32"
      d="m 678.10681,278.54818 0.26507,39.67346"
      id="path6-5-6"
-     sodipodi:nodetypes="cc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px" />
   <path
      class="cls-34"
      d="m 675.47681,277.65648 v 40.56049"
      id="path7-9-7"
-     sodipodi:nodetypes="cc"
      style="fill:none;stroke:#d55e00;stroke-width:3px" />
   <path
      class="cls-34"
      d="m 393.02741,78.466614 h -23.92352 c -2.83,0 -17.43418,17.633137 -19.07418,19.333137"
      id="path7-4"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px" />
   <path
      class="cls-34"
      d="m 375.75174,78.289318 h 55.3546 c 2.83,0 17.43418,17.633137 19.07418,19.333137"
      id="path7-4-1"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-34"
      d="m 392.61971,81.133919 h -22.19109 c -2.83,0 -17.43418,17.633138 -19.07418,19.333141"
      id="path7-4-3"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-opacity:1" />
   <path
      class="cls-34"
      d="m 377.05638,81.387054 h 53.37469 c 2.83,0 17.43418,17.633133 19.07418,19.333136"
      id="path7-4-1-2"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1" />
   <path
      class="cls-34"
      d="m 180.30814,78.427731 h 27.30263 c 2.83,0 17.43418,17.633137 19.07418,19.333137"
      id="path7-4-1-7"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-34"
      d="m 180.08822,82.135293 26.54237,-0.304913 c 2.82981,-0.03251 17.43418,17.63313 19.07418,19.33313"
      id="path7-4-1-2-4"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1" />
   <path
      class="cls-34"
      d="m 196.37332,78.794765 h -27.30263 c -2.83,0 -17.43418,17.633137 -19.07418,19.333135"
      id="path7-4-1-7-8"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-34"
      d="m 196.28833,82.197414 -26.54237,-0.304913 c -2.82981,-0.03251 -17.43418,17.633129 -19.07418,19.333129"
      id="path7-4-1-2-4-5"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1" />
   <line
      class="cls-16"
@@ -511,8 +455,7 @@
      id="polyline20"
      class="cls-34"
      style="fill:none;stroke:#d55e00;stroke-width:3;stroke-dasharray:none"
-     d="m 43.92,98.24 h 157.1256 l 22.55343,-0.01 613.19975,0.230949"
-     sodipodi:nodetypes="cccc" />
+     d="m 43.92,98.24 h 157.1256 l 22.55343,-0.01 613.19975,0.230949" />
   <line
      class="cls-32"
      x1="43.919998"
@@ -608,12 +551,10 @@
      x="254.71344"
      y="310.2189"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan13"
        x="254.71344"
        y="310.2189"
        style="text-align:center;text-anchor:middle">Samtools view</tspan><tspan
-       sodipodi:role="line"
        x="254.71344"
        y="321.9689"
        id="tspan18"
@@ -624,12 +565,10 @@
      x="194.02747"
      y="262.98914"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        x="194.02747"
        y="262.98914"
        id="tspan18-46"
        style="text-align:center;text-anchor:middle">Samtools</tspan><tspan
-       sodipodi:role="line"
        x="194.02747"
        y="274.73914"
        style="text-align:center;text-anchor:middle"
@@ -640,7 +579,6 @@
      x="278.86011"
      y="218.34602"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        x="278.86011"
        y="218.34602"
        style="text-align:center;text-anchor:middle"
@@ -651,7 +589,6 @@
      x="195.31273"
      y="284.79544"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        x="195.31273"
        y="284.79544"
        style="text-align:center;text-anchor:middle"
@@ -662,12 +599,10 @@
      x="129.21446"
      y="310.34393"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        x="129.21446"
        y="310.34393"
        style="text-align:center;text-anchor:middle"
        id="tspan47">bedtools</tspan><tspan
-       sodipodi:role="line"
        x="129.21446"
        y="322.09393"
        style="text-align:center;text-anchor:middle"
@@ -678,12 +613,10 @@
      x="278.0015"
      y="191.23157"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        x="278.0015"
        y="191.23157"
        id="tspan18-46-0"
        style="text-align:center;text-anchor:middle">Samtools</tspan><tspan
-       sodipodi:role="line"
        x="278.0015"
        y="202.98157"
        style="text-align:center;text-anchor:middle"
@@ -694,12 +627,10 @@
      x="335.05637"
      y="311.42596"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan13-8"
        x="335.05637"
        y="311.42596"
        style="text-align:center;text-anchor:middle">Samtools view</tspan><tspan
-       sodipodi:role="line"
        x="335.05637"
        y="323.17596"
        id="tspan18-4"
@@ -773,9 +704,9 @@
        id="path41" />
   </g>
   <circle
-     cx="40.72"
-     cy="99.64"
-     r="5.64"
+     cx="40.720001"
+     cy="99.639999"
+     r="5.6399999"
      id="circle41" />
   <path
      d="M 28.734941,112.58295 H 6.5549405 v -6.47 H 28.734941 Z M 6.5549405,81.362946 H 22.124941 v 6.88 c 0,0.37 0.3,0.67 0.67,0.67 h 5.94 v 3.37 H 6.5549405 Z m 24.3500005,10.92 h -0.82 v -3.97 c 0,0 0,-0.05 0,-0.07 0,-0.16 -0.05,-0.31 -0.16,-0.44 l -6.61,-7.55 c 0,0 0,0 0,0 -0.04,-0.04 -0.08,-0.08 -0.14,-0.11 -0.01,-0.01 -0.03,-0.02 -0.04,-0.03 -0.04,-0.03 -0.08,-0.04 -0.13,-0.06 -0.01,0 -0.02,0 -0.04,-0.01 -0.05,-0.01 -0.1,-0.02 -0.15,-0.02 H 6.5549405 c -0.74,0 -1.34,0.6 -1.34,1.34 v 10.92 h -0.82 c -1.06,0 -1.92,0.86 -1.92,1.92 v 9.990004 c 0,1.06 0.86,1.92 1.92,1.92 h 0.82 v 6.84 c 0,0.74 0.6,1.34 1.34,1.34 H 28.734941 c 0.74,0 1.34,-0.6 1.34,-1.34 v -6.84 h 0.82 c 1.06,0 1.92,-0.86 1.92,-1.92 v -9.990004 c 0,-1.06 -0.86,-1.92 -1.92,-1.92 z"
@@ -895,7 +826,6 @@
        style="font-weight:700;font-size:5.33333px;font-family:Verdana-Bold, Verdana;fill:#ffffff;fill-opacity:1"
        x="506.36295"
        y="355.27496"><tspan
-         sodipodi:role="line"
          id="tspan40"
          x="495.55173"
          y="355.27496"
@@ -904,7 +834,6 @@
            y="355.27496"
            id="tspan54-9"
            style="font-size:5.33333px;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1">haploid</tspan></tspan><tspan
-         sodipodi:role="line"
          id="tspan41"
          x="495.55173"
          y="361.94162"
@@ -915,7 +844,6 @@
        style="font-weight:700;font-size:5.33333px;font-family:Verdana-Bold, Verdana;fill:#ffffff;fill-opacity:1"
        x="-2.4373074"
        y="59.995415"><tspan
-         sodipodi:role="line"
          id="tspan41-3"
          x="-2.4373071"
          y="59.995415"
@@ -924,7 +852,6 @@
    y="59.995415"
    id="tspan54-9-4"
    style="font-size:5.33333px;text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1" /></tspan><tspan
-         sodipodi:role="line"
          x="-2.4373078"
          y="66.662079"
          style="text-align:center;text-anchor:middle"
@@ -934,8 +861,7 @@
      class="cls-15"
      d="M 835.09,99.403643 V 28.88 c 0,-3.32 -3.73,-7.05 -7.05,-7.05 h -7.05"
      id="path58"
-     style="stroke-width:3;stroke-dasharray:6, 3;stroke-dashoffset:0"
-     sodipodi:nodetypes="cssc" />
+     style="stroke-width:3;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <line
      class="cls-15"
      x1="693.09998"
@@ -958,34 +884,36 @@
   <text
      class="cls-7"
      id="text59"
-     transform="translate(653.26 382.36)"><tspan
-       x="0"
-       y="0"
+     x="653.26001"
+     y="382.35999"><tspan
+       x="653.26001"
+       y="382.35999"
        id="tspan59">Illumina reads: USER treatment</tspan></text>
   <line
      class="cls-17"
-     x1="587.3"
+     x1="587.29999"
      y1="406.28"
-     x2="648.07"
+     x2="648.07001"
      y2="406.28"
      id="line59" />
   <text
      class="cls-7"
-     transform="translate(652.87 409.71)"
-     id="text61"><tspan
+     id="text61"
+     x="652.87"
+     y="409.70999"><tspan
        class="cls-48"
-       x="0"
-       y="0"
+       x="652.87"
+       y="409.70999"
        id="tspan60">R</tspan><tspan
-       x="6.32"
-       y="0"
+       x="659.19"
+       y="409.70999"
        id="tspan61">eference</tspan></text>
   <line
      class="cls-15"
-     x1="586.52"
-     y1="434.49"
-     x2="647.29"
-     y2="434.49"
+     x1="586.52002"
+     y1="434.48999"
+     x2="647.28998"
+     y2="434.48999"
      id="line61" />
   <text
      class="cls-7"
@@ -1021,143 +949,155 @@
      style="font-size:9.4px;font-family:Verdana, Verdana">optional step</text>
   <text
      class="cls-7"
-     transform="translate(653.6 396.46)"
-     id="text68"><tspan
-       x="0"
-       y="0"
+     id="text68"
+     x="653.59998"
+     y="396.45999"><tspan
+       x="653.59998"
+       y="396.45999"
        id="tspan68">Illumina reads: non-USER treatment</tspan></text>
   <line
      class="cls-14"
-     x1="587.3"
+     x1="587.29999"
      y1="420.37"
-     x2="648.07"
+     x2="648.07001"
      y2="420.37"
      id="line68" />
   <text
      class="cls-7"
-     transform="translate(652.87 423.81)"
-     id="text72"><tspan
+     id="text72"
+     x="652.87"
+     y="423.81"><tspan
        class="cls-48"
-       x="0"
-       y="0"
+       x="652.87"
+       y="423.81"
        id="tspan69">R</tspan><tspan
-       x="6.32"
-       y="0"
+       x="659.19"
+       y="423.81"
        id="tspan70">eference + dec</tspan><tspan
        class="cls-49"
-       x="77.5"
-       y="0"
+       x="730.37"
+       y="423.81"
        id="tspan71">o</tspan><tspan
-       x="83.13"
-       y="0"
+       x="736"
+       y="423.81"
        id="tspan72">y sequence</tspan></text>
   <circle
-     cx="365.51"
-     cy="403.49"
-     r="5.64"
+     cx="365.51001"
+     cy="403.48999"
+     r="5.6399999"
      id="circle72" />
   <text
      class="cls-6"
-     transform="translate(376.19 406.6)"
-     id="text73"><tspan
-       x="0"
-       y="0"
+     id="text73"
+     x="376.19"
+     y="406.60001"><tspan
+       x="376.19"
+       y="406.60001"
        id="tspan73">Start</tspan></text>
   <text
      class="cls-7"
-     transform="translate(376.44 425.07)"
-     id="text74"><tspan
-       x="0"
-       y="0"
+     id="text74"
+     x="376.44"
+     y="425.07001"><tspan
+       x="376.44"
+       y="425.07001"
        id="tspan74">End</tspan></text>
   <text
      class="cls-7"
-     transform="translate(376.44,436.82)"
-     id="text75"><tspan
-       x="0"
-       y="0"
+     id="text75"
+     x="376.44"
+     y="436.82001"><tspan
+       x="376.44"
+       y="436.82001"
        id="tspan75">step</tspan></text>
   <line
      class="cls-37"
      x1="367.62"
-     y1="423.92"
+     y1="423.92001"
      x2="367.62"
-     y2="433.79"
+     y2="433.79001"
      id="line75" />
   <line
      class="cls-23"
      x1="359.59"
-     y1="428.68"
+     y1="428.67999"
      x2="368.59"
-     y2="428.68"
+     y2="428.67999"
      id="line76" />
   <circle
      class="cls-3"
      cx="503.63"
-     cy="409.2"
-     r="7.05"
+     cy="409.20001"
+     r="7.0500002"
      id="circle76" />
   <circle
      class="cls-16"
      cx="503.63"
-     cy="409.2"
-     r="7.05"
+     cy="409.20001"
+     r="7.0500002"
      id="circle77" />
   <text
      class="cls-7"
      id="text77"
-     transform="translate(515.26 401.49)"><tspan
-       x="0"
-       y="0"
+     x="515.26001"
+     y="401.48999"><tspan
+       x="515.26001"
+       y="401.48999"
        id="tspan77">Multi-output</tspan></text>
   <text
      class="cls-7"
      id="text78"
-     transform="translate(515.26 413.24)"><tspan
-       x="0"
-       y="0"
+     x="515.26001"
+     y="413.23999"><tspan
+       x="515.26001"
+       y="413.23999"
        id="tspan78">intermediate</tspan></text>
   <text
      class="cls-7"
      id="text79"
-     transform="translate(515.26 424.98)"><tspan
-       x="0"
-       y="0"
+     x="515.26001"
+     y="424.98001"><tspan
+       x="515.26001"
+       y="424.98001"
        id="tspan79">step</tspan></text>
   <text
      class="cls-7"
-     transform="translate(427.08 401.49)"
-     id="text80"><tspan
-       x="0"
-       y="0"
+     id="text80"
+     x="427.07999"
+     y="401.48999"><tspan
+       x="427.07999"
+       y="401.48999"
        id="tspan80">Single output</tspan></text>
   <text
      class="cls-7"
-     transform="translate(427.08,413.24)"
-     id="text81"><tspan
-       x="0"
-       y="0"
+     id="text81"
+     x="427.07999"
+     y="413.23999"><tspan
+       x="427.07999"
+       y="413.23999"
        id="tspan81">intermediate</tspan></text>
   <text
      class="cls-7"
-     transform="translate(427.08,424.98)"
-     id="text82"><tspan
-       x="0"
-       y="0"
+     id="text82"
+     x="427.07999"
+     y="424.98001"><tspan
+       x="427.07999"
+       y="424.98001"
        id="tspan82">step</tspan></text>
   <text
      class="cls-10"
-     transform="translate(354.31 383.86)"
-     id="text83"><tspan
-       x="0"
-       y="0"
+     id="text83"
+     x="354.31"
+     y="383.85999"><tspan
+       x="354.31"
+       y="383.85999"
        id="tspan83">Legend</tspan></text>
   <line
      class="cls-27"
-     x1="587.01"
-     y1="380.07"
-     x2="647.78"
-     y2="380.07"
+     x1="587.01001"
+     y1="380.07001"
+     x2="647.78003"
+     y2="380.07001"
      id="line88" />
   <line
      class="cls-27"
@@ -1166,13 +1106,13 @@
      x2="555.69495"
      y2="435.15588"
      id="line88-4"
-     style="fill:#000000;stroke:#000000;stroke-width:3;stroke-opacity:1;stroke-dasharray:6,3;stroke-dashoffset:0" />
+     style="fill:#000000;stroke:#000000;stroke-width:3;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1" />
   <line
      class="cls-29"
-     x1="587.01"
-     y1="392.73"
-     x2="647.78"
-     y2="392.73"
+     x1="587.01001"
+     y1="392.73001"
+     x2="647.78003"
+     y2="392.73001"
      id="line89" />
   <text
      class="cls-7"
@@ -1216,7 +1156,6 @@
      style="font-size:9.4px;font-family:Verdana, Verdana"
      x="374.85425"
      y="62.496567"><tspan
-       sodipodi:role="line"
        id="tspan9"
        x="350.12418"
        y="62.496567"
@@ -1225,39 +1164,34 @@
          y="62.496567"
          id="tspan93-1"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan10"
        x="350.12418"
        y="74.246567"
        style="text-align:center;text-anchor:middle">subsample</tspan></text>
   <text
      class="cls-7"
-     transform="translate(311.54,69.79)"
      id="text95"
-     x="24.730078"
-     y="0"><tspan
-       sodipodi:role="line"
+     x="336.27008"
+     y="69.790001"><tspan
        id="tspan4"
        x="0"
        y="0"><tspan
-         x="0"
-         y="0"
+         x="311.54001"
+         y="69.790001"
          id="tspan94"
          style="text-align:center;text-anchor:middle" /></tspan><tspan
-       sodipodi:role="line"
        id="tspan5"
        x="0"
        y="11.749999"><tspan
-         x="0"
-         y="0"
+         x="311.54001"
+         y="69.790001"
          style="text-align:center;text-anchor:middle"
          id="tspan6" /></tspan><tspan
-       sodipodi:role="line"
        x="0"
        y="11.749999"
        id="tspan7"><tspan
-         x="0"
-         y="0"
+         x="311.54001"
+         y="69.790001"
          style="text-align:center;text-anchor:middle"
          id="tspan8" /></tspan></text>
   <text
@@ -1274,19 +1208,15 @@
      x="430.745"
      y="44.264511"
      style="text-align:center;text-anchor:middle"><tspan
-       sodipodi:role="line"
        id="tspan11"
        x="430.745"
        y="44.264511">select-</tspan><tspan
-       sodipodi:role="line"
        id="tspan12"
        x="430.745"
        y="56.014511">readlength-</tspan><tspan
-       sodipodi:role="line"
        x="430.745"
        y="67.764511"
        id="tspan15">cutoff</tspan><tspan
-       sodipodi:role="line"
        x="430.745"
        y="79.514511"
        id="tspan14" /></text>
@@ -1452,7 +1382,6 @@
      x="84.922981"
      y="358.93121"
      style="font-size:6.58px;font-family:Verdana, Verdana;opacity:0.5"><tspan
-       sodipodi:role="line"
        id="tspan53"
        x="84.922981"
        y="358.93121"><tspan
@@ -1560,8 +1489,7 @@
      id="polyline20-8"
      class="cls-34"
      style="fill:none;stroke:#d55e00;stroke-width:3;stroke-dasharray:none"
-     d="m 681.13713,277.64209 h 32.63843 l 4.68485,-0.01 h 124.52"
-     sodipodi:nodetypes="cccc" />
+     d="m 681.13713,277.64209 h 32.63843 l 4.68485,-0.01 h 124.52" />
   <line
      class="cls-32"
      x1="679.95782"
@@ -1596,7 +1524,7 @@
   <line
      class="cls-16"
      x1="417.66"
-     y1="402.76"
+     y1="402.76001"
      x2="417.66"
      y2="409.81"
      id="line158" />
@@ -1693,10 +1621,11 @@
        id="tspan170">dup</tspan></text>
   <text
      class="cls-4"
-     transform="translate(780.31 336.56)"
-     id="text171"><tspan
-       x="0"
-       y="0"
+     id="text171"
+     x="780.31"
+     y="336.56"><tspan
+       x="780.31"
+       y="336.56"
        id="tspan171" /></text>
   <text
      class="cls-5"
@@ -1722,7 +1651,6 @@
      x="621.54999"
      y="328.87292"
      style="font-size:9.4px;font-family:Verdana, Verdana;fill:#231f20"><tspan
-       sodipodi:role="line"
        id="tspan43"
        x="606.36908"
        y="328.87292"
@@ -1731,7 +1659,6 @@
          y="328.87292"
          id="tspan173-6"
          style="text-align:center;text-anchor:middle;fill:#ff0000">plink</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan45"
        x="606.36908"
        y="340.62292"
@@ -2397,7 +2324,6 @@
      x="477.80569"
      y="65.760788"
      style="text-align:center;text-anchor:middle"><tspan
-       sodipodi:role="line"
        id="tspan16"
        x="462.9277"
        y="65.760788"><tspan
@@ -2405,15 +2331,12 @@
          y="65.760788"
          id="tspan292"
          style="text-align:center;text-anchor:middle">rm-</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan17"
        x="462.9277"
        y="77.510788">short-</tspan><tspan
-       sodipodi:role="line"
        x="462.9277"
        y="89.260788"
        id="tspan35">reads</tspan><tspan
-       sodipodi:role="line"
        x="462.9277"
        y="101.01079"
        id="tspan19" /></text>
@@ -2426,62 +2349,58 @@
      class="cls-31"
      d="m 250.86571,207.55739 v -80.98194 c 0,-2.63 24.22725,-21.93112 26.10725,-23.77112"
      id="path5-0"
-     sodipodi:nodetypes="csc"
-     style="fill:none;stroke:#009e73;stroke-width:3px;stroke-dasharray:6,3;stroke-dashoffset:0" />
+     style="fill:none;stroke:#009e73;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-32"
      d="m 244.68734,207.35037 v -82.42224 c 0.01,-2.83 24.32658,-22.9262 26.01658,-24.5862"
      id="path6-8"
-     sodipodi:nodetypes="ccc"
-     style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6,3;stroke-dashoffset:0" />
+     style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-34"
      d="M 247.86857,207.11008 V 125.7294 c 0,-2.83 27.28521,-25.10633 28.98521,-26.746333"
      id="path7-5"
-     sodipodi:nodetypes="csc"
-     style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6,3;stroke-dashoffset:0" />
+     style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-32"
      d="m 323.7958,100.79623 v 82.42224 c -0.01,2.83 -24.32658,22.9262 -26.01658,24.5862"
      id="path6-8-5"
-     sodipodi:nodetypes="ccc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-34"
      d="m 320.98932,100.28702 v 81.38069 c 0,2.83 -27.28521,25.10633 -28.98521,26.74633"
      id="path7-5-0"
-     sodipodi:nodetypes="csc"
      style="fill:none;stroke:#d55e00;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <text
      class="cls-7"
-     transform="translate(28.96 121.56)"
-     id="text295"><tspan
+     id="text295"
+     x="28.959999"
+     y="121.56"><tspan
        class="cls-40"
-       x="0"
-       y="0"
+       x="28.959999"
+       y="121.56"
        id="tspan294">F</tspan><tspan
-       x="4.94"
-       y="0"
+       x="33.900002"
+       y="121.56"
        id="tspan295">astQC</tspan></text>
   <line
      class="cls-34"
-     x1="71.44"
-     y1="135.74"
-     x2="71.44"
+     x1="71.440002"
+     y1="135.74001"
+     x2="71.440002"
      y2="97.75"
      id="line295" />
   <line
      class="cls-32"
-     x1="74.24"
-     y1="135.32"
-     x2="74.1"
-     y2="99.64"
+     x1="74.239998"
+     y1="135.32001"
+     x2="74.099998"
+     y2="99.639999"
      id="line296" />
   <line
      class="cls-35"
-     x1="79.03"
+     x1="79.029999"
      y1="135.47"
-     x2="66.35"
+     x2="66.349998"
      y2="135.47"
      id="line297" />
   <polyline
@@ -2491,10 +2410,11 @@
      transform="translate(0,-5.5956044)" />
   <text
      class="cls-7"
-     transform="translate(54.61 146.79)"
-     id="text297"><tspan
-       x="0"
-       y="0"
+     id="text297"
+     x="54.610001"
+     y="146.78999"><tspan
+       x="54.610001"
+       y="146.78999"
        id="tspan297">MultiQC</tspan></text>
   <text
      class="cls-7"
@@ -2559,7 +2479,7 @@
      x2="836.50079"
      y2="97.991699"
      id="line305"
-     style="stroke-width:3;stroke-dasharray:6,3;stroke-dashoffset:0" />
+     style="stroke-width:3;stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <line
      class="cls-35"
      x1="784.18872"
@@ -2579,19 +2499,16 @@
      class="cls-31"
      d="m 677.27368,276.86587 -53.80054,47.1115"
      id="path5-3-7-4"
-     sodipodi:nodetypes="cc"
      style="fill:none;stroke:#009e73;stroke-width:3px" />
   <path
      class="cls-32"
      d="m 676.04014,273.90578 -54.36528,47.26991"
      id="path6-5-6-1"
-     sodipodi:nodetypes="cc"
      style="fill:none;stroke:#ffcc00;stroke-width:3px" />
   <path
      class="cls-34"
      d="m 674.97209,271.34233 -55.62804,47.86554"
      id="path7-9-7-2"
-     sodipodi:nodetypes="cc"
      style="fill:none;stroke:#d55e00;stroke-width:3px" />
   <line
      class="cls-35"
@@ -2663,9 +2580,9 @@
      style="fill:none;stroke:#000000;stroke-width:1.42px;stroke-linecap:round" />
   <line
      class="cls-16"
-     x1="70.06"
+     x1="70.059998"
      y1="118.68"
-     x2="63.01"
+     x2="63.009998"
      y2="118.68"
      id="line310" />
   <text
@@ -2785,7 +2702,6 @@
      id="text319"
      x="655.88245"
      y="153.82994"><tspan
-       sodipodi:role="line"
        id="tspan1"
        x="634.32855"
        y="153.82994"
@@ -2794,7 +2710,6 @@
          y="153.82994"
          id="tspan319"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2"
        x="634.32855"
        y="165.57994"
@@ -2805,7 +2720,6 @@
      x="668.42651"
      y="125.52931"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan1-0"
        x="646.87262"
        y="125.52931"
@@ -2814,7 +2728,6 @@
          y="125.52931"
          id="tspan319-1"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2-8"
        x="646.87262"
        y="137.27931"
@@ -2825,7 +2738,6 @@
      x="732.78229"
      y="125.79234"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan1-9"
        x="711.22839"
        y="125.79234"
@@ -2834,7 +2746,6 @@
          y="125.79234"
          id="tspan319-4"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2-3"
        x="711.22839"
        y="137.54234"
@@ -2845,7 +2756,6 @@
      x="798.03326"
      y="122.17074"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan1-04"
        x="776.47937"
        y="122.17074"
@@ -2854,7 +2764,6 @@
          y="122.17074"
          id="tspan319-6"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2-4"
        x="776.47937"
        y="133.92073"
@@ -2865,7 +2774,6 @@
      x="855.42322"
      y="140.23996"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan1-04-5"
        x="833.86932"
        y="140.23996"
@@ -2874,7 +2782,6 @@
          y="140.23996"
          id="tspan319-6-0"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2-4-2"
        x="833.86932"
        y="151.98996"
@@ -2954,8 +2861,7 @@
      class="cls-33"
      d="m 173.62734,252.51633 h 66.21 c 0,0 3.61,-0.4 5.83,-2.47 1.98,-1.85 2.59,-5.35 2.59,-5.95 v -31.94317"
      id="path339-90"
-     style="fill:none;stroke:#cc79a7;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1"
-     sodipodi:nodetypes="cccsc" />
+     style="fill:none;stroke:#cc79a7;stroke-width:3px;stroke-dasharray:6, 3;stroke-dashoffset:0;stroke-opacity:1" />
   <circle
      cx="252.50735"
      cy="-168.88506"
@@ -3027,14 +2933,12 @@
      class="cls-33"
      d="m 97.95,36.73 h 66.21 c 0,0 3.61,0.4 5.83,2.47 1.98,1.85 2.59,5.35 2.59,5.95 v 31.943168"
      id="path339"
-     style="stroke-dasharray:6, 3;stroke-dashoffset:0"
-     sodipodi:nodetypes="cccsc" />
+     style="stroke-dasharray:6, 3;stroke-dashoffset:0" />
   <path
      class="cls-33"
      d="M 276.81766,105.46447 V 39.254468 c 0,0 -0.4,-3.61 -2.47,-5.83 -1.85,-1.98 -5.35,-2.59 -5.95,-2.59 H 236.4545"
      id="path339-9"
-     style="fill:none;stroke:#009e73;stroke-width:3px;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-     sodipodi:nodetypes="cccsc" />
+     style="fill:none;stroke:#009e73;stroke-width:3px;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
   <circle
      cx="97.740013"
      cy="36.419998"
@@ -3054,17 +2958,18 @@
      style="fill:#ffffff;fill-opacity:1" />
   <line
      class="cls-28"
-     x1="586.52"
-     y1="448.6"
-     x2="647.29"
-     y2="448.6"
+     x1="586.52002"
+     y1="448.60001"
+     x2="647.28998"
+     y2="448.60001"
      id="line358" />
   <text
      class="cls-7"
-     transform="translate(653.01 451.25)"
-     id="text358"><tspan
-       x="0"
-       y="0"
+     id="text358"
+     x="653.01001"
+     y="451.25"><tspan
+       x="653.01001"
+       y="451.25"
        id="tspan358">Kraken database</tspan></text>
   <line
      class="cls-34"
@@ -3134,7 +3039,6 @@
      x="373.81418"
      y="190.03076"
      style="font-size:9.4px;font-family:Verdana, Verdana;fill:#231f20"><tspan
-       sodipodi:role="line"
        id="tspan49-5"
        x="373.81418"
        y="190.03076"
@@ -3173,7 +3077,6 @@
      x="151.80151"
      y="152.61063"
      style="font-size:9.4px;font-family:Verdana, Verdana;fill:#231f20"><tspan
-       sodipodi:role="line"
        id="tspan49-5-0"
        x="151.80151"
        y="152.61063"
@@ -3208,7 +3111,6 @@
      x="782.36786"
      y="189.73285"
      style="font-size:9.4px;font-family:Verdana, Verdana;fill:#231f20"><tspan
-       sodipodi:role="line"
        id="tspan49-5-3"
        x="782.36786"
        y="189.73285"
@@ -3277,7 +3179,6 @@
      x="254.51373"
      y="351.75748"
      style="font-size:9.4px;font-family:Verdana, Verdana"><tspan
-       sodipodi:role="line"
        id="tspan1-0-8"
        x="232.95984"
        y="351.75748"
@@ -3286,7 +3187,6 @@
          y="351.75748"
          id="tspan319-1-4"
          style="text-align:center;text-anchor:middle">Samtools</tspan></tspan><tspan
-       sodipodi:role="line"
        id="tspan2-8-5"
        x="232.95984"
        y="363.50748"
