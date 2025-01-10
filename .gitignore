@@ -1,8 +1,9 @@
 .nextflow*
-read-harvester/work/*
-read-harvester/results/*
-read-harvester/bin/AMBER*
-read-harvester/assets/test-*.config
-read-harvester/assets/samplesheet-*.csv
-read-harvester/assets/samplesheet_*.csv
-!read-harvester/assets/samplesheet-example.csv
+.nf-core*
+work/*
+results/*
+bin/AMBER*
+assets/test-*.config
+assets/samplesheet-*.csv
+assets/samplesheet_*.csv
+!assets/samplesheet-example.csv

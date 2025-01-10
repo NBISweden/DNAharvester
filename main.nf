@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-// Analysis script for Read harvester pipeline
+// Analysis script for DNAharvester pipeline
 
 nextflow.enable.dsl = 2
 
@@ -27,9 +27,9 @@ workflow {
         error "Unrecognised workflow step in $params.steps ( $recognized_workflow_stages )"
     }
 
-    // The primary workflow for the read harvester pipeline
+    // The primary workflow for the DNAharvester pipeline
     log.info("""
-    Running Read Harvester.
+    Running DNAharvester.
     """)
 
     // Read in data and create channels
@@ -148,7 +148,7 @@ workflow {
 workflow.onComplete {
     if( workflow.success ){
         log.info("""
-        Thank you for using Read Harvester.
+        Thank you for using DNAharvester.
 
         Results are located in the folder: $params.outdir
         """)

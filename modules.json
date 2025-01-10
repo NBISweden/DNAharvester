@@ -1,6 +1,6 @@
 {
-  "name": "Read Harvester pipeline",
-  "homePage": "https://github.com/NBISweden/LTS-L_Dalen_2302/read-harvester",
+  "name": "DNAharvester pipeline",
+  "homePage": "https://github.com/NBISweden/LTS-L_Dalen_2302",
   "repos": {
     "https://github.com/nf-core/modules.git": {
       "modules": {

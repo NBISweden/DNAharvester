@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://raw.githubusercontent.com/Read Harvester pipeline/master/nextflow_schema.json",
-  "title": "Read Harvester pipeline pipeline parameters",
+  "$id": "https://raw.githubusercontent.com/NBISweden/LTS-L_Dalen_2302/refs/heads/main/nextflow_schema.json",
+  "title": "DNAharvester pipeline pipeline parameters",
   "description": "A novel pipeline for processing and analyzing extremely degraded DNA",
   "type": "object",
   "definitions": {

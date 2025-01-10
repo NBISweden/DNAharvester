@@ -2,6 +2,8 @@
 
 
 """
+Author: Verena Kutschera
+
 Creates an input file listing a bam file name for AMBER to
 as input in a Nextflow pipeline, i.e. without file path.
 
