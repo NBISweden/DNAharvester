@@ -56,7 +56,7 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_MQ_FILTERED_BAM.out.versions)
 
     // rm_short_reads_bam
-    if (params.read_len_cutoff == "auto") {
+    if (params.readlength == "auto") {
 
         ch_flagstat_rm_short_reads_bam           = rm_short_reads_bam.join(rm_short_reads_bam_index)
 
@@ -100,14 +100,15 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_MERGED_BAM_LIB.out.versions)
 
     // PRESEQ
-    ch_preseq_merged_bam_lib_files           = merged_bam_lib.join(merged_bam_lib_index)
+    if (params.preseq == true || params.preseq == 'true') {
+        ch_preseq_merged_bam_lib_files           = merged_bam_lib.join(merged_bam_lib_index)
 
-    PRESEQ ( ch_preseq_merged_bam_lib_files )
-    ch_versions                              = ch_versions.mix(PRESEQ.out.versions)
+        PRESEQ ( ch_preseq_merged_bam_lib_files )
+        ch_versions                              = ch_versions.mix(PRESEQ.out.versions)
 
-    PLOT_PRESEQ ( PRESEQ.out.preseq_txt )
-    ch_versions                              = ch_versions.mix(PLOT_PRESEQ.out.versions)
-
+        PLOT_PRESEQ ( PRESEQ.out.preseq_txt )
+        ch_versions                              = ch_versions.mix(PLOT_PRESEQ.out.versions)
+    }
     // dedup_lib
     ch_flagstat_dedup_lib                    = dedup_lib.join(dedup_lib_index)
 
@@ -168,7 +169,7 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
 
     emit:
-    multiqc_rm_short_reads_report            = params.read_len_cutoff == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty() // channel: [ val(meta), path(report) ]
+    multiqc_rm_short_reads_report            = params.readlength == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty()      // channel: [ val(meta), path(report) ]
     multiqc_mq_filtered_report               = MULTIQC_MQ_FILTERED_BAM.out.report.toList()                                                         // channel: [ val(meta), path(report) ]
     multiqc_merged_bam_lib_report            = MULTIQC_MERGED_BAM_LIB.out.report.toList()                                                          // channel: [ val(meta), path(report) ]
     multiqc_dedup_lib_report                 = MULTIQC_DEDUP_LIB.out.report.toList()                                                               // channel: [ val(meta), path(report) ]
@@ -176,7 +177,7 @@ workflow PROCESSED_BAM_QC {
     multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
     dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
-    preseq_txt                               = PRESEQ.out.preseq_txt                                                                               // channel: [ val(meta), path(preseq_txt) ]
-    preseq_plot                              = PLOT_PRESEQ.out.preseq_plot                                                                         // channel: [ val(meta), path(preseq_plot) ]
+    preseq_txt                               = params.preseq == true ? PRESEQ.out.preseq_txt : Channel.empty()                                     // channel: [ val(meta), path(preseq_txt) ]
+    preseq_plot                              = params.preseq == true ? PLOT_PRESEQ.out.preseq_plot : Channel.empty()                               // channel: [ val(meta), path(preseq_plot) ]
     versions                                 = ch_versions                                                                                         // channel: [ versions.yml ]
 }
