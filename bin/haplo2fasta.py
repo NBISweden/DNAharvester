@@ -5,6 +5,9 @@ import gzip
 import pandas as pd
 
 """
+Author: Tom van der Valk
+Script modifications: Verena Kutschera
+
 This script parses a *.haplo.gz file produced with ANGSD 
 doHaploCall and converts it to FASTA format, filling any 
 missing sites with "N". 

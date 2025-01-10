@@ -1,4 +1,4 @@
-name: read-harvester
+name: DNAharvester
 channels:
     - conda-forge
     - bioconda
