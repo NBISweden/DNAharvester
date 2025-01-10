@@ -23,7 +23,7 @@ process PRESEQ {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    preseq lc_extrap -B -o ${prefix}_preseq.txt ${bam}
+    preseq lc_extrap -B $args -o ${prefix}_preseq.txt ${bam}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
