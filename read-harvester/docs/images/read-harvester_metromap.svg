@@ -23,10 +23,10 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="true"
-     inkscape:zoom="1.2316035"
-     inkscape:cx="388.51788"
-     inkscape:cy="317.06632"
-     inkscape:window-width="1520"
+     inkscape:zoom="1.6290957"
+     inkscape:cx="388.25222"
+     inkscape:cy="317.04707"
+     inkscape:window-width="1512"
      inkscape:window-height="916"
      inkscape:window-x="228"
      inkscape:window-y="25"
@@ -1058,18 +1058,6 @@
      id="line89" />
   <text
      class="cls-7"
-     id="text90"
-     x="632.98199"
-     y="139.49513"><tspan
-       class="cls-40"
-       x="632.98199"
-       y="139.49513"
-       id="tspan89">F</tspan><tspan
-       x="637.922"
-       y="139.49513"
-       id="tspan90">astQC</tspan></text>
-  <text
-     class="cls-7"
      id="text91"
      x="628.06232"
      y="127.33041"><tspan
@@ -1088,9 +1076,9 @@
      class="cls-7"
      id="text93"
      x="633.09027"
-     y="149.38437"><tspan
+     y="145.38437"><tspan
        x="633.09027"
-       y="149.38437"
+       y="145.38437"
        id="tspan93">Samtools flagstat</tspan></text>
   <text
      class="cls-7"
@@ -2277,17 +2265,10 @@
      style="fill:none;stroke:#000000;stroke-width:2.83px" />
   <line
      class="cls-16"
-     x1="629.33197"
-     y1="136.82513"
-     x2="619.862"
-     y2="136.82513"
-     id="line312" />
-  <line
-     class="cls-16"
      x1="629.43671"
-     y1="146.05031"
+     y1="142.05031"
      x2="619.96674"
-     y2="146.05031"
+     y2="142.05031"
      id="line312-6"
      style="fill:none;stroke:#000000;stroke-width:2.83px" />
   <line
