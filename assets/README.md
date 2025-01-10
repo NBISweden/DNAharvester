@@ -1,0 +1,1 @@
+Folder with custom configuration files and samplesheets for different runs of the pipeline

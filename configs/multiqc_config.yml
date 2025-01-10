@@ -1,4 +1,4 @@
-title: "Read harvester pipeline MultiQC report"
+title: "DNAharvester pipeline MultiQC report"
 
 run_modules:
     - fastp

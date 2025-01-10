@@ -3,7 +3,7 @@
 
 """Provide a command line tool to validate and transform tabular samplesheets."""
 """From https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/bin/check_samplesheet.py"""
-
+"""Modified by Verena Kutschera"""
 
 import argparse
 import csv

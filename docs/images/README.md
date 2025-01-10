@@ -3,7 +3,7 @@
 input_check: done
 fastq_processing: done
 mapping: done
-competitive_mapping: in progress
+competitive_mapping: done
 processed_fastq_raw_bam_qc: done
 bam_processing: done
 processed_bam_qc: done
