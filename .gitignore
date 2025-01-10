@@ -5,3 +5,4 @@ read-harvester/bin/AMBER*
 read-harvester/assets/test-*.config
 read-harvester/assets/samplesheet-*.csv
 read-harvester/assets/samplesheet_*.csv
+!read-harvester/assets/samplesheet-example.csv
