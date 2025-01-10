@@ -5,8 +5,18 @@
 from sys import argv
 import matplotlib.pyplot as plt
 
+if len(argv) != 4:
+    print("Usage: plot_preseq.py <preseq_output_file> <steps_to_plot> <output_file>")
+    exit(1)
+
+
 filein = argv[1]
-fileout = argv[2]
+try:
+    steps_to_plot = int(argv[2])
+except ValueError:
+    print("Error: steps_to_plot must be an integer")
+    exit(1)
+fileout = argv[3]
 
 reads = []
 uniqs = []
@@ -19,7 +29,7 @@ with open(filein, 'r') as f1:
         reads.append(int(float(fields[0])))
         uniqs.append(float(fields[1]))
         i += 1
-        if i > 250: ## plotting only the first 250 points to avoid overplotting. increase this number if you want to plot more points
+        if i > steps_to_plot: ## beak after steps_to_plot to make the plot more readable
             break
 
 plt.plot(reads, uniqs)
