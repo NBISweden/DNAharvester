@@ -29,7 +29,7 @@ process FASTP {
     def prefix = task.ext.prefix ?: "${meta.id}"
     if (meta.single_end) {
     """
-    echo "Read Harvester currently does not process single end reads"
+    echo "DNAharvester currently does not process single end reads"
     """
     } else {
     """
