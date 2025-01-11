@@ -1,0 +1,413 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+from __future__ import division
+import matplotlib.pyplot as plt
+from matplotlib.ticker import MaxNLocator
+import pysam
+import numpy as np
+from optparse import OptionParser
+import re
+import sys
+from os.path import exists
+
+"""
+Author:		Tom van der Valk
+Contact: 	tvdvalk1989@gmail.com
+Citation:	TBA
+
+Usage:		AMBER [options]
+Example:	AMBER --bamfiles bamfile.txt --output amber_test
+"""
+
+
+"""
+user provided input
+"""
+usage = "usage: python %prog [options]"
+parser = OptionParser(usage=usage)
+parser.add_option("--bamfiles", action="store", type="string", dest="bamfiles", help="A tab seperated list of bamfiles to be analyzed. First column of the file depicts a name to use for the sample, second column should specify the path to the bamfile(s)")
+parser.add_option("--exclude", action="store", type="string", dest="exclude", help="A file containing the chromosome/scaffold/contig names to exclude from all the analysis. Each line in the file should list one contig. Default: None")
+parser.add_option("--errorbars", action="store_true", dest="errorbars", default=False, help="plot the 95% confidence intervals in the mistmatch rate plot")
+parser.add_option("--counts", action="store_true", dest="counts", default="False", help="Plot the data as counts instead of fractions.")
+parser.add_option("--output", action="store", type="string", dest="output", default="amber", help="Output file name")
+
+(options, args) = parser.parse_args()
+
+"""
+functions
+"""
+def reverse_complement(dna_sequence):
+    complement_dict = {'A': 'T', 'T': 'A', 'C': 'G', 'G': 'C'}
+    reverse_complement_seq = ''.join(complement_dict.get(base, base) for base in reversed(dna_sequence))
+    return reverse_complement_seq
+
+
+def print_progress_bar(iteration, total, prefix='', suffix='', decimals=1, length=100, fill='█'):
+    percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
+    filled_length = int(length * iteration // total)
+    bar = fill * filled_length + '-' * (length - filled_length)
+    sys.stdout.write('\r%s |%s| %s%% %s' % (prefix, bar, percent, suffix)),
+    sys.stdout.flush()
+    if iteration == total:
+        sys.stdout.write('\n')
+    return
+
+"""
+set global plotting parameters
+"""
+plt.rcParams['figure.figsize'] = [20, 10]
+plt.rcParams["figure.autolayout"] = True
+plt.rcParams['axes.linewidth'] = 1.25
+plt.rcParams['font.size'] = 14
+fig, ((ax1, ax2),(ax3,ax4)) = plt.subplots(2, 2)
+colorlist = ["dimgray","darkred","lightskyblue","green","gold","darkorchid"]
+color_list_index = -1
+
+"""
+set global variables
+"""
+max_mismatch = 0
+max_read_length = 0
+max_average_coverage = 0
+
+
+"""
+outputfile for sample specific statistics
+"""
+outputfile = open(options.output + ".txt","w")
+	
+
+"""
+loop through bamfiles
+"""
+if options.bamfiles == None:
+	print("No bamfiles provided. Exiting...")
+	exit()
+
+with open(options.bamfiles) as f:
+	bamfiles = f.readlines()
+	if len(bamfiles) > 6:
+		print("Maximum of 6 bamfiles allowed. Exiting...")
+		exit()
+
+	for line in bamfiles:
+		sample_name = line.strip().split("\t")[0]
+		outputfile.write("-" * 100 + "\n")
+		print()
+		print("\n" + "-" * 70)
+		print("Processing sample: " + sample_name)
+		outputfile.write("sample: " + sample_name + "\n")
+		filepath = line.strip().split("\t")[1].strip()
+		color_list_index += 1
+
+		focal_bamfile = (pysam.AlignmentFile(filepath, "rb"))
+
+		if focal_bamfile.header["HD"]["SO"] == "unsorted":
+			print("Bamfile is unsorted. Only sorted bamfiles are supported. Exiting...")
+			exit()
+
+
+		contigs_to_exclude = ["*"] # * is unmapped reads 
+		if options.exclude != None:
+			with open(options.exclude) as f1:
+				for line in f1.readlines():
+					contigs_to_exclude += [line.strip()]
+
+		"""
+		create bamfile index if it does not exist
+		"""
+		file_exists = exists(filepath + ".bai")
+		if not file_exists:
+			print("Creating bamfile index... ",end=" ")
+			sys.stdout.flush()
+			pysam.index(filepath)
+			focal_bamfile = (pysam.AlignmentFile(filepath, "rb"))
+			print("Done creating bamfile index")
+
+		"""
+		calculate and plot depth of bamfile in 1kb windows
+		"""
+		#calculate depth per window and store in dictionary
+		depth_dict = {}
+		contig_length_dict = {}
+		total_reads = 0
+		total_sites = 0
+		for i in (str(pysam.idxstats(filepath)).split("\n")):
+			splitted = i.split("\t")
+			if len(splitted) > 3 and splitted[0] != "*":
+				contig_name, contig_length = i.split("\t")[0],float(i.split("\t")[1])
+				if contig_name not in contigs_to_exclude:
+					total_reads += int(splitted[2])
+					total_sites += int(splitted[1])
+					contig_length_dict[contig_name] = contig_length
+					depth_dict[contig_name] = {}
+					for i in range(0,int(round(contig_length/1000,0)+1)):
+						depth_dict[contig_name][i] = 0
+
+		print("Calculating depth per window...", end="\n")
+		sys.stdout.flush()
+		site_counter = 0
+		contig_list = []
+		for pileupcolumn in focal_bamfile.pileup(min_mapping_quality=1):
+			contig,pos,depth = pileupcolumn.reference_name, pileupcolumn.pos, pileupcolumn.n
+			if contig in depth_dict:
+				rounded_pos = int(round(pos/1000,0))
+				depth_dict[contig][rounded_pos] += depth
+				if contig not in contig_list:
+					contig_list += [contig]
+				site_counter += 1
+				if site_counter % 1000000 == 0:
+					site_progress = sum([contig_length_dict[i] for i in contig_list[0:-1]]) + pos
+					print_progress_bar(site_progress, total_sites, prefix='Progress:', suffix='', length=50)
+		#calculate average depth per window
+		window_depth_list = [0,0]
+		for key,value in depth_dict.items():
+			for contig_positions,depth_value in value.items():
+				window_depth = round(depth_value/1000,3)
+				if window_depth > 0:
+					window_depth_list[0] += window_depth
+					window_depth_list[1] += 1
+		if window_depth_list[1] == 0:
+			print("No reads found on analysed contigs. Exiting...")
+			exit()
+		else:
+			average_window_depth = round(window_depth_list[0]/window_depth_list[1],3)
+			if average_window_depth > max_average_coverage:
+				max_average_coverage = average_window_depth
+			#plot histogram of window depth
+			histogram_dict = {}
+			average_xaxis_line = [0,0]
+			all_window_depths = []
+			for key,value in depth_dict.items():
+				for contig_positions,depth_value in value.items():
+					window_depth = round(depth_value/1000,3)
+					if window_depth < (average_window_depth*5):
+						average_xaxis_line[0] += window_depth
+						average_xaxis_line[1] += 1
+					if window_depth > average_window_depth*5: #merge all windows with more than 5X the average depth
+						window_depth = average_window_depth*5
+					if window_depth not in histogram_dict:
+						histogram_dict[window_depth] = 1
+					else:
+						histogram_dict[window_depth] += 1
+					all_window_depths += [window_depth]
+			hist, bin_edges = np.histogram(all_window_depths, bins=100)
+			max_depth = max(histogram_dict.keys())
+			outputfile.write("average depth per window: " + str(round(average_xaxis_line[0]/average_xaxis_line[1],4)) + "\n" + "\n") #write average depth per window to file
+			outputfile.write("WINDOW_DEPTH" + "\t" + "NUMBER_OF_WINDOWS" + "\n") #write window counts by depth to file
+			for i,j in zip(hist,bin_edges[1:-1]):
+				outputfile.write(str(round(j,4)) + "\t" + str(i) + "\n")
+			outputfile.write(">" + str(round(bin_edges[-1],4)) + "\t" + str(hist[-1]) + "\n")
+			outputfile.write("-" * 100 + "\n")
+			if options.counts == True:
+				ax4.bar(bin_edges[1:], hist, width=bin_edges[1] - bin_edges[0], color=colorlist[color_list_index],alpha=0.5,label=sample_name)
+			else:
+				hist = [x / sum(hist) for x in hist]
+				ax4.bar(bin_edges[1:], hist, width=bin_edges[1] - bin_edges[0], color=colorlist[color_list_index],alpha=0.5,label=sample_name)
+			ax4.axvline(x = average_xaxis_line[0]/average_xaxis_line[1], linestyle='dashed', color = colorlist[color_list_index],zorder=0)
+			print_progress_bar(total_sites, total_sites, prefix='Progress:', suffix='', length=50)
+			print("Done" + "\n")
+
+		"""
+		set sample specific variables
+		"""
+		readcounter = 0
+		mismatch_dict = {}
+		for i in range(301):
+			mismatch_dict[i] = []
+		readlen_dict = {}
+		for i in range(301):
+			readlen_dict[i] = 0
+		dna_damage_dict = {"CpG": [0] * 31, "CT" : [0] * 31 ,"other":[0] * 31}
+		cpg_sites = [0] * 31
+		c_sites = [0] * 31
+		other_sites = [0] * 31
+
+
+		"""
+		loop through reads
+		"""
+		print("Calculating mismatch rate and DNA damage...", end="\n")
+		sys.stdout.flush()
+		for read in focal_bamfile.fetch():
+			read_contig = read.reference_name
+			read_mapping_quality = read.mapping_quality
+			if read_contig not in contigs_to_exclude and read_mapping_quality > 0:
+				readcounter += 1
+				if readcounter % 10000 == 0:
+					print_progress_bar(readcounter, total_reads, prefix='Progress:', suffix='', length=50)
+				read_length = len(read.query_sequence)
+				read_sequence = read.query_sequence
+				edit_distance = read.get_tag("NM")
+				MD_string = read.get_tag("MD")
+				cigar = read.cigarstring
+				reverse = read.is_reverse
+				if "N" in read_sequence or "N" in MD_string or "I" in cigar or "D" in cigar or "N" in cigar or "S" in cigar or "H" in cigar or 'P' in cigar:
+					continue
+				else:
+
+					"""
+					recreate reference sequence
+					"""
+					refseq = ""
+					newread_seq = ""
+					MD = MD_string.split()[0].rstrip('\n')
+					MDlist = re.findall('(\d+|\D+)',MD)
+					MDcounter = 0
+					for base in MDlist:
+						if base.isdigit():
+							base = int(base)
+							refseq += read_sequence[MDcounter:MDcounter+base]
+							newread_seq += read_sequence[MDcounter:MDcounter+base]
+							MDcounter += int(base)
+						elif '^' in base:
+							continue
+						elif base.isalpha():
+							refseq += base
+							newread_seq += read_sequence[MDcounter]
+							MDcounter += len(base)
+
+					if reverse == True:
+						refseq = reverse_complement(refseq)
+						newread_seq = reverse_complement(newread_seq)
+
+					readlen_dict[min(300,read_length)] += 1
+					mismatch_dict[min(300,read_length)] += [edit_distance/read_length]
+					if "^" not in MD_string:
+						for readpos in range(0,max(len(newread_seq)-1,31)): #,newread_seq):
+							other = True
+							if readpos < 31 and readpos < len(newread_seq)-1:
+								if "N" in refseq[readpos] or "N" in newread_seq[readpos]:
+									continue
+								else:
+									if refseq[readpos] == "C" and refseq[readpos+1] != "G":
+										c_sites[readpos] += 1
+										other = False
+										if newread_seq[readpos] == "T":
+											dna_damage_dict["CT"][readpos] += 1
+									elif refseq[readpos] == "C" and refseq[readpos+1] == "G":
+										cpg_sites[readpos] += 1
+										other = False
+										if newread_seq[readpos] == "T":
+											dna_damage_dict["CpG"][readpos] += 1
+									else:
+										if refseq[readpos] not in "CT" and newread_seq[readpos] not in "CT" and refseq[readpos]+newread_seq[readpos] != "GA":
+											other_sites[readpos] += 1
+											if refseq[readpos] != newread_seq[readpos]:
+												dna_damage_dict["other"][readpos] += 1
+									   
+		print_progress_bar(total_reads, total_reads, prefix='Progress:', suffix='', length=50)
+		print("Done")
+								
+						
+		#plot mistmatch rate per read length
+		x_axis_mismatch = []
+		y_axis_mismatch = []
+		y_err = []
+		for i in range(301):
+			if len(mismatch_dict[i]) > 10:
+				if i > max_read_length:
+					max_read_length = i
+				x_axis_mismatch += [i]
+				value = mismatch_dict[i]
+				y_err += [1.96 * np.std(value)/np.sqrt(len(value))]
+				y_axis_mismatch += [sum(value)/len(value)]
+				if sum(value)/len(value) > max_mismatch:
+					max_mismatch = sum(value)/len(value)
+		outputfile.write("READ_LENGTH" + "\t" + "MISMATCH_RATE " + "\n")
+		for i,j in zip(x_axis_mismatch,y_axis_mismatch):
+			outputfile.write(str(i) + "\t" + str(round(j,5)) + "\n")
+		outputfile.write("-" * 100 + "\n")
+		if options.errorbars == True:
+			ax1.errorbar(x_axis_mismatch, y_axis_mismatch, yerr=y_err, fmt="o",markerfacecolor = colorlist[color_list_index], markersize=8,markeredgecolor="black",label=sample_name,color = colorlist[color_list_index])
+		else:
+			ax1.scatter(x_axis_mismatch, y_axis_mismatch, s=40, alpha=1, edgecolors="k",label=sample_name,color = colorlist[color_list_index])
+		 
+		#plot read length distribution
+		x_axis_readlen = []
+		y_axis_readlen = []
+		readcounts = []
+		total_reads = sum(readlen_dict.values())
+		for i in range(301):
+			if readlen_dict[i] > 0:
+				x_axis_readlen += [i]
+				readcounts += [readlen_dict[i]]
+				if options.counts == True:
+					y_axis_readlen += [readlen_dict[i]]
+				else:
+					y_axis_readlen += [(readlen_dict[i]/total_reads)*100]
+		outputfile.write("READ_LENGTH" + "\t" + "READ_COUNTS" + "\n")
+		if options.counts == True:
+			for i,j in zip(x_axis_readlen,readcounts):
+				outputfile.write(str(i) + "\t" + str(j) + "\n")
+		else:
+			for i,j in zip(x_axis_readlen,y_axis_readlen):
+				outputfile.write(str(i) + "\t" + str(j*total_reads*100) + "\n")
+		outputfile.write("-" * 100 + "\n")
+		ax3.fill_between(x_axis_readlen, 0, y_axis_readlen, alpha=0.25,label=sample_name,color=colorlist[color_list_index])
+		ax3.plot(x_axis_readlen, y_axis_readlen,color=colorlist[color_list_index],linewidth=2,linestyle='-', marker='o',markersize=3)
+
+		#plot DNA damage by read length
+		CT_axis_damage = []
+		CPG_axis_damage = []
+		other_axis_damage = []
+		x_axis_damage = list(range(0, 31, 1))
+		for key,value in dna_damage_dict.items():
+			x_axis_damage = []
+			for i in range(len(value)):
+				x_axis_damage += [i]
+				if key == "CT":
+					CT_axis_damage += [value[i]/c_sites[i]]
+				elif key == "CpG":
+					if cpg_sites[i] > 0:
+						CPG_axis_damage += [value[i]/cpg_sites[i]]
+				elif key == "other":
+					other_axis_damage += [value[i]/other_sites[i]] 
+			if key == "other":
+				ax2.plot(x_axis_damage,other_axis_damage,linewidth=2,linestyle='dotted',color=colorlist[color_list_index],label=sample_name + ": " + "other")
+			elif key == "CT":
+				ax2.plot(x_axis_damage,CT_axis_damage,label=sample_name + ": " + "C to T",linewidth=2,color=colorlist[color_list_index])
+			elif key == "CpG":
+				ax2.plot(x_axis_damage,CPG_axis_damage,label=sample_name + ": " + "CpG to TpG",linestyle='dashed',linewidth=2,color=colorlist[color_list_index])
+
+		outputfile.write("DISTANCE_FROM_READ_END" + "\t" + "C-to-T" + "\t" + "CpG-to-TG" + "\t" "other" + "\n")
+		for i,j,k,l in zip(x_axis_damage,CT_axis_damage,CPG_axis_damage,other_axis_damage):
+			outputfile.write(str(i) + "\t" + str(round(j,4)) + "\t" + str(round(k,4)) + "\t" + str(round(l,4)) + "\n")
+		outputfile.write("\n")
+		outputfile.write("-" * 100 + "\n")
+
+#set up plot axis and position of legend
+if max_read_length > 200:
+	x_spacing = list(range(0, max_read_length+10, 20))
+else:
+	x_spacing = list(range(0, max_read_length+10, 10))
+ax1.set_xlabel("read length (bp)",weight='bold',fontsize=14)
+ax1.set_ylabel("mismatches per basepair",weight='bold',fontsize=14)
+ax1.set_xticks(x_spacing)
+ax1.set_xlim(10,max_read_length+10)
+#ax1.set_ylim(0,max(0.01,max_mismatch*1.25))
+ax2.set_xticks(list(range(0, 31, 2)))
+ax2.set_ylim(0,0.5)
+ax2.set_xlim(0 - 0.5, 30 + 0.5)
+ax2.set_xlabel("distance from read end (bp)",weight='bold',fontsize=14)
+ax2.set_ylabel("mismatch frequency",weight='bold',fontsize=14)
+ax3.set_xticks(x_spacing)
+ax3.set_xlim(10,max_read_length+10)
+ax3.set_xlabel("read length (bp)",weight='bold',fontsize=14)
+if options.counts == True:
+	ax3.set_ylabel("read counts",weight='bold',fontsize=14)
+	ax4.set_ylabel("window counts",weight='bold',fontsize=14)
+else:
+	ax3.set_ylabel("% of reads",weight='bold',fontsize=14)
+	ax4.set_ylabel("fraction of 1kb windows",weight='bold',fontsize=14)
+ax4.set_xlabel("depth",weight='bold',fontsize=14)
+#ax4.set_ylim(0,max_depth*1.2)
+ax4.set_xlim(0,max_average_coverage*4 + 1)
+ax4.locator_params(nbins=20, axis='x')
+ax1.legend(loc="upper right",edgecolor="black")
+ax2.legend(loc="upper right",edgecolor="black")
+ax3.legend(loc="upper right",edgecolor="black")
+ax4.legend(loc="upper right",edgecolor="black")
+plt.savefig(options.output + ".pdf")
+plt.close()
+print("\n" + "Finished plotting")
