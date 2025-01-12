@@ -14,8 +14,7 @@ process SEQ_STATS {
     path(fastp_log),
     path(raw_bam_flagstat),
     path(dedup_lib_flagstat),
-    path(realigned),
-    path(realigned_index)
+    path(dedup_sample)
 
     output:
     tuple val(meta), path("*.stats.txt")    , emit: stats_txt
@@ -43,7 +42,7 @@ process SEQ_STATS {
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\t"}')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\n"}')
 
-    samtools stats --threads ${task.cpus} ${realigned} > stats.txt
+    samtools stats --threads ${task.cpus} ${dedup_sample} > stats.txt
     min_reads_len=\$(awk '/^RL/ {print \$2}' stats.txt | head -n 1)
     max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' stats.txt)
     mean_reads_len=\$(awk '/^SN/ && /average length/ {print \$4}' stats.txt)
