@@ -176,6 +176,7 @@ workflow PROCESSED_BAM_QC {
     multiqc_merged_bam_sample_report         = MULTIQC_MERGED_BAM_SAMPLE.out.report.toList()                                                       // channel: [ val(meta), path(report) ]
     multiqc_dedup_sample_report              = MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
+    mq_filtered_bam_flagstat                 = FLAGSTAT_MQ_FILTERED_BAM.out.flagstat                                                               // channel: [ val(meta), path(flagstat) ]
     dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
     preseq_txt                               = params.preseq == true ? PRESEQ.out.preseq_txt : Channel.empty()                                     // channel: [ val(meta), path(preseq_txt) ]
     preseq_plot                              = params.preseq == true ? PLOT_PRESEQ.out.preseq_plot : Channel.empty()                               // channel: [ val(meta), path(preseq_plot) ]
