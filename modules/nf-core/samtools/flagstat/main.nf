@@ -19,7 +19,7 @@ process SAMTOOLS_FLAGSTAT {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${new Random().nextInt(1_000_000)}"
     """
     samtools \\
         flagstat \\
