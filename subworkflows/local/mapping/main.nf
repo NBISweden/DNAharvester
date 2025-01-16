@@ -19,8 +19,12 @@ workflow MAPPING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.fai)
 
-    //BWA_INDEX ( reference )
-    //ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+    // bwa_index_reference.ifEmpty {
+    //     BWA_INDEX ( reference )
+    //     bwa_index_reference = BWA_INDEX.out.index
+    //     ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
+    // }
+
 
     BWA_ALN ( reads, bwa_index_reference )
     ch_versions = ch_versions.mix(BWA_ALN.out.versions)
@@ -35,7 +39,7 @@ workflow MAPPING {
 
     emit:
     fai            = SAMTOOLS_FAIDX.out.fai                      // channel: path(index)
-    //index          = BWA_INDEX.out.index                         // channel: path(index)
+    index          = bwa_index_reference                         // channel: path(index)
     bam            = BWA_SAMSE.out.bam                           // channel: [ val(meta), [ bam ] ]
     bai            = SAMTOOLS_INDEX.out.bai                      // channel: [ val(meta), [ bai ] ]
     versions       = ch_versions                                 // channel: [ versions.yml ]
