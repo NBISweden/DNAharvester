@@ -50,7 +50,7 @@ workflow {
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_reference_index = Channel.fromFilePairs("${params.reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
+    ch_reference_index = Channel.fromFilePairs("${params.reference}*.{amb,ann,bwt,pac,sa}", size: 5)
         .map { id, files ->
             def parentDir = files[0].getParent()
             return [[id:id], parentDir] }
