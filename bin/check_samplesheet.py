@@ -33,7 +33,7 @@ class RowChecker:
     def __init__(
         self,
         sample_col="sample",
-        index_col="index",
+        library_id_col="library_id",
         lane_col="lane",
         first_col="fastq_1",
         second_col="fastq_2",
@@ -46,8 +46,8 @@ class RowChecker:
         Args:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
-            index_col (str): The name of the column that contains the index (id) of 
-                the sequencing library (default "index").
+            library_id_col (str): The name of the column that contains the ID of 
+                the sequencing library (default "library_id").
             lane_col (str): The name of the column that contains the lane number 
                 on which the sample was sequenced (default "lane").
             first_col (str): The name of the column that contains the first (or only)
@@ -61,7 +61,7 @@ class RowChecker:
         """
         super().__init__(**kwargs)
         self._sample_col = sample_col
-        self._index_col = index_col
+        self._library_id_col = library_id_col
         self._lane_col = lane_col
         self._first_col = first_col
         self._second_col = second_col
@@ -79,7 +79,7 @@ class RowChecker:
 
         """
         self._validate_sample(row)
-        self._validate_index(row)
+        self._validate_library_id(row)
         self._validate_lane(row)
         self._validate_first(row)
         self._validate_second(row)
@@ -94,10 +94,10 @@ class RowChecker:
         # Sanitize samples slightly.
         row[self._sample_col] = row[self._sample_col].replace(" ", "-")
 
-    def _validate_index(self, row):
-        """Assert that the index number exists."""
-        if len(row[self._index_col]) <= 0:
-            raise AssertionError("An index number that is unique for each sequencing library is required.")
+    def _validate_library_id(self, row):
+        """Assert that the library ID exists."""
+        if len(row[self._library_id_col]) <= 0:
+            raise AssertionError("An ID that is unique for each sequencing library is required.")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""

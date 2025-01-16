@@ -53,10 +53,10 @@ def create_fastq_channel(LinkedHashMap row) {
     // create meta map: [id, single_end]
     // TO DO Update to take strandedness and damage treatment
     def meta = [:]
-    meta.id                = row.sample + "_" + row.index + "_" + row.lane
+    meta.id                = row.sample + "_" + row.library_id + "_" + row.lane
     meta.single_end        = row.single_end.toBoolean()
     // readgroup: ID = ID = readgroup id (flowcell-id.lane-nr.library-index-nr), SM = sample-id, PL = sequencing platform (e.g. Illumina, NovaSeq), LB = library-index-nr based on the number of unique libraries per sample in samplesheet
-    meta.read_group        = "@RG\\tID:" + row.flowcell_id + "." + row.lane + "." + row.index + "\\tSM:" + row.sample + "\\tPL:" + row.seq_platform + "\\tLB:" + row.index
+    meta.read_group        = "@RG\\tID:" + row.flowcell_id + "." + row.lane + "." + row.library_id + "\\tSM:" + row.sample + "\\tPL:" + row.seq_platform + "\\tLB:" + row.library_id
 
     // add path(s) of the fastq file(s) to the meta map
     def fastq_meta = []
