@@ -1,4 +1,6 @@
 process HAPLOTOFASTA {
+    tag "$meta.id"
+    label 'process_medium'
 
     conda "conda-forge::python=3.13.0 conda-forge::pandas=2.2.3"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
@@ -26,7 +28,7 @@ process HAPLOTOFASTA {
 
     # Loop through the chromosome *.haplo files and convert them to fasta format
     # to avoid storing the genome-wide *.haplo.gz file into memory
-    for chr in \$(ls *.haplo); do 
+    for chr in \$(ls *.haplo); do
         gzip \${chr} &&
         haplo2fasta.py \\
             \${chr}.gz \\
@@ -34,7 +36,7 @@ process HAPLOTOFASTA {
             > \${chr}.fa
     done &&
 
-    # Concatenate the chromosome *.haplo.fasta files 
+    # Concatenate the chromosome *.haplo.fasta files
     cat *.fa > ${prefix}.haplo.fasta &&
 
     cat <<-END_VERSIONS > versions.yml

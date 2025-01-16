@@ -1,6 +1,6 @@
 process SAMTOOLS_INDEX {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
     conda "bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
