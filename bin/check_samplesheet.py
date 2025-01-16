@@ -88,11 +88,12 @@ class RowChecker:
         self.modified.append(row)
 
     def _validate_sample(self, row):
-        """Assert that the sample name exists and convert spaces to underscores."""
+        """Assert that the sample name exists and convert spaces and underscores to dashes."""
         if len(row[self._sample_col]) <= 0:
             raise AssertionError("A sample ID is required.")
         # Sanitize samples slightly.
         row[self._sample_col] = row[self._sample_col].replace(" ", "-")
+        row[self._sample_col] = row[self._sample_col].replace("_", "-")
 
     def _validate_library_id(self, row):
         """Assert that the library ID exists."""
