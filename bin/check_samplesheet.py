@@ -47,7 +47,7 @@ class RowChecker:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
             library_id_col (str): The name of the column that contains the ID of 
-                the sequencing library (default "library_id").
+                the sequencing library_id (default "library_id").
             lane_col (str): The name of the column that contains the lane number 
                 on which the sample was sequenced (default "lane").
             first_col (str): The name of the column that contains the first (or only)
@@ -96,9 +96,9 @@ class RowChecker:
         row[self._sample_col] = row[self._sample_col].replace("_", "-")
 
     def _validate_library_id(self, row):
-        """Assert that the library ID exists."""
+        """Assert that the library_id ID exists."""
         if len(row[self._library_id_col]) <= 0:
-            raise AssertionError("An ID that is unique for each sequencing library is required.")
+            raise AssertionError("An ID that is unique for each sequencing library_id is required.")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""
@@ -201,8 +201,8 @@ def check_samplesheet(file_in, file_out):
         https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
 
     """
-    required_columns = {"sample", "fastq_1", "fastq_2"}
-    # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
+    required_columns = {"sample", "library_id", "lane", "fastq_1", "fastq_2"}
+    # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
         reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
         # Validate the existence of the expected header columns.
@@ -221,7 +221,7 @@ def check_samplesheet(file_in, file_out):
         checker.validate_unique_samples()
     header = list(reader.fieldnames)
     header.insert(1, "single_end")
-    # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
+    # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_out.open(mode="w", newline="") as out_handle:
         writer = csv.DictWriter(out_handle, header, delimiter=",")
         writer.writeheader()
