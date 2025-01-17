@@ -9,4 +9,4 @@ The documentation can be found in the Github [wiki](https://github.com/NBISweden
 
 ## Pipeline map
 
-<img src="https://github.com/NBISweden/DNAharvester/blob/dev/docs/images/DNAharvester_metromap.png" width="75%"/>
+<img src="https://github.com/NBISweden/DNAharvester/blob/main/docs/images/DNAharvester_metromap.png"/>
