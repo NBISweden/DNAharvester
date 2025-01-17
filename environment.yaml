@@ -1,4 +1,4 @@
-name: DNAharvester
+name: dh
 channels:
     - conda-forge
     - bioconda
