@@ -1,5 +1,5 @@
 process BEDTOOLS_SUBTRACT {
-    label 'process_single'
+    label 'process_low'
 
     conda "bioconda::bedtools=2.31.1"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
