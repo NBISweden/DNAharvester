@@ -33,7 +33,7 @@ class RowChecker:
     def __init__(
         self,
         sample_col="sample",
-        index_col="index",
+        library_id_col="library_id",
         lane_col="lane",
         first_col="fastq_1",
         second_col="fastq_2",
@@ -46,8 +46,8 @@ class RowChecker:
         Args:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
-            index_col (str): The name of the column that contains the index (id) of 
-                the sequencing library (default "index").
+            library_id_col (str): The name of the column that contains the ID of 
+                the sequencing library_id (default "library_id").
             lane_col (str): The name of the column that contains the lane number 
                 on which the sample was sequenced (default "lane").
             first_col (str): The name of the column that contains the first (or only)
@@ -61,7 +61,7 @@ class RowChecker:
         """
         super().__init__(**kwargs)
         self._sample_col = sample_col
-        self._index_col = index_col
+        self._library_id_col = library_id_col
         self._lane_col = lane_col
         self._first_col = first_col
         self._second_col = second_col
@@ -79,7 +79,7 @@ class RowChecker:
 
         """
         self._validate_sample(row)
-        self._validate_index(row)
+        self._validate_library_id(row)
         self._validate_lane(row)
         self._validate_first(row)
         self._validate_second(row)
@@ -88,16 +88,17 @@ class RowChecker:
         self.modified.append(row)
 
     def _validate_sample(self, row):
-        """Assert that the sample name exists and convert spaces to underscores."""
+        """Assert that the sample name exists and convert spaces and underscores to dashes."""
         if len(row[self._sample_col]) <= 0:
             raise AssertionError("A sample ID is required.")
         # Sanitize samples slightly.
         row[self._sample_col] = row[self._sample_col].replace(" ", "-")
+        row[self._sample_col] = row[self._sample_col].replace("_", "-")
 
-    def _validate_index(self, row):
-        """Assert that the index number exists."""
-        if len(row[self._index_col]) <= 0:
-            raise AssertionError("An index number that is unique for each sequencing library is required.")
+    def _validate_library_id(self, row):
+        """Assert that the library_id ID exists."""
+        if len(row[self._library_id_col]) <= 0:
+            raise AssertionError("An ID that is unique for each sequencing library_id is required.")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""
@@ -200,8 +201,8 @@ def check_samplesheet(file_in, file_out):
         https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
 
     """
-    required_columns = {"sample", "fastq_1", "fastq_2"}
-    # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
+    required_columns = {"sample", "library_id", "lane", "fastq_1", "fastq_2"}
+    # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
         reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
         # Validate the existence of the expected header columns.
@@ -220,7 +221,7 @@ def check_samplesheet(file_in, file_out):
         checker.validate_unique_samples()
     header = list(reader.fieldnames)
     header.insert(1, "single_end")
-    # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
+    # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_out.open(mode="w", newline="") as out_handle:
         writer = csv.DictWriter(out_handle, header, delimiter=",")
         writer.writeheader()

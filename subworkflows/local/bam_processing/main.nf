@@ -9,11 +9,11 @@ include { ESTIMATE_READ_LEN_CUTOFF                      } from '../../../modules
 include { RM_SHORT_READS                                } from '../../../modules/local/samtools/rm_short_reads/main'
 include { SAMTOOLS_INDEX as RM_SHORT_READS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
 
-// Merge BAM files per library index
+// Merge BAM files per library/PCR
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools/merge/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules/nf-core/samtools/index/main'
 
-// Remove duplicates from BAM files merged per library index
+// Remove duplicates from BAM files merged per library/PCR
 include { SAMREMOVEDUP as SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as SAMREMOVEDUP_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 
@@ -82,7 +82,7 @@ workflow BAM_PROCESSING {
     SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB_INDEX.out.versions)
 
-    // Remove duplicates from BAM files merged per library index
+    // Remove duplicates from BAM files merged per library/PCR
     SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB.out.versions)
 

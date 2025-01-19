@@ -1,3 +1,3 @@
-sample,index,lane,flowcell_id,seq_platform,fastq_1,fastq_2
-S08,07,L002,BHJ5YVCCXY,Illumina,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L2.BHJ5YVCCXY.R1.fastq.gz,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L2.BHJ5YVCCXY.R2.fastq.gz
-S08,07,L006,BHJ5YVCCXY,Illumina,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L6.BHJ5YVCCXY.R1.fastq.gz,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L6.BHJ5YVCCXY.R2.fastq.gz
+sample,library_id,lane,flowcell_id,seq_platform,fastq_1,fastq_2
+S08,07,L002,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L2.BHJ5YVCCXY.R1.fastq.gz,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L2.BHJ5YVCCXY.R2.fastq.gz
+S08,07,L006,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L6.BHJ5YVCCXY.R1.fastq.gz,https://github.com/NBISweden/GenErode/raw/refs/heads/main/.test/data/shortread_data/historical/S08_07_L6.BHJ5YVCCXY.R2.fastq.gz
