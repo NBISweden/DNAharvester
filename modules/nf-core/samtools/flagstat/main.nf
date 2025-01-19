@@ -1,6 +1,6 @@
 process SAMTOOLS_FLAGSTAT {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_low'
 
     conda "bioconda::samtools=1.20 bioconda::htslib=1.20"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
@@ -19,7 +19,7 @@ process SAMTOOLS_FLAGSTAT {
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
+    def prefix = task.ext.prefix ?: "${meta.id}_${new Random().nextInt(1_000_000)}"
     """
     samtools \\
         flagstat \\

@@ -37,7 +37,7 @@ workflow {
 
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect()
-    
+
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
@@ -49,6 +49,12 @@ workflow {
 
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+
+    ch_reference_index = Channel.fromFilePairs("${params.reference}*.{amb,ann,bwt,pac,sa}", size: 5)
+        .map { id, files ->
+            def parentDir = files[0].getParent()
+            return [[id:id], parentDir] }
+        .collect()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -79,6 +85,7 @@ workflow {
         } else {
             MAPPING (
                 ch_reference,
+                ch_reference_index,
                 FASTQ_PROCESSING.out.reads
             )
         }
@@ -138,8 +145,9 @@ workflow {
             INPUT_CHECK.out.reads,
             FASTQ_PROCESSING.out.fastp_log,
             RAW_BAM_QC.out.flagstat,
+            PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
-            BAM_PROCESSING.out.dedup_sample
+            BAM_PROCESSING.out.dedup_lib
         )
     }
 

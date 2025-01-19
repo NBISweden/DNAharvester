@@ -1,6 +1,6 @@
 process AMBER {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_low'
 
     conda "conda-forge::matplotlib=3.9.3 bioconda::pysam=0.22.1"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
