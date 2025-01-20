@@ -16,7 +16,7 @@ workflow MAPPING {
     ch_versions = Channel.empty()
 
     SAMTOOLS_FAIDX ( reference )
-    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.fai)
+    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     BWA_INDEX ( reference )
     ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
