@@ -32,8 +32,11 @@ workflow {
     Running DNAharvester.
     """)
 
+    ch_all_versions = Channel.empty()
+
     // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
+    ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect()
@@ -56,6 +59,7 @@ workflow {
         FASTQ_PROCESSING (
             INPUT_CHECK.out.reads
         )
+        ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
     // Run FastQC, MultiQC and read statistics on processed reads
@@ -64,6 +68,7 @@ workflow {
             FASTQ_PROCESSING.out.reads,
             FASTQ_PROCESSING.out.json
         )
+        ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
 
     // Map with bwa-aln (aDNA parameters) and convert to bam
@@ -76,12 +81,14 @@ workflow {
                     ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
+            ch_all_versions = ch_all_versions.mix(COMPETITIVE_MAPPING.out.versions)
         // Map to the reference genome assembly
         } else {
             MAPPING (
                 ch_reference,
                 FASTQ_PROCESSING.out.reads
             )
+            ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
     }
 
@@ -92,6 +99,7 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
+        ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
     // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates
     if ( 'bam_processing' in workflow_steps ) {
@@ -102,6 +110,7 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
+        ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
     }
 
     // Run flagstat and MultiQC on processed bam files
@@ -122,6 +131,7 @@ workflow {
             BAM_PROCESSING.out.dedup_sample_index,
             ch_intervals
         )
+        ch_all_versions = ch_all_versions.mix(PROCESSED_BAM_QC.out.versions)
     }
 
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
@@ -131,6 +141,7 @@ workflow {
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
+        ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
     // Output stats
@@ -143,25 +154,11 @@ workflow {
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib
         )
+        ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
     }
 
     // output software versions
-    def all_versions = INPUT_CHECK.out.versions
-        .mix(FASTQ_PROCESSING.out.versions)
-        .mix(PROCESSED_FASTQ_QC.out.versions)
-        .mix(RAW_BAM_QC.out.versions)
-        .mix(BAM_PROCESSING.out.versions)
-        .mix(PROCESSED_BAM_QC.out.versions)
-        .mix(RANDOM_SAMPLING_BAM.out.versions)
-        .mix(STATS_OUTPUT.out.versions)
-    if (params.competitive_reference && file( params.competitive_reference ).exists() ) {
-        all_versions = all_versions.mix(COMPETITIVE_MAPPING.out.versions)
-    }
-    else {
-        all_versions = all_versions.mix(MAPPING.out.versions)
-    }
-    all_versions
-        .collectFile(name: "versions.yml", storeDir: "${params.outdir}")
+    ch_all_versions.collectFile(name: "versions.yml", storeDir: "${params.outdir}")
 
 }
 
