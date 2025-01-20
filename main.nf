@@ -145,6 +145,17 @@ workflow {
         )
     }
 
+
+    // Emit channel in the results folder
+
+    def all_versions = PROCESSED_FASTQ_QC.out.versions
+        .mix(MAPPING.out.versions)
+        .mix(RAW_BAM_QC.out.versions)
+        .mix(BAM_PROCESSING.out.versions)
+        .mix(PROCESSED_BAM_QC.out.versions)
+        .mix(RANDOM_SAMPLING_BAM.out.versions)
+        .mix(STATS_OUTPUT.out.versions)
+        .collectFile(name: "versions.yml", storeDir: "${params.outdir}")
 }
 
 workflow.onComplete {
