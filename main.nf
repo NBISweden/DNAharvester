@@ -50,11 +50,6 @@ workflow {
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_reference_index = Channel.fromFilePairs("${params.reference}*.{amb,ann,bwt,pac,sa}", size: 5)
-        .map { id, files ->
-            def parentDir = files[0].getParent()
-            return [[id:id], parentDir] }
-        .collect()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -85,7 +80,6 @@ workflow {
         } else {
             MAPPING (
                 ch_reference,
-                ch_reference_index,
                 FASTQ_PROCESSING.out.reads
             )
         }
