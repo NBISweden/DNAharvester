@@ -95,7 +95,6 @@ workflow {
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
@@ -114,6 +113,7 @@ workflow {
     // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
+            params.competitive_reference ? ch_competitive_reference : ch_reference,
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,
