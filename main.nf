@@ -146,14 +146,23 @@ workflow {
     }
 
     // output software versions
-    def all_versions = PROCESSED_FASTQ_QC.out.versions
-        .mix(MAPPING.out.versions)
+    def all_versions = INPUT_CHECK.out.versions
+        .mix(FASTQ_PROCESSING.out.versions)
+        .mix(PROCESSED_FASTQ_QC.out.versions)
         .mix(RAW_BAM_QC.out.versions)
         .mix(BAM_PROCESSING.out.versions)
         .mix(PROCESSED_BAM_QC.out.versions)
         .mix(RANDOM_SAMPLING_BAM.out.versions)
         .mix(STATS_OUTPUT.out.versions)
+    if (params.competitive_reference && file( params.competitive_reference ).exists() ) {
+        all_versions = all_versions.mix(COMPETITIVE_MAPPING.out.versions)
+    }
+    else {
+        all_versions = all_versions.mix(MAPPING.out.versions)
+    }
+    all_versions
         .collectFile(name: "versions.yml", storeDir: "${params.outdir}")
+
 }
 
 workflow.onComplete {
