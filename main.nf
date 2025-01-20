@@ -145,9 +145,7 @@ workflow {
         )
     }
 
-
-    // Emit channel in the results folder
-
+    // output software versions
     def all_versions = PROCESSED_FASTQ_QC.out.versions
         .mix(MAPPING.out.versions)
         .mix(RAW_BAM_QC.out.versions)
