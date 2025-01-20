@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FLAGSTAT          } from '../../../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT          } from '../../../modules/local/samtools/flagstat/main'
 include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/view_subsample/main'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
