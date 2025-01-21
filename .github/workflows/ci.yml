@@ -24,7 +24,7 @@ jobs:
   test:
     name: Run pipeline with test data
     # Only run on push if this is the dev branch
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/LTS-L_Dalen_2302') }}"
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/DNAharvester') }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:

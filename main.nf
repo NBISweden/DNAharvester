@@ -175,7 +175,7 @@ workflow.onComplete {
 
         Please read the error message. If you need help to solve your issue,
         feel free to reach out via slack or by opening an issue at
-        https://github.com/NBISweden/LTS-L_Dalen_2302/issues.
+        https://github.com/NBISweden/DNAharvester/issues.
         """)
     }
 }
