@@ -1,0 +1,7 @@
+name: dh
+channels:
+    - conda-forge
+    - bioconda
+dependencies:
+    - nextflow=24.10.3
+    - nf-core=3.0.2
