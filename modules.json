@@ -1,6 +1,6 @@
 {
   "name": "DNAharvester pipeline",
-  "homePage": "https://github.com/NBISweden/LTS-L_Dalen_2302",
+  "homePage": "https://github.com/NBISweden/DNAharvester",
   "repos": {
     "https://github.com/nf-core/modules.git": {
       "modules": {
