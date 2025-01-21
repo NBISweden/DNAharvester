@@ -41,7 +41,7 @@ process SAMTOOLS_DEPTH_MEAN {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        awk: \$(echo \$(awk --version 2>&1) | sed 's/^.*awk //; s/Using.*\$//')
+        awk: \$(awk --version 2>&1 | head -1 | awk '{print \$1, \$2}')
     END_VERSIONS
     """
 }

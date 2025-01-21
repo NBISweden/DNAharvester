@@ -10,7 +10,7 @@ include { FAI_TO_BED as FAI_TO_BED_TARGET                } from '../../../module
 include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET  } from '../../../modules/local/bedtools/subtract/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/view_regions/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY         } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/nf-core/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/local/samtools/flagstat/main'
 include { MULTIQC as MULTIQC_DECOY                       } from '../../../modules/nf-core/multiqc/main'
 include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/view_regions/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../modules/nf-core/samtools/index/main'
@@ -54,7 +54,7 @@ workflow COMPETITIVE_MAPPING {
 
     // Convert to *.bed format
     FAI_TO_BED_TARGET ( SAMTOOLS_FAIDX_TARGET.out.fai )
-   
+
     // Decoy genome
     // Extract the decoy genome chromosomes from the concatenated genome BED file
     BEDTOOLS_SUBTRACT_TARGET ( FAI_TO_BED_COMPETITIVE.out.bed, FAI_TO_BED_TARGET.out.bed )
@@ -64,7 +64,7 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_VIEW_DECOY.out.versions)
      // Index the BAM file
     SAMTOOLS_INDEX_DECOY ( SAMTOOLS_VIEW_DECOY.out.bam )
-    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_DECOY.out.versions)   
+    ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_DECOY.out.versions)
 
     // Run samtools flagstat and MultiQC
     ch_flagstat_decoy                = SAMTOOLS_VIEW_DECOY.out.bam.join(SAMTOOLS_INDEX_DECOY.out.bai)

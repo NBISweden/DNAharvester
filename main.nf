@@ -32,8 +32,11 @@ workflow {
     Running DNAharvester.
     """)
 
+    ch_all_versions = Channel.empty()
+
     // Read in data and create channels
     INPUT_CHECK ( params.samplesheet )
+    ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect()
@@ -50,17 +53,13 @@ workflow {
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_reference_index = Channel.fromFilePairs("${params.reference}*.{amb,ann,bwt,pac,sa}", size: 5)
-        .map { id, files ->
-            def parentDir = files[0].getParent()
-            return [[id:id], parentDir] }
-        .collect()
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
         FASTQ_PROCESSING (
             INPUT_CHECK.out.reads
         )
+        ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
     // Run FastQC, MultiQC and read statistics on processed reads
@@ -69,6 +68,7 @@ workflow {
             FASTQ_PROCESSING.out.reads,
             FASTQ_PROCESSING.out.json
         )
+        ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
 
     // Map with bwa-aln (aDNA parameters) and convert to bam
@@ -81,13 +81,14 @@ workflow {
                     ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
+            ch_all_versions = ch_all_versions.mix(COMPETITIVE_MAPPING.out.versions)
         // Map to the reference genome assembly
         } else {
             MAPPING (
                 ch_reference,
-                ch_reference_index,
                 FASTQ_PROCESSING.out.reads
             )
+            ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
     }
 
@@ -95,10 +96,10 @@ workflow {
     if ( 'raw_bam_qc' in workflow_steps ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
         )
+        ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
     // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates
     if ( 'bam_processing' in workflow_steps ) {
@@ -109,11 +110,13 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
+        ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
     }
 
     // Run flagstat and MultiQC on processed bam files
     if ( 'processed_bam_qc' in workflow_steps ) {
         PROCESSED_BAM_QC (
+            params.competitive_reference ? ch_competitive_reference : ch_reference,
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,
@@ -128,6 +131,7 @@ workflow {
             BAM_PROCESSING.out.dedup_sample_index,
             ch_intervals
         )
+        ch_all_versions = ch_all_versions.mix(PROCESSED_BAM_QC.out.versions)
     }
 
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
@@ -137,6 +141,7 @@ workflow {
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
+        ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
     // Output stats
@@ -149,7 +154,11 @@ workflow {
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib
         )
+        ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
     }
+
+    // output software versions
+    ch_all_versions.collectFile(name: "versions.yml", storeDir: "${params.outdir}")
 
 }
 

@@ -29,7 +29,7 @@ process BWA_ALN {
         $args \\
         -t $task.cpus \\
         -f ${prefix}.sai \\
-        \$INDEX \\
+        \${INDEX} \\
         ${reads}
 
     cat <<-END_VERSIONS > versions.yml

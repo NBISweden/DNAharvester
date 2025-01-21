@@ -10,7 +10,7 @@ preseq	            low
 samrmdup	        low
 samtools 	        low to medium
 bwa_index 	        medium
-fastp 	            medium
+fastp 	            high
 haplotofasta	    medium
 mapdamage 	        medium
 plink	            medium
