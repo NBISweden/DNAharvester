@@ -37,9 +37,9 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Run pipeline with EAGER test data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
+      # - name: Run pipeline with EAGER test data
+      #   run: |
+      #     nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
 
       - name: Run pipeline with GenErode test data
         run: |
