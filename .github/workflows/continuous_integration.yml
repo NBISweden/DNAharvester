@@ -50,6 +50,4 @@ jobs:
         with:
           name: nextflow-logs
           retention-days: 1
-          path: |
-            .nextflow.log
-            work/
+          path: '.nextflow.log'
