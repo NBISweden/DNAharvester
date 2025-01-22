@@ -62,11 +62,11 @@ process MAPDAMAGE2 {
             -i $bam \\
             -r $fasta
 
-    // # Rename files to include the prefix
-    // for file in ${prefix}/*; do
-    //     basefile=\$(basename "\$file")
-    //     mv "\$file" "${prefix}/${prefix}_\${basefile}"
-    // done
+    # Rename files to include the prefix
+    #for file in ${prefix}/*; do
+    #    basefile=\$(basename "\$file")
+    #    mv "\$file" "${prefix}/${prefix}_\${basefile}"
+    #done
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
