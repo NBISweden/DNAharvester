@@ -37,10 +37,14 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      # - name: Run pipeline with EAGER test data
-      #   run: |
-      #     nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
-
-      - name: Run pipeline with GenErode test data
+      - name: Download EAGER test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -c .github/test-generode_github.config -profile test,docker --outdir ./generode-results
+          git clone --single-branch --branch eager https://github.com/nf-core/test-datasets.git data/eager
+
+      - name: Run pipeline with EAGER test data
+        run: |
+         nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
+
+      # - name: Run pipeline with GenErode test data
+      #   run: |
+      #     nextflow run ${GITHUB_WORKSPACE} -c .github/test-generode_github.config -profile test,docker --outdir ./generode-results
