@@ -43,13 +43,15 @@ process MAPDAMAGE2 {
             $args \\
             -d $prefix \\
             -i $bam \\
-            -r $fasta &&
+            -r $fasta
 
     # Rename files to include the prefix
     for file in ${prefix}/*; do
         basefile=\$(basename "\$file")
         mv "\$file" "${prefix}/${prefix}_\${basefile}"
-    done &&
+    done
+
+    touch ${prefix}/${prefix}_Runtime_log.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
