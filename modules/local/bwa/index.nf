@@ -7,7 +7,7 @@ process BWA_INDEX {
         'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
         'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
-    storeDir "${params.reference.substring(0, params.reference.lastIndexOf('/'))}"
+    //storeDir "${params.reference.substring(0, params.reference.lastIndexOf('/'))}"
 
     input:
     tuple val(meta2), path(fasta)
