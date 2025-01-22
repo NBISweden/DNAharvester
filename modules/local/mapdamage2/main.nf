@@ -22,7 +22,7 @@ process MAPDAMAGE2 {
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_iter.csv"), optional: true            ,emit: stats_out_mcmc_iter
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_trace.pdf"), optional: true           ,emit: stats_out_mcmc_trace
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_iter_summ_stat.csv"), optional: true  ,emit: stats_out_mcmc_iter_summ_stat
-    tuple val(meta), path("${prefix}/${prefix}_tats_out_MCMC_post_pred.pdf"), optional: true        ,emit: stats_out_mcmc_post_pred
+    tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_post_pred.pdf"), optional: true       ,emit: stats_out_mcmc_post_pred
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_correct_prob.csv"), optional: true    ,emit: stats_out_mcmc_correct_prob
     tuple val(meta), path("${prefix}/${prefix}_dnacomp_genome.csv"), optional: true                 ,emit: dnacomp_genome
     tuple val(meta), path("${prefix}/${prefix}_*rescaled.bam"), optional: true                      ,emit: rescaled
