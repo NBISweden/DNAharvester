@@ -1,9 +1,6 @@
-name: CI
+name: continuous integration
 # This workflow runs the pipeline with the minimal test dataset to check that it completes without any syntax errors
 on:
-  # push:
-  #   branches:
-  #     - dev
   pull_request:
     paths-ignore:
       - 'README.md'
@@ -24,13 +21,13 @@ jobs:
   test:
     name: Run pipeline with test data
     # Only run on push if this is the dev branch
-    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/LTS-L_Dalen_2302') }}"
+    if: "${{ github.event_name != 'push' || (github.event_name == 'push' && github.repository == 'NBISweden/DNAharvester') }}"
     runs-on: ubuntu-latest
     strategy:
       matrix:
         NXF_VER:
-          - "23.04.0"
-          - "latest-everything"
+          - "24.10.3"
+          #- "latest-everything"
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v3
@@ -40,6 +37,17 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
-      - name: Run pipeline with test data
+      - name: Download EAGER test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -c ../test-eager_github.config -profile test,docker --outdir ./results
+          git clone --single-branch --branch eager https://github.com/nf-core/test-datasets.git data/eager
+
+      - name: Run pipeline with EAGER test data
+        run: |
+         nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
+
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: nextflow-logs
+          retention-days: 1
+          path: '.nextflow.log'
