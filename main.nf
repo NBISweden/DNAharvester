@@ -19,7 +19,7 @@ include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stat
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','output_stats']
+    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','stats_output']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -145,7 +145,7 @@ workflow {
     }
 
     // Output stats
-    if ( 'output_stats' in workflow_steps ) {
+    if ( 'stats_output' in workflow_steps ) {
         STATS_OUTPUT (
             INPUT_CHECK.out.reads,
             FASTQ_PROCESSING.out.fastp_log,
@@ -175,7 +175,7 @@ workflow.onComplete {
 
         Please read the error message. If you need help to solve your issue,
         feel free to reach out via slack or by opening an issue at
-        https://github.com/NBISweden/LTS-L_Dalen_2302/issues.
+        https://github.com/NBISweden/DNAharvester/issues.
         """)
     }
 }

@@ -2,10 +2,10 @@ process AMBER {
     tag "$meta.id"
     label 'process_low'
 
-    conda "conda-forge::matplotlib=3.9.3 bioconda::pysam=0.22.1"
+    conda "conda-forge::matplotlib=3.9.3 bioconda::pysam=0.22.1 conda-forge::wget=1.21.4"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/pysam_matplotlib:9a83292e6b804598' :
-        'community.wave.seqera.io/library/pysam_matplotlib:58a92b14d0d8ded9' }"
+        'oras://community.wave.seqera.io/library/pysam_matplotlib_wget:29119c93f69dc707' :
+        'community.wave.seqera.io/library/pysam_matplotlib_wget:a20bf1a7f1b8bebe' }"
 
     input:
     tuple val(meta), path(bam), path(tsv)
@@ -18,11 +18,14 @@ process AMBER {
     when:
     task.ext.when == null || task.ext.when
 
-    script: // This script is available at https://github.com/tvandervalk/AMBER/AMBER and has to be placed in bin/
+    script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    amber = "https://raw.githubusercontent.com/tvandervalk/AMBER/refs/heads/main/AMBER"
     """
-    AMBER \\
+    wget $amber &&
+
+    python AMBER \\
         $args \\
         --bamfiles $tsv \\
         --output ${prefix}.amber_plot

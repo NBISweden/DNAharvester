@@ -11,9 +11,9 @@ jobs:
     steps:
       # PRs to the repo main branch are only ok if coming from the repo `dev` branch
       - name: Check PRs
-        if: github.repository == 'NBISweden/LTS-L_Dalen_2302'
+        if: github.repository == 'NBISweden/DNAharvester'
         run: |
-          { [[ ${{github.event.pull_request.head.repo.full_name }} == NBISweden/LTS-L_Dalen_2302 ]] && [[ $GITHUB_HEAD_REF == "dev" ]]; }
+          { [[ ${{github.event.pull_request.head.repo.full_name }} == NBISweden/DNAharvester ]] && [[ $GITHUB_HEAD_REF == "dev" ]]; }
 
       # If the above check failed, post a comment on the PR explaining the failure
       # NOTE - this doesn't currently work if the PR is coming from a fork, due to limitations in GitHub actions secrets
