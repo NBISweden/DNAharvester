@@ -213,7 +213,7 @@ def check_samplesheet(file_in, file_out):
         https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
 
     """
-    required_columns = {"sample", "library_id", "lane", "library_type" "fastq_1", "fastq_2"}
+    required_columns = {"sample", "library_id", "lane", "library_type", "fastq_1", "fastq_2"}
     # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
         reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
