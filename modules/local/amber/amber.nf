@@ -23,9 +23,13 @@ process AMBER {
     def prefix = task.ext.prefix ?: "${meta.id}"
     amber = "https://raw.githubusercontent.com/tvandervalk/AMBER/refs/heads/main/AMBER"
     """
-    wget $amber &&
+    if [ ! -f ${projectDir}/bin/AMBER ]; then
+        wget $amber &&
+        chmod +x AMBER &&
+        mv AMBER ${projectDir}/bin/
+    fi
 
-    python AMBER \\
+    AMBER \\
         $args \\
         --bamfiles $tsv \\
         --output ${prefix}.amber_plot
