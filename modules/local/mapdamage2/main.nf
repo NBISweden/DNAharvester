@@ -38,12 +38,25 @@ process MAPDAMAGE2 {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
+    def library_type = meta.library_type
+
     """
-    mapDamage \\
+    ## Run mapDamage for library type = double
+    if [ "$library_type" == "double" ]; then
+        mapDamage \\
             $args \\
             -d $prefix \\
             -i $bam \\
             -r $fasta
+    else
+        ## Run mapDamage for library type = single
+        mapDamage \\
+            $args \\
+            -d $prefix \\
+            -i $bam \\
+            -r $fasta \\
+            --single-stranded
+    fi
 
     # Rename files to include the prefix
     for file in ${prefix}/*; do
