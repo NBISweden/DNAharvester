@@ -101,9 +101,9 @@ class RowChecker:
         row[self._sample_col] = row[self._sample_col].replace("_", "-")
 
     def _validate_library_id(self, row):
-        """Assert that the library_id ID exists."""
+        """Assert that the library ID exists."""
         if len(row[self._library_id_col]) <= 0:
-            raise AssertionError("An ID that is unique for each sequencing library_id is required.")
+            raise AssertionError("An ID that is unique for each sequencing library is required.")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""
@@ -233,7 +233,7 @@ def check_samplesheet(file_in, file_out):
         checker.validate_unique_samples()
     header = list(reader.fieldnames)
     header.insert(1, "single_end")
-    # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
+    # See https://docs.python.org/3.9/library/csv.html#id3 to read up on `newline=""`.
     with file_out.open(mode="w", newline="") as out_handle:
         writer = csv.DictWriter(out_handle, header, delimiter=",")
         writer.writeheader()
