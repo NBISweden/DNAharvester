@@ -50,15 +50,14 @@ workflow INPUT_CHECK {
 
 // Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
 def create_fastq_channel(LinkedHashMap row) {
-    // create meta map: [id, read_group]
-    // TO DO Remove single end
+    // create meta map: [id, single_end]
     // TO DO Update to take strandedness and damage treatment
     def meta = [:]
     meta.id                = row.sample + "_" + row.library_id + "_" + row.lane
     meta.library_type      = row.library_type
     meta.single_end        = row.single_end.toBoolean()
-    // readgroup: ID = readgroup id (sample_library-id_lane), SM = sample-id, PL = sequencing platform (e.g. Illumina, NovaSeq), LB = library_id based on the number of unique libraries per sample in samplesheet
-    meta.read_group        = "@RG\\tID:" + row.sample + "_" + row.library_id + "_" + row.lane + "\\tSM:" + row.sample + "\\tLB:" + row.library_id
+    // readgroup: ID = ID = readgroup id (flowcell-id.lane-nr.library-index-nr), SM = sample-id, PL = sequencing platform (e.g. Illumina, NovaSeq), LB = library-index-nr based on the number of unique libraries per sample in samplesheet
+    meta.read_group        = "@RG\\tID:" + row.flowcell_id + "." + row.lane + "." + row.library_id + "\\tSM:" + row.sample + "\\tPL:" + row.seq_platform + "\\tLB:" + row.library_id
 
     // add path(s) of the fastq file(s) to the meta map
     def fastq_meta = []
