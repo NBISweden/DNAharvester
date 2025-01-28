@@ -1,3 +1,3 @@
 sample,library_id,lane,library_type,fastq_1,fastq_2
 AB1234,01,L001,single,/path/to/data/AB1234_R1.fq.gz,/path/to/data/AB1234_R2.fq.gz
-AB5678,01,L001,doubel,/path/to/data/AB5678_R1.fq.gz,/path/to/data/AB5678_R2.fq.gz
+AB5678,01,L001,double,/path/to/data/AB5678_R1.fq.gz,/path/to/data/AB5678_R2.fq.gz
