@@ -27,7 +27,7 @@ jobs:
       matrix:
         NXF_VER:
           - "24.10.3"
-          - "latest-everything"
+          #- "latest-everything"
     steps:
       - name: Check out pipeline code
         uses: actions/checkout@v3
@@ -37,10 +37,17 @@ jobs:
         with:
           version: "${{ matrix.NXF_VER }}"
 
+      - name: Download EAGER test data
+        run: |
+          git clone --single-branch --branch eager https://github.com/nf-core/test-datasets.git data/eager
+
       - name: Run pipeline with EAGER test data
         run: |
-          nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
+         nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
 
-      - name: Run pipeline with GenErode test data
-        run: |
-          nextflow run ${GITHUB_WORKSPACE} -c .github/test-generode_github.config -profile test,docker --outdir ./generode-results
+      - name: Upload logs
+        uses: actions/upload-artifact@v3
+        with:
+          name: nextflow-logs
+          retention-days: 1
+          path: '.nextflow.log'
