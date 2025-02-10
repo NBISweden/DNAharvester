@@ -41,7 +41,7 @@ workflow STATS_OUTPUT {
 
     // run the SEQ_STATS process
     SEQ_STATS ( ch_seq_stats )
-
+    ch_versions = ch_versions.mix(SEQ_STATS.out.versions)
     // Concatenate all output files
     def all_stats_txt = SEQ_STATS.out.stats_txt
         .map { it[1] }
