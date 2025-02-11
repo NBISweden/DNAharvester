@@ -104,11 +104,17 @@ class RowChecker:
         """Assert that the library_id ID exists."""
         if len(row[self._library_id_col]) <= 0:
             raise AssertionError("An ID that is unique for each sequencing library_id is required.")
+        # Sanitize library_id IDs slightly.
+        row[self._library_id_col] = row[self._library_id_col].replace(" ", "-")
+        row[self._library_id_col] = row[self._library_id_col].replace("_", "-")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""
         if len(row[self._lane_col]) <= 0:
             raise AssertionError("A lane number is required.")
+        # Sanitize lane numbers slightly.
+        row[self._lane_col] = row[self._lane_col].replace(" ", "-")
+        row[self._lane_col] = row[self._lane_col].replace("_", "-")
 
     def _validate_library_type(self, row):
         """Assert that the library type exists and it only contains one of the following values: 'single', 'double'."""
