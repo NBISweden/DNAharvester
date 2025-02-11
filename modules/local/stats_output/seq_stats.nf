@@ -37,13 +37,13 @@ process SEQ_STATS {
     ## collect stats
     id="${prefix}"
     raw_reads=\$(zcat ${reads} | wc -l | awk '{print \$1 / 4}')
-    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{print \$2}')
+    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {print sum}')
     reference=\$(basename ${reference})
     mapping_program="bwa aln"
-    mapped_reads=\$(cat ${raw_bam_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\t"}')
+    mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mq}
-    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\t"}')
-    uniq_reads=\$(cat ${dedup_lib_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\n"}')
+    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
 
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
     min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
