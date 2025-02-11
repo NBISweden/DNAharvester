@@ -18,8 +18,8 @@ workflow MAPPING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
+    // This will run only if the index is not already present
     BWA_INDEX ( reference )
-    ch_versions = ch_versions.mix(BWA_INDEX.out.versions)
 
     ch_reference_index = BWA_INDEX.out.index
         .map { id, files ->
