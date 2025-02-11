@@ -7,20 +7,21 @@ process BWA_INDEX {
         'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
         'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
 
-    storeDir "${params.reference.substring(0, params.reference.lastIndexOf('/'))}"
+    storeDir "${file(params.reference).parent}"
 
     input:
     tuple val(meta2), path(fasta)
 
     output:
-    tuple val(meta2), path("*.amb"), path("*.ann"), path("*.bwt"), path("*.pac"), path("*.sa")  , emit: index
-    path "versions.yml"                                                                         , emit: versions
+    tuple val(meta2), path("${meta2.id}.{amb,ann,bwt,pac,sa}", arity: '5')     , emit: index
+    path "versions.yml"                                                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
+
     """
     bwa \\
         index \\

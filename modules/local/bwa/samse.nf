@@ -22,14 +22,15 @@ process BWA_SAMSE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def read_group = meta.read_group ? "-r '${meta.read_group}'" : ""
+    def reference = task.ext.reference ?: "${meta2.id}"
 
     """
-    INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
+    INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
 
     bwa samse \\
         $args \\
         $read_group \\
-        \$INDEX \\
+        \${INDEX} \\
         $sai \\
         $reads | samtools sort -@ ${task.cpus - 1} -O bam - > ${prefix}.bam
 
