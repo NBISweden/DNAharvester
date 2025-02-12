@@ -1,6 +1,6 @@
 process BWA_SAMSE {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_bwa_samse'
 
     conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?

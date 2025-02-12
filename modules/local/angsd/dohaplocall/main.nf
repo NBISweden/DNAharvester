@@ -1,6 +1,6 @@
 process ANGSD_DOHAPLOCALL {
     tag "$meta.id"
-    label 'process_long'
+    label 'process_angsd'
 
     conda "bioconda::angsd=0.939"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?

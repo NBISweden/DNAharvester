@@ -1,7 +1,7 @@
 #! /usr/bin/env nextflow
 process FASTP {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_fastp'
 
     conda "bioconda::fastp=0.24.0"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
