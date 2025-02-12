@@ -1,6 +1,6 @@
 process BWA_ALN {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_bwa_aln'
 
     conda "bioconda::bwa=0.7.18"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
