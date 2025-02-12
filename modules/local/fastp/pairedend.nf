@@ -1,13 +1,12 @@
 #! /usr/bin/env nextflow
-
 process FASTP {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_fastp'
 
-    conda "bioconda::fastp=0.23.4"
+    conda "bioconda::fastp=0.24.0"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/fastp:0.23.4--h5f740d0_0' :
-        'quay.io/biocontainers/fastp:0.23.4--h5f740d0_0' }"
+        'oras://community.wave.seqera.io/library/fastp:0.24.0--0397de619771c7ae' :
+        'community.wave.seqera.io/library/fastp:0.24.0--62c97b06e8447690' }"
 
     input:
     tuple val(meta), path(reads)

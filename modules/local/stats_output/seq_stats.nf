@@ -2,10 +2,10 @@ process SEQ_STATS {
     tag "$meta.id"
     label 'process_single'
 
-    conda "bioconda::samtools=1.20"
+    conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/samtools:1.20--ad906e74fde1812b' :
-        'community.wave.seqera.io/library/samtools:1.20--b5dfbd93de237464' }"
+        'oras://community.wave.seqera.io/library/samtools_gawk:47334f042a11e64b' :
+        'community.wave.seqera.io/library/samtools_gawk:2f6ad5ac0a3fef78' }"
 
 
     input:
@@ -37,20 +37,19 @@ process SEQ_STATS {
     ## collect stats
     id="${prefix}"
     raw_reads=\$(zcat ${reads} | wc -l | awk '{print \$1 / 4}')
-    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{print \$2}')
+    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {print sum}')
     reference=\$(basename ${reference})
     mapping_program="bwa aln"
-    mapped_reads=\$(cat ${raw_bam_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\t"}')
+    mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mq}
-    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\t"}')
-    uniq_reads=\$(cat ${dedup_lib_flagstat} | grep -m 1 "mapped (" | awk '{printf \$1 "\\n"}')
+    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
 
-    samtools stats --threads ${task.cpus} ${dedup_lib} > stats.txt
-    min_reads_len=\$(awk '/^RL/ {print \$2}' stats.txt | head -n 1)
-    max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' stats.txt)
-    mean_reads_len=\$(awk '/^SN/ && /average length/ {print \$4}' stats.txt)
-    median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=total} END \\
-    {median_pos=total/2; for (len in lengths) if (lengths[len]>=median_pos) {print len; break}}' stats.txt)
+    samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
+    min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
+    max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' ${prefix}-samtools-stats)
+    mean_reads_len=\$(awk '/^SN/ && /average length/ {print \$4}' ${prefix}-samtools-stats)
+    median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=\$3} END {median=total/2; sum=0; for (len in lengths) {sum+=lengths[len]; if (sum>=median) {print len; break}}}' ${prefix}-samtools-stats)
 
     ## write stats
     printf "\$id\\t\$raw_reads\\t\$merged_reads\\t\$reference\\t\$mapping_program\\t\$mapped_reads\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\
@@ -59,6 +58,7 @@ process SEQ_STATS {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        awk: \$(awk --version | head -n 1 | awk '{print \$1, \$2, \$3}')
     END_VERSIONS
     """
 

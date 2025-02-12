@@ -1,6 +1,6 @@
 process BWA_ALN {
     tag "$meta.id"
-    label 'process_high'
+    label 'process_bwa_aln'
 
     conda "bioconda::bwa=0.7.18"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
@@ -21,9 +21,10 @@ process BWA_ALN {
     script:
     def args = task.ext.args ?: '' // ancient DNA parameters are added via args in the configs/modules.config file
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def reference = task.ext.reference ?: "${meta2.id}"
 
     """
-    INDEX=`find -L ./ -name "*.amb" | sed 's/\\.amb\$//'`
+    INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
 
     bwa aln \\
         $args \\

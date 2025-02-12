@@ -66,14 +66,14 @@ workflow BAM_PROCESSING {
         // Prepare BAM files for merging
         ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [ meta + ['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
         }.groupTuple()
 
     } else {
         // Directly provide BAM channel for merging
         ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [ meta + ['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
         }.groupTuple()
     }
 
@@ -93,7 +93,7 @@ workflow BAM_PROCESSING {
     // Merge BAM files per sample
     ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
         // update only the 'id' field in meta, keep all other fields
-        [ meta + ['id': meta.id.split("_")[0]], bam]
+        [['id': meta.id.split("_")[0]], bam]
     }.groupTuple()
 
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ch_reference_fai )
