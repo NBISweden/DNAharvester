@@ -8,11 +8,11 @@ process FILTER_FASTQ {
         'community.wave.seqera.io/library/seqtk:1.4--f2bbc7882319500b' }"
 
     input:
-    tuple val(meta), path(reads), path(kraken_output)
+    tuple val(meta), path(reads), path(kraken2_output)
 
 
     output:
-    tuple val(meta), path("*_kraken-filtered.fastq.gz")     , emit: filtered_reads
+    tuple val(meta), path("*_kraken2-filtered.fastq.gz")    , emit: filtered_reads
     path "versions.yml"                                     , emit: versions
 
     when:
@@ -24,12 +24,12 @@ process FILTER_FASTQ {
 
     """
     # Extract read names where column 1 is "U"
-    awk '\$1 == "U" { print \$2 }' $kraken_output > ${prefix}_unclassified_readnames.txt
+    awk '\$1 == "U" { print \$2 }' $kraken2_output > ${prefix}_unclassified_readnames.txt
 
     seqtk subseq \\
         $reads \\
         ${prefix}_unclassified_readnames.txt \\
-        | gzip > ${prefix}_kraken-filtered.fastq.gz
+        | gzip > ${prefix}_kraken2-filtered.fastq.gz
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
