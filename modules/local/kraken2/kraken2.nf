@@ -3,7 +3,7 @@ process KRAKEN2 {
     label 'process_kraken2'
 
     conda "bioconda::kraken2=2.1.3"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ workflow.containerEngine == 'apptainer' && !task.ext.singularity_pull_docker_container ?
         'oras://community.wave.seqera.io/library/kraken2:eed6d8ea184673ff' :
         'community.wave.seqera.io/library/kraken2:3773f4955380979e' }"
 
