@@ -28,7 +28,7 @@ workflow FASTQ_PROCESSING {
 
 
     emit:
-    reads          = FASTP.out.reads                                                            // channel: [ val(meta), [ reads ] ]. Merged paired-end reads.
+    reads          = params.kraken2 == 'true' ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
     json           = FASTP.out.json                                                             // channel: [ val(meta), [ reads ] ]
     fastp_log      = FASTP.out.log                                                              // channel: [ val(meta), [ reads ] ]
     reads_unmerged = FASTP.out.reads_unmerged                                                   // channel: [ val(meta), [ reads ] ]
