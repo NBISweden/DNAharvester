@@ -1,6 +1,6 @@
 process KRAKEN2 {
     tag "$meta.id"
-    label 'process_high_memory'
+    label 'kraken2'
 
     conda "bioconda::kraken2=2.1.3"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -9,10 +9,10 @@ process KRAKEN2 {
 
     input:
     tuple val(meta) , path(reads)
-    path(kraken_db)
+    path(kraken2_db)
 
     output:
-    tuple val(meta), path("*.kraken")      , emit: kraken_output
+    tuple val(meta), path("*.kraken2")     , emit: kraken2_output
     tuple val(meta), path("*.output")      , emit: kraken_report
     path "versions.yml"                    , emit: versions
 
@@ -26,11 +26,11 @@ process KRAKEN2 {
     """
     kraken2 \\
         $reads $args \\
-        --db ${kraken_db} \\
+        --db ${kraken2_db} \\
         --threads ${task.cpus} \\
         --report-minimizer-data \\
         --use-names \\
-        --output ${prefix}.kraken \\
+        --output ${prefix}.kraken2 \\
         --report ${prefix}.output
 
 
