@@ -19,7 +19,7 @@ include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stat
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','stats_output']
+    def recognized_workflow_stages = ['repeat_cpg_masking','fastq_processing','mapping','processed_fastq_qc','raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam','stats_output']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -53,6 +53,13 @@ workflow {
     ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
+    // Run RepeatModeler to mask repeats and CpG islands
+    if ( 'repeat_cpg_masking' in workflow_steps ) {
+        REPEAT_CPG_MASKING (
+            ch_reference
+        )
+        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_MASKING.out.versions)
+    }
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
