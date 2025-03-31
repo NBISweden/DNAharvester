@@ -6,6 +6,7 @@ nextflow.enable.dsl = 2
 
 // Import subworkflows
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
+include { REPEAT_CPG_MASKING         } from "$projectDir/subworkflows/local/repeat_cpg_masking/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
