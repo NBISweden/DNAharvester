@@ -2,10 +2,10 @@ process REPEATMODELER {
     tag "$fasta"
     label 'repeatmodeler'
 
-    conda "bioconda::repeatmasker=4.1.8"
+    conda "bioconda::repeatmodeler=2.0.6"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/repeatmasker:4.1.8--48c1ed645707b418' :
-        'quay.io/biocontainers/repeatmasker:4.1.8--pl5321hdfd78af_0' }"
+        'oras://community.wave.seqera.io/library/repeatmodeler:2.0.6--33ecba32dc152693' :
+        'quay.io/biocontainers/repeatmodeler:2.0.6--pl5321hdfd78af_0' }"
 
     input:
     tuple val(meta2), path(fasta)
@@ -25,7 +25,7 @@ process REPEATMODELER {
     """
 
     ## changing the reference fasta to upper case
-    awk '{{ if ($0 !~ />/) {{print toupper($0)}} else {{print $0}} }}' ${fasta} > ${prefix}.upper.fasta
+    awk '{{ if (\$0 !~ />/) {{print toupper(\$0)}} else {{print \$0}} }}' ${fasta} > ${prefix}.upper.fasta
 
     ## build repeat database
     BuildDatabase -name ${prefix}_database ${prefix}.upper.fasta
