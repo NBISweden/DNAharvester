@@ -47,10 +47,6 @@ workflow {
             return [[id:id], parentDir] }
         .collect() : Channel.empty()
 
-    //ch_intervals = params.intervals ? Channel.fromPath( params.intervals, checkIfExists: true )
-    //    .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
-
-
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
 
