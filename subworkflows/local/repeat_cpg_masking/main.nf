@@ -21,7 +21,7 @@ workflow REPEAT_CPG_MASKING {
     ch_versions = ch_versions.mix(REPEATMODELER.out.versions)
 
     // Run RepeatMasker
-    REPEATMASKER ( REPEATMODELER.out.upper_fasta, REPEATMODELER.out.consensi)
+    REPEATMASKER ( reference, REPEATMODELER.out.upper_fasta, REPEATMODELER.out.consensi)
     ch_versions = ch_versions.mix(REPEATMASKER.out.versions)
 
     // Index the reference genome
@@ -29,11 +29,11 @@ workflow REPEAT_CPG_MASKING {
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     // Create the repeat bed file
-    CREATE_REPEATS_BED ( REPEATMASKER.out.repeatmasker_out )
+    CREATE_REPEATS_BED ( reference, REPEATMASKER.out.repeatmasker_out )
     ch_versions = ch_versions.mix(CREATE_REPEATS_BED.out.versions)
 
     // Create the repeats masked (repma) bed file
-    CREATE_REPMA_BED ( SAMTOOLS_FAIDX.out.fai, CREATE_REPEATS_BED.out.repeats_bed )
+    CREATE_REPMA_BED ( reference, SAMTOOLS_FAIDX.out.fai, CREATE_REPEATS_BED.out.repeats_bed )
     ch_versions = ch_versions.mix(CREATE_REPMA_BED.out.versions)
 
     // Create the CpG bed file
@@ -42,6 +42,7 @@ workflow REPEAT_CPG_MASKING {
 
     // Merge the CpG and repeat bed files
     CREATE_REPMA_CPG_BED (
+        reference,
         CREATE_REPMA_BED.out.genomefile,
         CREATE_REPMA_BED.out.sorted_repeats_bed,
         CREATE_REPMA_BED.out.ref_bed,

@@ -1,5 +1,5 @@
 process CREATE_REPMA_BED {
-    tag "$fai"
+    tag "$fasta"
     label 'process_low'
 
     conda "bioconda::bedtools=2.31.1"
@@ -8,6 +8,7 @@ process CREATE_REPMA_BED {
         'quay.io/biocontainers/bedtools:2.31.1--hf5e1c6e_0' }"
 
     input:
+    tuple val(meta2), path(fasta)
     tuple val(meta2), path(fai)
     tuple val(meta2), path(repeats_bed)
 

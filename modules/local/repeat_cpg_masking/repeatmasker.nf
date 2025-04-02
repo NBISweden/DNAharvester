@@ -1,5 +1,5 @@
 process REPEATMASKER {
-    tag "$upper_ref"
+    tag "$fasta"
     label 'process_repeatmasker'
 
     conda "bioconda::repeatmasker=4.1.8"
@@ -8,6 +8,7 @@ process REPEATMASKER {
         'quay.io/biocontainers/repeatmasker:4.1.8--pl5321hdfd78af_0' }"
 
     input:
+    tuple val(meta2), path(fasta)
     tuple val(meta2), path(upper_ref)
     tuple val(meta2), path(consensi)
 
