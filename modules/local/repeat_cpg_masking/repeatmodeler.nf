@@ -1,6 +1,6 @@
 process REPEATMODELER {
     tag "$fasta"
-    label 'repeatmodeler'
+    label 'process_repeatmodeler'
 
     conda "bioconda::repeatmodeler=2.0.6"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
@@ -11,10 +11,10 @@ process REPEATMODELER {
     tuple val(meta2), path(fasta)
 
     output:
-    tuple val(meta2), path ("*.upper.fasta")                    , emit: upper
+    tuple val(meta2), path ("*.upper.fasta")                    , emit: upper_fasta
     tuple val(meta2), path ("RM_*.*/consensi.fa.classified")    , emit: consensi
     tuple val(meta2), path ("RM_*.*/families-classified.stk")   , emit: families
-    path "versions.yml"                    , emit: versions
+    path "versions.yml"                                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -22,8 +22,8 @@ process REPEATMODELER {
     script:
     def prefix = task.ext.prefix ?: "${meta2.id}"
     def args = task.ext.args ?: ''
-    """
 
+    """
     ## changing the reference fasta to upper case
     awk '{{ if (\$0 !~ />/) {{print toupper(\$0)}} else {{print \$0}} }}' ${fasta} > ${prefix}.upper.fasta
 
