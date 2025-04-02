@@ -35,10 +35,6 @@ workflow {
 
     ch_all_versions = Channel.empty()
 
-    // Read in data and create channels
-    INPUT_CHECK ( params.samplesheet )
-    ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
-
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect()
 
@@ -64,9 +60,12 @@ workflow {
 
     // Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
-        FASTQ_PROCESSING (
-            INPUT_CHECK.out.reads
-        )
+
+        // Check the input files
+        INPUT_CHECK ( params.samplesheet )
+        ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
+
+        FASTQ_PROCESSING ( INPUT_CHECK.out.reads )
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
