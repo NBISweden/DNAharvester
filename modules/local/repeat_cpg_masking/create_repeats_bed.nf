@@ -1,5 +1,5 @@
 process CREATE_REPEATS_BED {
-    tag "$repeatmasker_out"
+    tag "$fasta"
     label 'process_low'
 
     conda "conda-forge::python=3.13.0"
@@ -8,6 +8,7 @@ process CREATE_REPEATS_BED {
         'community.wave.seqera.io/library/python:3.13.0--a025ad9838d75455' }"
 
     input:
+    tuple val(meta2), path(fasta)
     tuple val(meta2), path(repeatmasker_out)
 
     output:
