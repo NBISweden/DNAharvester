@@ -49,11 +49,13 @@ workflow {
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
-
         INPUT_CHECK ( params.samplesheet )
         ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
-        FASTQ_PROCESSING ( INPUT_CHECK.out.reads )
+        FASTQ_PROCESSING (
+            params.kraken2_db ? file(params.kraken2_db, checkIfExists: true ) : [],
+            INPUT_CHECK.out.reads
+        )
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
