@@ -1,15 +1,15 @@
 #! /usr/bin/env nextflow
 
-include { REPEATMODELER         } from '../../../modules/local/repeat_cpg_masking/repeatmodeler'
-include { REPEATMASKER          } from '../../../modules/local/repeat_cpg_masking/repeatmasker'
+include { REPEATMODELER         } from '../../../modules/local/repeat_cpg_identification/repeatmodeler'
+include { REPEATMASKER          } from '../../../modules/local/repeat_cpg_identification/repeatmasker'
 include { SAMTOOLS_FAIDX        } from '../../../modules/local/samtools/faidx/main'
-include { CREATE_REPEATS_BED    } from '../../../modules/local/repeat_cpg_masking/create_repeats_bed'
-include { CREATE_REPMA_BED      } from '../../../modules/local/repeat_cpg_masking/create_repma_bed'
-include { CREATE_CPG_BED        } from '../../../modules/local/repeat_cpg_masking/create_cpg_bed'
-include { CREATE_REPMA_CPG_BED  } from '../../../modules/local/repeat_cpg_masking/create_repma_cpg_bed'
+include { CREATE_REPEATS_BED    } from '../../../modules/local/repeat_cpg_identification/create_repeats_bed'
+include { CREATE_REPMA_BED      } from '../../../modules/local/repeat_cpg_identification/create_repma_bed'
+include { CREATE_CPG_BED        } from '../../../modules/local/repeat_cpg_identification/create_cpg_bed'
+include { CREATE_REPMA_CPG_BED  } from '../../../modules/local/repeat_cpg_identification/create_repma_cpg_bed'
 
 
-workflow REPEAT_CPG_MASKING {
+workflow REPEAT_CPG_IDENTIFICATION {
     take:
     reference
 

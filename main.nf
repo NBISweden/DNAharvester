@@ -10,7 +10,7 @@ include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fast
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
-include { REPEAT_CPG_MASKING         } from "$projectDir/subworkflows/local/repeat_cpg_masking/main"
+include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
@@ -20,7 +20,7 @@ include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stat
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_masking', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'stats_output']
+    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'stats_output']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -88,15 +88,15 @@ workflow {
     }
 
     // Run RepeatModeler and RepeatMasker to mask repeats and a custom script to mask CpG sites
-    if ( 'repeat_cpg_masking' in workflow_steps ) {
-        REPEAT_CPG_MASKING ( ch_reference )
-        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_MASKING.out.versions)
+    if ( 'repeat_cpg_identification' in workflow_steps ) {
+        REPEAT_CPG_IDENTIFICATION ( ch_reference )
+        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
     }
 
     // Create a channel from repeat masked bed file
     ch_intervals = params.intervals ? Channel.fromPath(params.intervals, checkIfExists: true)
         .map { it -> [[id: it.name], it] }.collect()
-        : ('repeat_cpg_masking' in workflow_steps ? REPEAT_CPG_MASKING.out.repma_bed : Channel.empty())
+        : ('repeat_cpg_identification' in workflow_steps ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
 
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
     if ( 'raw_bam_qc' in workflow_steps ) {
