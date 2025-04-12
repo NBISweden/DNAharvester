@@ -89,7 +89,7 @@ workflow {
         }
     }
 
-    // Run RepeatModeler and RepeatMasker to mask repeats and a custom script to mask CpG sites
+    // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites
     if ( 'repeat_cpg_identification' in workflow_steps ) {
         REPEAT_CPG_IDENTIFICATION ( ch_reference )
         ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
