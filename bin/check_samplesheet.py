@@ -52,7 +52,7 @@ class RowChecker:
             lane_col (str): The name of the column that contains the lane number
                 on which the sample was sequenced (default "lane").
             library_type_col (str): The name of the column that contains the type of
-                the library (default "library_type").
+                the library, whether it is single or double stranded (default "library_type").
             first_col (str): The name of the column that contains the first (or only)
                 FASTQ file path (default "fastq_1").
             second_col (str): The name of the column that contains the second (if any)

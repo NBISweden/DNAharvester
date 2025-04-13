@@ -12,12 +12,13 @@ process FASTP {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path('*.merged.fastq.gz'), emit: reads
-    tuple val(meta), path('*.json')           , emit: json
-    tuple val(meta), path('*.html')           , emit: html
-    tuple val(meta), path('*.log')            , emit: log
-    path "versions.yml"                       , emit: versions
-    tuple val(meta), path('*.fastp.fastq.gz') , optional:true, emit: reads_unmerged
+    tuple val(meta), path('*.fastp.fastq.gz')       , emit: reads //output merged fastq in case of paired-end, output adapter trimmed fastq in case of single-end
+    tuple val(meta), path('*.json')                 , emit: json
+    tuple val(meta), path('*.html')                 , emit: html
+    tuple val(meta), path('*.log')                  , emit: log
+    path "versions.yml"                             , emit: versions
+    tuple val(meta), path('*.fastp_R1.fastq.gz')    , optional:true, emit: reads_unmerged_R1
+    tuple val(meta), path('*.fastp_R2.fastq.gz')    , optional:true, emit: reads_unmerged_R2
 
     when:
     task.ext.when == null || task.ext.when
@@ -28,7 +29,20 @@ process FASTP {
     def prefix = task.ext.prefix ?: "${meta.id}"
     if (meta.single_end) {
     """
-    echo "DNAharvester currently does not process single end reads"
+    [ ! -f  ${prefix}.fastq.gz ] && ln -sf $reads ${prefix}.fastq.gz
+    fastp \\
+        --in1 ${prefix}.fastq.gz \\
+        --out1 ${prefix}.fastp.fastq.gz \\
+        --json ${prefix}.fastp.json \\
+        --html ${prefix}.fastp.html \\
+        --thread $task.cpus \\
+        $args \\
+        2> ${prefix}.fastp.log
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        fastp: \$(fastp --version 2>&1 | sed -e "s/fastp //g")
+    END_VERSIONS
     """
     } else {
     """
@@ -38,13 +52,13 @@ process FASTP {
         --in1 ${prefix}_1.fastq.gz \\
         --in2 ${prefix}_2.fastq.gz \\
         --merge \\
-        --merged_out ${prefix}.merged.fastq.gz \\
+        --merged_out ${prefix}.merged.fastp.fastq.gz \\
         --correction \\
         --overlap_len_require 15 \\
         --overlap_diff_limit 1 \\
         --detect_adapter_for_pe \\
-        --out1 ${prefix}_1.fastp.fastq.gz \\
-        --out2 ${prefix}_2.fastp.fastq.gz \\
+        --out1 ${prefix}.fastp_R1.fastq.gz \\
+        --out2 ${prefix}.fastp_R2.fastq.gz \\
         --json ${prefix}.fastp.json \\
         --html ${prefix}.fastp.html \\
         --thread $task.cpus \\
@@ -58,3 +72,10 @@ process FASTP {
     """
     }
 }
+
+
+
+
+
+
+
