@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { FASTP         }       from '../../../modules/local/fastp/pairedend.nf'
+include { FASTP         }       from '../../../modules/local/fastp/main.nf'
 include { KRAKEN2       }       from '../../../modules/local/kraken2/kraken2.nf'
 include { FILTER_FASTQ  }       from '../../../modules/local/kraken2/filter_fastq.nf'
 
@@ -28,11 +28,12 @@ workflow FASTQ_PROCESSING {
 
 
     emit:
-    reads          = params.kraken2 == 'true' ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
-    json           = FASTP.out.json                                                             // channel: [ val(meta), [ reads ] ]
-    fastp_log      = FASTP.out.log                                                              // channel: [ val(meta), [ reads ] ]
-    reads_unmerged = FASTP.out.reads_unmerged                                                   // channel: [ val(meta), [ reads ] ]
-    kraken2_output  = params.kraken2 == 'true' ? KRAKEN2.out.kraken2_output : Channel.empty()   // channel: [ val(meta), [ reads ] ]
-    kraken2_report  = params.kraken2 == 'true' ? KRAKEN2.out.kraken2_report : Channel.empty()   // channel: [ val(meta), [ reads ] ]
-    versions       = ch_versions                                                                // channel: [ versions.yml ]
+    reads          = params.kraken2 == 'true' ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads   // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
+    json           = FASTP.out.json                                                                 // channel: [ val(meta), [ reads ] ]
+    fastp_log      = FASTP.out.log                                                                  // channel: [ val(meta), [ reads ] ]
+    reads_unmerged_R1 = FASTP.out.reads_unmerged_R1                                                 // channel: [ val(meta), [ reads ] ]
+    reads_unmerged_R2 = FASTP.out.reads_unmerged_R2                                                 // channel: [ val(meta), [ reads ] ]
+    kraken2_output  = params.kraken2 == 'true' ? KRAKEN2.out.kraken2_output : Channel.empty()       // channel: [ val(meta), [ reads ] ]
+    kraken2_report  = params.kraken2 == 'true' ? KRAKEN2.out.kraken2_report : Channel.empty()       // channel: [ val(meta), [ reads ] ]
+    versions       = ch_versions                                                                    // channel: [ versions.yml ]
 }
