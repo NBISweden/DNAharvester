@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { FASTP         }       from '../../../modules/local/fastp/pairedend.nf'
+include { FASTP         }       from '../../../modules/local/fastp/main.nf'
 include { KRAKEN2       }       from '../../../modules/local/kraken2/kraken2.nf'
 include { FILTER_FASTQ  }       from '../../../modules/local/kraken2/filter_fastq.nf'
 
