@@ -1,6 +1,7 @@
 #! /usr/bin/env nextflow
 
-include { ANGSD_GENOTYPING  } from '../../../modules/local/angsd/genotyping/main'
+include { ANGSD_GENOTYPING  }           from '../../../modules/local/angsd/genotyping/main'
+include { BCFTOOLS_VARIANT_CALLING }    from '../../../modules/local/bcftools/genotyping/main'
 
 workflow GENOTYPING {
     take:
@@ -13,6 +14,13 @@ workflow GENOTYPING {
 
     ANGSD_GENOTYPING ( bam, reference, fai )
     ch_versions                              = ch_versions.mix(ANGSD_GENOTYPING.out.versions)
+
+    BCFTOOLS_VARIANT_CALLING ( bam, reference, fai )
+    ch_versions                              = ch_versions.mix(BCFTOOLS_VARIANT_CALLING.out.versions)
+
+
+
+
 
     emit:
     angsd_log                                = ANGSD_GENOTYPING.out.angsd_log                   // channel: [ val(meta), log ]
