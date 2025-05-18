@@ -15,13 +15,13 @@ include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
-include { GENOTYPING                 } from "$projectDir/subworkflows/local/genotyping/main"
+include { VARIANT_CALLING            } from "$projectDir/subworkflows/local/variant_calling/main"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'genotyping', 'stats_output']
+    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'variant_calling', 'stats_output']
 
     // Check input
     def workflow_steps = params.steps.tokenize(",")
@@ -153,14 +153,14 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
-    // Run ANGSD to call genotypes in both genotype likelihood framework and hard call framework
-    if ( 'genotyping' in workflow_steps ) {
-        GENOTYPING (
+    // Variant calling with ANGSD and bcftools
+    if ( 'variant_calling' in workflow_steps ) {
+        VARIANT_CALLING (
             BAM_PROCESSING.out.dedup_sample,
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
-        ch_all_versions = ch_all_versions.mix(GENOTYPING.out.versions)
+        ch_all_versions = ch_all_versions.mix(VARIANT_CALLING.out.versions)
     }
 
     // Output stats
