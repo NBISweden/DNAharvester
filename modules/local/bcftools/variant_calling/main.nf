@@ -24,7 +24,7 @@ process BCFTOOLS_VARIANT_CALLING {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def mapQ = task.ext.mapQ ?: "${params.mq}"
+    def mapQ = task.ext.mapQ ?: "${params.mapping_quality}"
     def baseQ = task.ext.baseQ ?: "${params.base_quality}"
 
     """
