@@ -20,10 +20,17 @@ process BCFTOOLS_VARIANT_FILTERING {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def qual = task.ext.qual ?: "${params.quality}"
 
 
 
     """
+    bcftools filter \\
+        -e 'QUAL < ${qual}' \\
+        -Oz \\
+        -o ${prefix}.filtered.bcf \\
+        ${args} \\ \\
+        --threads ${task.cpus-1}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
