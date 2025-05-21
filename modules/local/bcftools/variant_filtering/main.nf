@@ -8,14 +8,13 @@ process BCFTOOLS_VARIANT_FILTERING {
         'quay.io/biocontainers/bcftools:1.21--h3a4d415_1' }"
 
     input:
-
+    tuple val(meta), path(bcf)
 
     output:
-                                , emit: versions
+    tuple val(meta), path("*_filtered.bcf")           , emit: bcftools_filtered_bcf
 
     when:
     task.ext.when == null || task.ext.when
-
 
     script:
     def args = task.ext.args ?: ''
@@ -23,13 +22,12 @@ process BCFTOOLS_VARIANT_FILTERING {
     def qual = task.ext.qual ?: "${params.quality}"
 
 
-
     """
     bcftools filter \\
         -e 'QUAL < ${qual}' \\
         -Oz \\
         -o ${prefix}.filtered.bcf \\
-        ${args} \\ \\
+        ${args} \\
         --threads ${task.cpus-1}
 
     cat <<-END_VERSIONS > versions.yml
