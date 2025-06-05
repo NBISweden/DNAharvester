@@ -13,8 +13,8 @@ process GUNZIP {
     tuple val(meta2), path(fasta)
 
     output:
-    tuple val(meta2), path("*.fasta")   , emit: unzip_fasta
-    path "versions.yml"                 , emit: versions
+    tuple val(meta2), path("${fasta.baseName.replaceAll(/\.gz$/, '')}")      , emit: unzip_fasta
+    path "versions.yml"                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -27,7 +27,7 @@ process GUNZIP {
         -cd \\
         ${args} \\
         ${fasta} \\
-        > ${fasta.toString().replace('.gz', '')}
+        > ${fasta.baseName.replaceAll(/\.gz$/, '')}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
