@@ -12,8 +12,8 @@ process SAMTOOLS_MERGE {
     tuple val(meta2), path(fasta), path(fai)
 
     output:
-    tuple val(meta), path("${prefix}.bam") , optional:true, emit: bam
-    tuple val(meta), path("${prefix}.cram"), optional:true, emit: cram
+    tuple val(meta), path("${prefix}*.bam") , optional:true, emit: bam
+    tuple val(meta), path("${prefix}*.cram"), optional:true, emit: cram
     tuple val(meta), path("*.csi")         , optional:true, emit: csi
     tuple val(meta), path("*.crai")        , optional:true, emit: crai
     path  "versions.yml"                                  , emit: versions
@@ -27,13 +27,15 @@ process SAMTOOLS_MERGE {
     prefix   = task.ext.prefix ?: "${meta.id}"
     def file_type = input_files instanceof List ? input_files[0].getExtension() : input_files.getExtension()
     def reference = fasta ? "--reference ${fasta}" : ""
+    def ref_prefix = task.ext.reference ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
+
     """
     samtools \\
         merge \\
         --threads ${task.cpus-1} \\
         $args \\
         ${reference} \\
-        ${prefix}.${file_type} \\
+        ${prefix}.${ref_prefix}.${file_type} \\
         $input_files
 
     cat <<-END_VERSIONS > versions.yml
@@ -47,9 +49,9 @@ process SAMTOOLS_MERGE {
     prefix = task.ext.suffix ? "${meta.id}${task.ext.suffix}" : "${meta.id}"
     def file_type = input_files instanceof List ? input_files[0].getExtension() : input_files.getExtension()
     def index_type = file_type == "bam" ? "csi" : "crai"
-    def index = args.contains("--write-index") ? "touch ${prefix}.${index_type}" : ""
+    def index = args.contains("--write-index") ? "touch ${prefix}.${ref_prefix}.${index_type}" : ""
     """
-    touch ${prefix}.${file_type}
+    touch ${prefix}.${ref_prefix}.${file_type}
     ${index}
 
     cat <<-END_VERSIONS > versions.yml
