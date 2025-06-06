@@ -84,7 +84,7 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB_INDEX.out.versions)
 
     // Remove duplicates from BAM files merged per library/PCR
-    SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam )
+    SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB.out.versions)
 
     SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
@@ -103,7 +103,7 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
 
     // Remove duplicates from BAM files merged per sample
-    SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam )
+    SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
 
     SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
