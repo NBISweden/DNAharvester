@@ -65,14 +65,15 @@ workflow BAM_PROCESSING {
 
         // Prepare BAM files for merging
         ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam]
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
         }.groupTuple()
 
     } else {
         // Directly provide BAM channel for merging
         ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-            def id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1]
-            return [[id:id], bam]
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
         }.groupTuple()
     }
 
@@ -89,12 +90,11 @@ workflow BAM_PROCESSING {
     SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
 
-// Merge BAM files per sample
+    // Merge BAM files per sample
     ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
-        def id = meta.id.split("_")[0]
-        return [[id:id], bam]
-        }
-        .groupTuple()
+        // update only the 'id' field in meta, keep all other fields
+        [['id': meta.id.split("_")[0]], bam]
+    }.groupTuple()
 
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
@@ -102,7 +102,7 @@ workflow BAM_PROCESSING {
     SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
 
-// Remove duplicates from BAM files merged per sample
+    // Remove duplicates from BAM files merged per sample
     SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
 

@@ -3,7 +3,7 @@
 
 """Provide a command line tool to validate and transform tabular samplesheets."""
 """From https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/bin/check_samplesheet.py"""
-"""Modified by Verena Kutschera"""
+"""Modified by Verena Kutschera, Muhammad Bilal Sharif"""
 
 import argparse
 import csv
@@ -35,6 +35,7 @@ class RowChecker:
         sample_col="sample",
         library_id_col="library_id",
         lane_col="lane",
+        library_type_col="library_type",
         first_col="fastq_1",
         second_col="fastq_2",
         single_col="single_end",
@@ -46,10 +47,12 @@ class RowChecker:
         Args:
             sample_col (str): The name of the column that contains the sample name
                 (default "sample").
-            library_id_col (str): The name of the column that contains the ID of 
+            library_id_col (str): The name of the column that contains the ID of
                 the sequencing library_id (default "library_id").
-            lane_col (str): The name of the column that contains the lane number 
+            lane_col (str): The name of the column that contains the lane number
                 on which the sample was sequenced (default "lane").
+            library_type_col (str): The name of the column that contains the type of
+                the library, whether it is single or double stranded (default "library_type").
             first_col (str): The name of the column that contains the first (or only)
                 FASTQ file path (default "fastq_1").
             second_col (str): The name of the column that contains the second (if any)
@@ -63,6 +66,7 @@ class RowChecker:
         self._sample_col = sample_col
         self._library_id_col = library_id_col
         self._lane_col = lane_col
+        self._library_type_col = library_type_col
         self._first_col = first_col
         self._second_col = second_col
         self._single_col = single_col
@@ -81,6 +85,7 @@ class RowChecker:
         self._validate_sample(row)
         self._validate_library_id(row)
         self._validate_lane(row)
+        self._validate_library_type(row)
         self._validate_first(row)
         self._validate_second(row)
         self._validate_pair(row)
@@ -99,11 +104,24 @@ class RowChecker:
         """Assert that the library_id ID exists."""
         if len(row[self._library_id_col]) <= 0:
             raise AssertionError("An ID that is unique for each sequencing library_id is required.")
+        # Sanitize library_id IDs slightly.
+        row[self._library_id_col] = row[self._library_id_col].replace(" ", "-")
+        row[self._library_id_col] = row[self._library_id_col].replace("_", "-")
 
     def _validate_lane(self, row):
         """Assert that the lane number exists."""
         if len(row[self._lane_col]) <= 0:
             raise AssertionError("A lane number is required.")
+        # Sanitize lane numbers slightly.
+        row[self._lane_col] = row[self._lane_col].replace(" ", "-")
+        row[self._lane_col] = row[self._lane_col].replace("_", "-")
+
+    def _validate_library_type(self, row):
+        """Assert that the library type exists and it only contains one of the following values: 'single', 'double'."""
+        if len(row[self._library_type_col]) <= 0:
+            raise AssertionError("A library type is required.")
+        if row[self._library_type_col] not in ["single", "double"]:
+            raise AssertionError("Library type must be either 'single' or 'double'.")
 
     def _validate_first(self, row):
         """Assert that the first FASTQ entry is non-empty and has the right format."""
@@ -201,7 +219,7 @@ def check_samplesheet(file_in, file_out):
         https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
 
     """
-    required_columns = {"sample", "library_id", "lane", "fastq_1", "fastq_2"}
+    required_columns = {"sample", "library_id", "lane", "library_type", "fastq_1", "fastq_2"}
     # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
         reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))

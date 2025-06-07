@@ -35,7 +35,7 @@ process SAMTOOLS_DEPTH_MEAN {
         '{sum+=\$3} END { print sum/NR }' \\
         ${prefix}.tsv | \\
         awk \\
-        '{ printf "%.0f", \$1 }' \\
+        '{ printf "%.6f", \$1 }' \\
         > ${prefix}.dpstats.txt
 
     cat <<-END_VERSIONS > versions.yml
