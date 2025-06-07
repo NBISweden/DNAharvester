@@ -48,12 +48,6 @@ workflow {
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
-        .map { id, files ->
-            def parentDir = files[0].getParent()
-            return [[id:id], parentDir] }
-        .collect() : Channel.empty()
-
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
         INPUT_CHECK ( params.samplesheet )
@@ -81,7 +75,6 @@ workflow {
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
                     ch_competitive_reference,
-                    ch_competitive_reference_index,
                     ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
