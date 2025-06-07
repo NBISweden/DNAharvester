@@ -72,6 +72,7 @@ class RowChecker:
         self._single_col = single_col
         self._seen = set()
         self.modified = []
+        self._multiple_fastq = set()
 
     def validate_and_transform(self, row):
         """
@@ -82,6 +83,11 @@ class RowChecker:
                 (values).
 
         """
+        multiple_fastq = (row[self._sample_col], row[self._library_id_col], row[self._lane_col])
+        if multiple_fastq in self._multiple_fastq:
+            raise AssertionError(f"Duplicate FASTQ entries for the same sample/library_id/lane combination: {multiple_fastq}. it is recommended to add a unique identifier to the lane column in such scenarios.")
+        self._multiple_fastq.add(multiple_fastq)
+
         self._validate_sample(row)
         self._validate_library_id(row)
         self._validate_lane(row)
