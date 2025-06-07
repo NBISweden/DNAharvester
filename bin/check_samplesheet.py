@@ -52,7 +52,7 @@ class RowChecker:
             lane_col (str): The name of the column that contains the lane number
                 on which the sample was sequenced (default "lane").
             library_type_col (str): The name of the column that contains the type of
-                the library, whether it is single or double stranded (default "library_type").
+                the library, whether it is single-stranded or double-stranded (default "library_type").
             first_col (str): The name of the column that contains the first (or only)
                 FASTQ file path (default "fastq_1").
             second_col (str): The name of the column that contains the second (if any)
@@ -120,8 +120,8 @@ class RowChecker:
         """Assert that the library type exists and it only contains one of the following values: 'single', 'double'."""
         if len(row[self._library_type_col]) <= 0:
             raise AssertionError("A library type is required.")
-        if row[self._library_type_col] not in ["single", "double"]:
-            raise AssertionError("Library type must be either 'single' or 'double'.")
+        if row[self._library_type_col] not in ["single-stranded", "double-stranded"]:
+            raise AssertionError("Library type must be either 'single-stranded' or 'double-stranded'.")
 
     def _validate_first(self, row):
         """Assert that the first FASTQ entry is non-empty and has the right format."""
