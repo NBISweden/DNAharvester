@@ -1,5 +1,6 @@
 #! /usr/bin/env nextflow
 
+include { BWA_INDEX                                      } from '../../../modules/local/bwa/index.nf'
 include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/aln.nf'
 include { BWA_SAMSE as BWA_SAMSE_COMPETITIVE             } from '../../../modules/local/bwa/samse.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'
@@ -18,20 +19,30 @@ include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../module
 workflow COMPETITIVE_MAPPING {
     take:
     competitive_reference
-    bwa_index_competitive
     reference
     reads
 
     main:
     ch_versions = Channel.empty()
 
+    // Index the competitive reference genome if it is not already indexed
+    BWA_INDEX ( competitive_reference )
+
+    ch_competitive_reference_index = BWA_INDEX.out.index
+        .map { id, files ->
+            // Extracting the parent directory from the first file in the list
+            def parentDir = files[0].getParent()
+            return [id, parentDir] // Return necessary data
+        }
+        .collect()
+
     // Map the reads to the concatenated fasta file
-    BWA_ALN_COMPETITIVE ( reads, bwa_index_competitive )
+    BWA_ALN_COMPETITIVE ( reads, ch_competitive_reference_index )
     ch_versions                      = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
 
     ch_bwa_samse_competitive         = reads.join(BWA_ALN_COMPETITIVE.out.sai)
 
-    BWA_SAMSE_COMPETITIVE ( ch_bwa_samse_competitive, bwa_index_competitive )
+    BWA_SAMSE_COMPETITIVE ( ch_bwa_samse_competitive, ch_competitive_reference_index )
     ch_versions                      = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
 
     // Index the BAM file
@@ -93,6 +104,7 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
+    competitive_reference_index      = ch_competitive_reference_index        // channel: path(index)
     competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai    // channel: path(index)
     target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
     multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]

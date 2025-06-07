@@ -18,7 +18,7 @@ workflow MAPPING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // This will run only if the index is not already present
+    // Index the reference genome if it is not already indexed
     BWA_INDEX ( reference )
 
     ch_reference_index = BWA_INDEX.out.index
