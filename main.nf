@@ -40,13 +40,20 @@ workflow {
             if (it.size() > 20L * 1024 * 1024 * 1024) {
                 log.warn("""
                 Reference genome is larger than 20GB. This might take a long time to process.
-                Consider increasing the resources allocated to the process, or indexing the reference genome with BWA before running the pipeline.
+                Consider increasing the resources allocated in the config file, or indexing the reference genome with BWA before running the pipeline.
                 """)
             }
             [[id:it.Name], it] }.collect()
 
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
-        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+        .map { it ->
+            if (it.size() > 20L * 1024 * 1024 * 1024) {
+                log.warn("""
+                Competitive reference genome is larger than 20GB. This might take a long time to process.
+                Consider increasing the resources allocated in the config file, or indexing the competitive reference genome with BWA before running the pipeline.
+                """)
+            }
+            [[id:it.Name], it] }.collect() : Channel.empty()
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
