@@ -22,6 +22,7 @@ process BWA_ALN {
     def args = task.ext.args ?: '' // ancient DNA parameters are added via args in the configs/modules.config file
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = task.ext.reference ?: "${meta2.id}"
+    def ref_prefix = reference.replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
     INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
@@ -29,7 +30,7 @@ process BWA_ALN {
     bwa aln \\
         $args \\
         -t $task.cpus \\
-        -f ${prefix}.sai \\
+        -f ${prefix}.${ref_prefix}.sai \\
         \${INDEX} \\
         ${reads}
 
