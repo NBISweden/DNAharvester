@@ -36,7 +36,14 @@ workflow {
     ch_all_versions = Channel.empty()
 
     ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
-        .map { it -> [[id:it.Name], it] }.collect()
+        .map { it ->
+            if (it.size() > 20L * 1024 * 1024 * 1024) {
+                log.warn("""
+                Reference genome is larger than 20GB. This might take a long time to process.
+                Consider increasing the resources allocated to the process, or indexing the reference genome with BWA before running the pipeline.
+                """)
+            }
+            [[id:it.Name], it] }.collect()
 
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
