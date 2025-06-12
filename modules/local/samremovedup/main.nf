@@ -11,6 +11,7 @@ process SAMREMOVEDUP {
 
     input:
     tuple val(meta), path(bam)
+    tuple val(meta2), path(fasta), path(fai)
 
     output:
     tuple val(meta), path("*dedup.bam")                       , emit: dedup
@@ -21,6 +22,8 @@ process SAMREMOVEDUP {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def ref_prefix = task.ext.reference ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
+
     """
     samtools view \\
         -@ ${task.cpus-1} \\
@@ -28,7 +31,7 @@ process SAMREMOVEDUP {
         samremovedup.py | \\
         samtools view \\
         -b \\
-        -o ${prefix}.dedup.bam
+        -o ${prefix}.${ref_prefix}.dedup.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
