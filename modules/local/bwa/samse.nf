@@ -23,6 +23,7 @@ process BWA_SAMSE {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def read_group = meta.read_group ? "-r '${meta.read_group}'" : ""
     def reference = task.ext.reference ?: "${meta2.id}"
+    def ref_prefix = reference.replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
     INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
@@ -32,7 +33,7 @@ process BWA_SAMSE {
         $read_group \\
         \${INDEX} \\
         $sai \\
-        $reads | samtools sort -@ ${task.cpus - 1} -O bam - > ${prefix}.bam
+        $reads | samtools sort -@ ${task.cpus - 1} -O bam - > ${prefix}.${ref_prefix}.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

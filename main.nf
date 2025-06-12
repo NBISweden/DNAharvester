@@ -5,6 +5,7 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
+include { GUNZIP                     } from "$projectDir/modules/local/gunzip/main"
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
@@ -16,6 +17,7 @@ include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
+
 
 workflow {
 
@@ -34,17 +36,30 @@ workflow {
     """)
 
     ch_all_versions = Channel.empty()
+    // Input channels for reference genome
+    if (params.reference.endsWith('.gz')) {
+        ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
+            .map { it -> [[id:it.Name.replaceAll(/\.gz$/, '')], it] }.collect()
+        GUNZIP (ch_reference)
+        ch_reference = GUNZIP.out.unzip_fasta
+    }
+    else {
+        ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+    }
 
-    ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
-        .map { it ->
-            if (it.size() > 20L * 1024 * 1024 * 1024) {
-                log.warn("""
-                Reference genome is larger than 20GB. This might take a long time to process.
-                Consider increasing the resources allocated in the config file, or indexing the reference genome with BWA before running the pipeline.
-                """)
-            }
-            [[id:it.Name], it] }.collect()
+    // Check if the reference genome is larger than 20GB and warn the user
+    ch_reference = ch_reference.tap { tuple ->
+        def file = tuple[1]
+        if (file.size() > 20L * 1024 * 1024 * 1024) {
+            log.warn """
+            Reference genome is larger than 20GB. This might take a long time to process.
+            Consider increasing the resources allocated in the config file, or indexing the reference genome with BWA before running the pipeline.
+            """
+        }
+    }
 
+    // Input channel for competitive reference genome
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it ->
             if (it.size() > 20L * 1024 * 1024 * 1024) {
