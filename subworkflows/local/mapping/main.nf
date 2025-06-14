@@ -20,6 +20,7 @@ workflow MAPPING {
 
     // Index the reference genome if it is not already indexed
     BWA_INDEX(reference, file(params.reference).getParent())
+    ch_versions         = ch_versions.mix(BWA_INDEX.out.versions)
     ch_reference_index  = BWA_INDEX.out.index_dir
 
     // Map the reads to the reference genome
