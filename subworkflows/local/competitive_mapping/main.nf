@@ -26,15 +26,10 @@ workflow COMPETITIVE_MAPPING {
     ch_versions = Channel.empty()
 
     // Index the competitive reference genome if it is not already indexed
-    BWA_INDEX ( competitive_reference )
+    BWA_INDEX(competitive_reference, file(params.competitive_reference).getParent())
 
-    ch_competitive_reference_index = BWA_INDEX.out.index
-        .map { id, files ->
-            // Extracting the parent directory from the first file in the list
-            def parentDir = files[0].getParent()
-            return [id, parentDir] // Return necessary data
-        }
-        .collect()
+    // define the channel for the competitive reference index
+    ch_competitive_reference_index = BWA_INDEX.out.index_dir
 
     // Map the reads to the concatenated fasta file
     BWA_ALN_COMPETITIVE ( reads, ch_competitive_reference_index )
