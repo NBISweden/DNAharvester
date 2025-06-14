@@ -2,10 +2,10 @@ process BWA_INDEX {
     tag "$fasta"
     label 'process_medium'
 
-    conda "bioconda::bwa=0.7.18"
+    conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
-        'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
+        'oras://community.wave.seqera.io/library/bwa_samtools:813d9b5fea3890ec' :
+        'community.wave.seqera.io/library/bwa_samtools:3938c84206f62975' }"
 
     storeDir "${output_dir}"
 
