@@ -27,8 +27,6 @@ workflow COMPETITIVE_MAPPING {
 
     // Index the competitive reference genome if it is not already indexed
     BWA_INDEX(competitive_reference, file(params.competitive_reference).getParent())
-
-    // define the channel for the competitive reference index
     ch_competitive_reference_index = BWA_INDEX.out.index_dir
 
     // Map the reads to the concatenated fasta file
