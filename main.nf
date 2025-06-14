@@ -39,11 +39,11 @@ workflow {
 
     // Input channels for reference genome
     ch_reference_raw = Channel.fromPath(params.reference, checkIfExists: true)
+    // Unzip the gzipped reference genome if it is gzipped
     if (params.reference.endsWith('.gz')) {
         ch_reference = ch_reference_raw
             .map { file -> tuple([id: file.name.replaceAll(/\.gz$/, '')], file) }
             .collect()
-
         GUNZIP(ch_reference)
         ch_reference = GUNZIP.out.unzip_fasta
     } else {
@@ -52,28 +52,21 @@ workflow {
             .collect()
     }
 
-
-    // // Check if the reference genome is larger than 20GB and warn the user
-    // ch_reference = ch_reference
-    //     .tap { it ->
-    //         if (it.size() > 20L * 1024 * 1024 * 1024) {
-    //             log.warn("""
-    //             Reference genome is larger than 20GB. This might take a long time to process.
-    //             Consider increasing the resources allocated in the config file, or indexing the reference genome with BWA before running the pipeline.
-    //             """)
-    //         }
-    //     }
-
     // Input channel for competitive reference genome
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
-        .map { it ->
-            if (it.size() > 20L * 1024 * 1024 * 1024) {
-                log.warn("""
-                Competitive reference genome is larger than 20GB. This might take a long time to process.
-                Consider increasing the resources allocated in the config file, or indexing the competitive reference genome with BWA before running the pipeline.
-                """)
-            }
-            [[id:it.Name], it] }.collect() : Channel.empty()
+        .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
+
+    // Warn if the reference genome or competitive reference genome is larger than 20GB
+    def warnIfLarge = { Path file, String label ->
+        if (file.size() > 20L ) {
+            log.warn """
+            ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
+            Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
+            """
+        }
+    }
+    ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
+    ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
