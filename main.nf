@@ -58,7 +58,7 @@ workflow {
 
     // Warn if the reference genome or competitive reference genome is larger than 20GB
     def warnIfLarge = { Path file, String label ->
-        if (file.size() > 20L ) {
+        if (file.size() > 20L * 1024 * 1024 * 1024) {
             log.warn """
             ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
             Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
