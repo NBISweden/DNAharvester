@@ -37,26 +37,36 @@ workflow {
 
     ch_all_versions = Channel.empty()
 
-    // Input channels for reference and competitive reference
+    // Input channels for reference genome
+    ch_reference_raw = Channel.fromPath(params.reference, checkIfExists: true)
+    // Unzip the gzipped reference genome if it is gzipped
     if (params.reference.endsWith('.gz')) {
-        ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
-            .map { it -> [[id:it.Name.replaceAll(/\.gz$/, '')], it] }.collect()
-        GUNZIP (ch_reference)
+        ch_reference = ch_reference_raw
+            .map { file -> tuple([id: file.name.replaceAll(/\.gz$/, '')], file) }
+            .collect()
+        GUNZIP(ch_reference)
         ch_reference = GUNZIP.out.unzip_fasta
-    }
-    else {
-        ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
-            .map { it -> [[id:it.Name], it] }.collect()
+    } else {
+        ch_reference = ch_reference_raw
+            .map { file -> tuple([id: file.name], file) }
+            .collect()
     }
 
+    // Input channel for competitive reference genome
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
-        .map { id, files ->
-            def parentDir = files[0].getParent()
-            return [[id:id], parentDir] }
-        .collect() : Channel.empty()
+    // Warn if the reference genome or competitive reference genome is larger than 20GB
+    def warnIfLarge = { Path file, String label ->
+        if (file.size() > 20L * 1024 * 1024 * 1024) {
+            log.warn """
+            ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
+            Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
+            """
+        }
+    }
+    ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
+    ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -85,7 +95,6 @@ workflow {
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
                     ch_competitive_reference,
-                    ch_competitive_reference_index,
                     ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
