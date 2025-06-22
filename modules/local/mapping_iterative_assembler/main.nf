@@ -12,8 +12,8 @@ process MAPPING_ITERATIVE_ASSEMBLER {
     tuple val(meta4), path(mt_reference)
 
     output:
-    tuple val(meta), path("${meta.id}.${meta4.id}.maln*") , emit: mia_maln
-    path "versions.yml"             , emit: versions
+    tuple val(meta), path("${meta.id}.${meta4.id}.maln.*.41")   , emit: mia_maln_41
+    path "versions.yml"                                         , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,14 +21,27 @@ process MAPPING_ITERATIVE_ASSEMBLER {
     script:
     def args = task.ext.args ?: '' // ancient DNA parameters are added via args in the configs/modules.config file
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def ref_prefix = task.ext.ref_prefix ?: "${meta4.id}"
+    def ref_prefix = task.ext.ref_prefix ?: "${meta4.id.replaceAll(/\.(fasta|fna|fa)$/, '')}"
 
     """
+    gunzip -c ${reads} > ${prefix}.unzipped.fastq
+
     mia -c -C -U -i -F -k 14  \\
         $args \\
         -r ${mt_reference} \\
-        -f ${reads} \\
+        -f ${prefix}.unzipped.fastq \\
         -m ${prefix}.${ref_prefix}.maln \\
+
+    ## Remove the unzipped fastq file to save space
+    rm ${prefix}.unzipped.fastq
+
+    maln_file=\$(ls ${prefix}.${ref_prefix}.maln.*)
+    iteration=\$(echo "\${maln_file}" | grep -oE '[0-9]+\$')
+
+    ## convert format
+    ma -M \${maln_file} \\
+        -f 41 \\
+        > \${maln_file}.41 \\
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
