@@ -12,8 +12,8 @@ process MAPPING_ITERATIVE_ASSEMBLER {
     tuple val(meta4), path(mt_reference)
 
     output:
-    tuple val(meta), path("${meta.id}.${meta4.id}.maln.*.41")   , emit: mia_maln_41
-    path "versions.yml"                                         , emit: versions
+    tuple val(meta), path("*.maln.*.41")   , emit: mia_maln_41
+    path "versions.yml"                    , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
