@@ -26,7 +26,7 @@ process BWA_SAMSE {
     def ref_prefix = reference.replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
-    INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
+    INDEX=`find -L ./ -maxdepth 2 -name "${reference}.amb" | sed 's/\\.amb\$//'`
 
     bwa samse \\
         $args \\
