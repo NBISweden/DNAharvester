@@ -25,7 +25,7 @@ process BCFTOOLS_VARIANT_CALLING {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def mapQ = task.ext.mapQ ?: "${params.mapping_quality}"
     def baseQ = task.ext.baseQ ?: "${params.base_quality}"
-    def non_variant_sites = params.keep_non_variant_sites ? '' : '-v'
+    def non_variant_sites = params.keep_non_variant_sites ? '-v' : ''
 
 
     """
