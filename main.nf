@@ -5,11 +5,13 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
+include { GUNZIP                     } from "$projectDir/modules/local/gunzip/main"
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
+include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
@@ -18,11 +20,11 @@ include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/rand
 include { VARIANT_CALLING            } from "$projectDir/subworkflows/local/variant_calling/main"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
+
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'variant_calling', 'stats_output']
-
+    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'iterative_assembly', 'random_sampling_bam', 'variant_calling', 'stats_output']
     // Check input
     def workflow_steps = params.steps.tokenize(",")
     if ( ! workflow_steps.every { it in recognized_workflow_stages } ) {
@@ -36,17 +38,36 @@ workflow {
 
     ch_all_versions = Channel.empty()
 
-    ch_reference = Channel.fromPath( params.reference, checkIfExists: true )
-        .map { it -> [[id:it.Name], it] }.collect()
+    // Input channels for reference genome
+    ch_reference_raw = Channel.fromPath(params.reference, checkIfExists: true)
+    // Unzip the gzipped reference genome if it is gzipped
+    if (params.reference.endsWith('.gz')) {
+        ch_reference = ch_reference_raw
+            .map { file -> tuple([id: file.name.replaceAll(/\.gz$/, '')], file) }
+            .collect()
+        GUNZIP(ch_reference)
+        ch_reference = GUNZIP.out.unzip_fasta
+    } else {
+        ch_reference = ch_reference_raw
+            .map { file -> tuple([id: file.name], file) }
+            .collect()
+    }
 
+    // Input channel for competitive reference genome
     ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    ch_competitive_reference_index = params.competitive_reference ? Channel.fromFilePairs("${params.competitive_reference}*.{amb,ann,bwt,pac,sa}", size: 5, checkIfExists: true)
-        .map { id, files ->
-            def parentDir = files[0].getParent()
-            return [[id:id], parentDir] }
-        .collect() : Channel.empty()
+    // Warn if the reference genome or competitive reference genome is larger than 20GB
+    def warnIfLarge = { Path file, String label ->
+        if (file.size() > 20L * 1024 * 1024 * 1024) {
+            log.warn """
+            ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
+            Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
+            """
+        }
+    }
+    ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
+    ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
     if ( 'fastq_processing' in workflow_steps ) {
@@ -75,7 +96,6 @@ workflow {
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
                     ch_competitive_reference,
-                    ch_competitive_reference_index,
                     ch_reference,
                     FASTQ_PROCESSING.out.reads
             )
@@ -88,6 +108,15 @@ workflow {
             )
             ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
+    }
+
+    // MIA - Mapping Iterative Assembler
+    if ( 'iterative_assembly' in workflow_steps ) {
+        ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
+                .map { it -> [[id:it.Name], it] }.collect()
+
+        ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.reads, ch_mt_reference)
+        ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
     }
 
     // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites
