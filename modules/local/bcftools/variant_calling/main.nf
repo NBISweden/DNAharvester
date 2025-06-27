@@ -14,7 +14,6 @@ process BCFTOOLS_VARIANT_CALLING {
 
     output:
     tuple val(meta), path("*_sorted.bcf")              , emit: bcftools_sorted_bcf
-    tuple val(meta), path("*.bcf.stats")               , emit: bcftools_bcf_stats
     path "versions.yml"                                , emit: versions
 
     when:
@@ -26,7 +25,7 @@ process BCFTOOLS_VARIANT_CALLING {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def mapQ = task.ext.mapQ ?: "${params.mapping_quality}"
     def baseQ = task.ext.baseQ ?: "${params.base_quality}"
-    def non_variant_sites = params.keep_no_variant_sites ? '' : '-v'
+    def non_variant_sites = params.keep_non_variant_sites ? '' : '-v'
 
 
     """
@@ -47,6 +46,8 @@ process BCFTOOLS_VARIANT_CALLING {
         --threads ${task.cpus-1} \\
         -o ${prefix}.bcf
 
+    bcftools sort -O b -o ${prefix}_sorted.bcf ${prefix}.bcf
+    bcftools index ${prefix}_sorted.bcf
 
     rm ${prefix}.bcf
 
