@@ -8,10 +8,12 @@ process BCFTOOLS_VARIANT_FILTERING {
         'quay.io/biocontainers/bcftools:1.21--h3a4d415_1' }"
 
     input:
-    tuple val(meta), path(bcf)
+    tuple val(meta), path(sorted_bcf)
 
     output:
-    tuple val(meta), path("*_filtered.bcf")           , emit: bcftools_filtered_bcf
+    tuple val(meta), path("*.filtered.bcf")           , emit: bcftools_filtered_bcf
+    path "versions.yml"                                , emit: versions
+
 
     when:
     task.ext.when == null || task.ext.when
@@ -19,16 +21,24 @@ process BCFTOOLS_VARIANT_FILTERING {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def qual = task.ext.qual ?: "${params.quality}"
+    def variant_quality = task.ext.variant_quality ?: "${params.variant_quality}"
+    def variant_min_depth = task.ext.variant_min_depth ?: "${params.variant_min_depth}"
+    def variant_max_depth = task.ext.variant_max_depth ?: "${params.variant_max_depth}"
+    def variant_gap_indels = task.ext.variant_gap_indels ?: "${params.variant_gap_indels}"
 
 
     """
     bcftools filter \\
-        -e 'QUAL < ${qual}' \\
+        -e 'QUAL<${variant_quality} || DP<${variant_min_depth} || DP>${variant_max_depth}' \\
+        -g ${variant_gap_indels} \\
         -Oz \\
-        -o ${prefix}.filtered.bcf \\
+        -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}.filtered.bcf \\
         ${args} \\
-        --threads ${task.cpus-1}
+        --threads ${task.cpus-1} \\
+        ${sorted_bcf}
+
+
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
