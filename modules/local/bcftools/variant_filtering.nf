@@ -31,6 +31,7 @@ process BCFTOOLS_VARIANT_FILTERING {
     bcftools filter \\
         -e 'QUAL<${variant_quality} || DP<${variant_min_depth} || DP>${variant_max_depth}' \\
         -g ${variant_gap_indels} \\
+
         -Oz \\
         -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}.filtered.bcf \\
         ${args} \\
