@@ -1,7 +1,7 @@
 #! /usr/bin/env nextflow
 
 include { ANGSD_VARIANT_CALLING     }       from '../../../modules/local/angsd/variant_calling/main'
-include { BCFTOOLS_VARIANT_CALLING  }       from '../../../modules/local/bcftools/variant_calling/main'
+include { BCFTOOLS_CALL  }       from '../../../modules/local/bcftools/bcftools_call.nf'
 include { BCFTOOLS_VARIANT_FILTERING }      from '../../../modules/local/bcftools/variant_filtering/main'
 
 workflow VARIANT_CALLING {
@@ -18,11 +18,11 @@ workflow VARIANT_CALLING {
     ch_versions             = ch_versions.mix(ANGSD_VARIANT_CALLING.out.versions)
 
     // Variant calling with BCFtools
-    BCFTOOLS_VARIANT_CALLING ( bam, reference, fai )
-    ch_versions             = ch_versions.mix(BCFTOOLS_VARIANT_CALLING.out.versions)
+    BCFTOOLS_CALL ( bam, reference, fai )
+    ch_versions             = ch_versions.mix(BCFTOOLS_CALL.out.versions)
 
     // Filter Variants for bcf files produced by BCFtools
-    BCFTOOLS_VARIANT_FILTERING ( BCFTOOLS_VARIANT_CALLING.out.bcftools_sorted_bcf )
+    BCFTOOLS_VARIANT_FILTERING ( BCFTOOLS_CALL.out.bcftools_sorted_bcf )
     ch_versions             = ch_versions.mix(BCFTOOLS_VARIANT_FILTERING.out.versions)
 
 

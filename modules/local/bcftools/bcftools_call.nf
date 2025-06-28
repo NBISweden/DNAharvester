@@ -1,4 +1,4 @@
-process BCFTOOLS_VARIANT_CALLING {
+process BCFTOOLS_CALL {
     tag "$meta.id"
     label 'process_low'
 
