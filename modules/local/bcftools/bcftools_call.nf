@@ -13,7 +13,7 @@ process BCFTOOLS_CALL {
     tuple val(meta2), path(fai)
 
     output:
-    tuple val(meta), path("*_sorted.bcf")              , emit: bcftools_sorted_bcf
+    tuple val(meta), path("*_sorted.bcf")              , emit: sorted_bcf
     path "versions.yml"                                , emit: versions
 
     when:
