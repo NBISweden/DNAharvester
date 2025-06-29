@@ -1,4 +1,4 @@
-process BCFTOOLS_VARIANT_FILTERING {
+process BCFTOOLS_FILTER {
     tag "$meta.id"
     label 'process_low'
 
@@ -11,8 +11,8 @@ process BCFTOOLS_VARIANT_FILTERING {
     tuple val(meta), path(sorted_bcf)
 
     output:
-    tuple val(meta), path("*.filtered.bcf")           , emit: bcftools_filtered_bcf
-    path "versions.yml"                                , emit: versions
+    tuple val(meta), path("*.filtered.bcf")           , emit: filtered_bcf
+    path "versions.yml"                               , emit: versions
 
 
     when:
@@ -31,15 +31,11 @@ process BCFTOOLS_VARIANT_FILTERING {
     bcftools filter \\
         -e 'QUAL<${variant_quality} || DP<${variant_min_depth} || DP>${variant_max_depth}' \\
         -g ${variant_gap_indels} \\
-
         -Oz \\
-        -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}.filtered.bcf \\
+        -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}_gapindels${variant_gap_indels}.filtered.bcf \\
         ${args} \\
         --threads ${task.cpus-1} \\
         ${sorted_bcf}
-
-
-
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
