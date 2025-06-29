@@ -11,8 +11,8 @@ process BCFTOOLS_FILTER {
     tuple val(meta), path(sorted_bcf)
 
     output:
-    tuple val(meta), path("*.filtered.bcf")           , emit: filtered_bcf
-    path "versions.yml"                               , emit: versions
+    tuple val(meta), path("*.filtered.bcf") , emit: filtered_bcf
+    path "versions.yml"                     , emit: versions
 
 
     when:
