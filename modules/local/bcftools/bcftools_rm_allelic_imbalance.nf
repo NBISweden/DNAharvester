@@ -11,8 +11,8 @@ process BCFTOOLS_RM_ALLELIC_IMBALANCE {
     tuple val(meta), path(bcf)
 
     output:
-    tuple val(meta), path("*_rmindels.bcf") , emit: rmindels_bcf
-    path "versions.yml"                     , emit: versions
+    tuple val(meta), path("*_rm-allelic-imbalance.bcf") , emit: rm_allelic_imbalance_bcf
+    path "versions.yml"                                 , emit: versions
 
 
     when:
@@ -21,11 +21,11 @@ process BCFTOOLS_RM_ALLELIC_IMBALANCE {
     script:
 
     """
-    bcftools view --threads ${task.cpus}-e 'GT="0/1" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) < 0.2' ${bcf} | \\
-    bcftools view --threads ${threads} -e 'GT="0/1" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) > 0.8' | \\
-    bcftools view --threads ${threads} -e 'GT="1/2" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) < 0.2' | \\
-    bcftools view --threads ${threads} -e 'GT="1/2" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) > 0.8' \\
-    -Ob -o ${bcf.baseName}_rmindels.bcf
+    bcftools view --threads ${task.cpus} -e 'GT="0/1" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) < 0.2' ${bcf} | \\
+    bcftools view --threads ${task.cpus} -e 'GT="0/1" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) > 0.8' | \\
+    bcftools view --threads ${task.cpus} -e 'GT="1/2" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) < 0.2' | \\
+    bcftools view --threads ${task.cpus} -e 'GT="1/2" & (DP4[2]+DP4[3])/(DP4[0]+DP4[1]+DP4[2]+DP4[3]) > 0.8' \\
+    -Ob -o ${bcf.baseName}_rm-allelic-imbalance.bcf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
