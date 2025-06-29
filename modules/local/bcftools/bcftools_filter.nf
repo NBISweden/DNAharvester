@@ -11,8 +11,8 @@ process BCFTOOLS_FILTER {
     tuple val(meta), path(sorted_bcf)
 
     output:
-    tuple val(meta), path("*.filtered.bcf") , emit: filtered_bcf
-    path "versions.yml"                     , emit: versions
+    tuple val(meta), path("*.bcf")      , emit: filtered_bcf
+    path "versions.yml"                 , emit: versions
 
 
     when:
@@ -32,7 +32,7 @@ process BCFTOOLS_FILTER {
         -e 'QUAL<${variant_quality} || DP<${variant_min_depth} || DP>${variant_max_depth}' \\
         -g ${variant_gap_indels} \\
         -Oz \\
-        -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}_gapindels${variant_gap_indels}.filtered.bcf \\
+        -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}_gapindels${variant_gap_indels}.bcf \\
         ${args} \\
         --threads ${task.cpus-1} \\
         ${sorted_bcf}
