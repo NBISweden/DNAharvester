@@ -26,7 +26,7 @@ workflow {
     def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'iterative_assembly', 'stats_output']
 
     // Check input
-    def workflow_steps = params.steps.tokenize(",")
+    def workflow_steps = params.steps.replaceAll(/\s+/, '').tokenize(",")
     if ( ! workflow_steps.every { it in recognized_workflow_stages } ) {
         error "Unrecognised workflow step in $params.steps ( $recognized_workflow_stages )"
     }
