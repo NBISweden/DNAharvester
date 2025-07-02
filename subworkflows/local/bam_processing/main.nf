@@ -21,8 +21,9 @@ include { SAMTOOLS_INDEX as SAMREMOVEDUP_LIB_INDEX      } from '../../../modules
 include { MAPDAMAGE2                                    } from '../../../modules/local/mapdamage2/main'
 include { SAMTOOLS_INDEX as MAPDAMAGE2_INDEX            } from '../../../modules/nf-core/samtools/index/main'
 
-// // Removing transitions or only C to T substitutions (if params.remove_transitions and params.remove_c_to_t are set to true, respectively)
-// include { RM_TRANSITIONS                                } from '../../../modules/local/samtools/rm_transitions/main'
+// Removing transitions or only C to T substitutions (if params.remove_transitions and params.remove_c_to_t are set to true, respectively)
+include { RM_TRANSITIONS                                } from '../../../modules/local/rm_transitions/rm_transitions.nf'
+include { SAMTOOLS_INDEX as RM_TRANSITIONS_INDEX  } from '../../../modules/nf-core/samtools/index/main'
 
 // Merge BAM files per sample
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE       } from '../../../modules/local/samtools/merge/main'
@@ -108,7 +109,22 @@ workflow BAM_PROCESSING {
             // update only the 'id' field in meta, keep all other fields
             [['id': meta.id.split("_")[0]], bam]
         }.groupTuple()
-    } else {
+    }
+    else if (params.rm_transitions) {
+        // Remove transitions from BAM files
+        RM_TRANSITIONS ( SAMREMOVEDUP_LIB.out.dedup, SAMREMOVEDUP_LIB_INDEX.out.bai )
+        ch_versions = ch_versions.mix(RM_TRANSITIONS.out.versions)
+
+        RM_TRANSITIONS_INDEX ( RM_TRANSITIONS.out.rm_trans_bam,  )
+        ch_versions = ch_versions.mix(RM_TRANSITIONS_INDEX.out.versions)
+
+        // Prepare BAM files for merging per sample
+        ch_bam_sample_to_merge = RM_TRANSITIONS.out.rm_trans_bam.map { meta, bam ->
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0]], bam]
+        }.groupTuple()
+    }
+    else {
         // Merge BAM files per sample
         ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
