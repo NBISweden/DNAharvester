@@ -17,6 +17,13 @@ include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules
 include { SAMREMOVEDUP as SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as SAMREMOVEDUP_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 
+// Running MapDamage2 (rescalling BAM if params.mapdamage2_rescale is set to true)
+include { MAPDAMAGE2                                    } from '../../../modules/local/mapdamage2/main'
+include { SAMTOOLS_INDEX as MAPDAMAGE2_INDEX            } from '../../../modules/nf-core/samtools/index/main'
+
+// // Removing transitions or only C to T substitutions (if params.remove_transitions and params.remove_c_to_t are set to true, respectively)
+// include { RM_TRANSITIONS                                } from '../../../modules/local/samtools/rm_transitions/main'
+
 // Merge BAM files per sample
 include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE       } from '../../../modules/local/samtools/merge/main'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_SAMPLE_INDEX } from '../../../modules/nf-core/samtools/index/main'
@@ -90,11 +97,24 @@ workflow BAM_PROCESSING {
     SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
 
-    // Merge BAM files per sample
-    ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
-        // update only the 'id' field in meta, keep all other fields
-        [['id': meta.id.split("_")[0]], bam]
-    }.groupTuple()
+    // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
+    MAPDAMAGE2 ( SAMREMOVEDUP_LIB.out.bam , reference )
+    ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
+    if (params.mapdamage2_rescale) {
+        MAPDAMAGE2_INDEX ( MAPDAMAGE2.out.rescaled )
+        ch_versions = ch_versions.mix(MAPDAMAGE2_INDEX.out.versions)
+        // Prepare BAM files for merging per sample
+        ch_bam_sample_to_merge = MAPDAMAGE2.out.rescaled.map { meta, bam ->
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0]], bam]
+        }.groupTuple()
+    } else {
+        // Merge BAM files per sample
+        ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0]], bam]
+        }.groupTuple()
+    }
 
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ch_reference_fai )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
@@ -111,17 +131,33 @@ workflow BAM_PROCESSING {
 
 
     emit:
-    mq_filtered_bam         = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
-    mq_filtered_index       = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
-    rm_short_reads_bam      = params.readlength == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()            // channel: [ val(meta), [ bam ] ]
-    rm_short_reads_index    = params.readlength == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty()      // channel: [ val(meta), [ bai ] ]
-    merged_bam_lib          = SAMTOOLS_MERGE_LIB.out.bam                                                        // channel: [ val(meta), [ bam ] ]
-    merged_bam_lib_index    = SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                  // channel: [ val(meta), [ bai ] ]
-    dedup_lib               = SAMREMOVEDUP_LIB.out.dedup                                                        // channel: [ val(meta), [ bam ] ]
-    dedup_lib_index         = SAMREMOVEDUP_LIB_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
-    merged_bam_sample       = SAMTOOLS_MERGE_SAMPLE.out.bam                                                     // channel: [ val(meta), [ bam ] ]
-    merged_bam_sample_index = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                               // channel: [ val(meta), [ bai ] ]
-    dedup_sample            = SAMREMOVEDUP_SAMPLE.out.dedup                                                     // channel: [ val(meta), [ bam ] ]
-    dedup_sample_index      = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                 // channel: [ val(meta), [ bai ] ]
-    versions                = ch_versions                                                                       // channel: [ versions.yml ]
+    mq_filtered_bam                             = SAMTOOLS_VIEW_MQ.out.bam                                                          // channel: [ val(meta), [ bam ] ]
+    mq_filtered_index                           = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
+    rm_short_reads_bam                          = params.readlength == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()            // channel: [ val(meta), [ bam ] ]
+    rm_short_reads_index                        = params.readlength == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty()      // channel: [ val(meta), [ bai ] ]
+    merged_bam_lib                              = SAMTOOLS_MERGE_LIB.out.bam                                                        // channel: [ val(meta), [ bam ] ]
+    merged_bam_lib_index                        = SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                  // channel: [ val(meta), [ bai ] ]
+    dedup_lib                                   = SAMREMOVEDUP_LIB.out.dedup                                                        // channel: [ val(meta), [ bam ] ]
+    dedup_lib_index                             = SAMREMOVEDUP_LIB_INDEX.out.bai                                                    // channel: [ val(meta), [ bai ] ]
+    mapdamage2_fragmisincorporation_plot        = MAPDAMAGE2.out.fragmisincorporation_plot                                          // channel: [ val(meta), path(fragmisincorporation_plot) ]
+    mapdamage2_length_plot                      = MAPDAMAGE2.out.length_plot                                                        // channel: [ val(meta), path(length_plot) ]
+    mapdamage2_misincorporation                 = MAPDAMAGE2.out.misincorporation                                                   // channel: [ val(meta), path(misincorporation) ]
+    mapdamage2_lgdistribution                   = MAPDAMAGE2.out.lgdistribution                                    // channel: [ val(meta), path(lgdistribution) ]
+    mapdamage2_dnacomp                          = MAPDAMAGE2.out.dnacomp                                           // channel: [ val(meta), path(dnacomp) ]
+    mapdamage2_stats_out_mcmc_hist              = MAPDAMAGE2.out.stats_out_mcmc_hist                               // channel: [ val(meta), path(stats_out_mcmc_hist) ]
+    mapdamage2_stats_out_mcmc_iter              = MAPDAMAGE2.out.stats_out_mcmc_iter                               // channel: [ val(meta), path(stats_out_mcmc_iter) ]
+    mapdamage2_stats_out_mcmc_trace             = MAPDAMAGE2.out.stats_out_mcmc_trace                              // channel: [ val(meta), path(stats_out_mcmc_trace) ]
+    mapdamage2_stats_out_mcmc_iter_summ_stat    = MAPDAMAGE2.out.stats_out_mcmc_iter_summ_stat                     // channel: [ val(meta), path(stats_out_mcmc_iter_summ_stat) ]
+    mapdamage2_stats_out_mcmc_post_pred         = MAPDAMAGE2.out.stats_out_mcmc_post_pred                          // channel: [ val(meta), path(stats_out_mcmc_post_pred) ]
+    mapdamage2_stats_out_mcmc_correct_prob      = MAPDAMAGE2.out.stats_out_mcmc_correct_prob                       // channel: [ val(meta), path(stats_out_mcmc_correct_prob) ]
+    mapdamage2_dnacomp_genome                   = MAPDAMAGE2.out.dnacomp_genome                                    // channel: [ val(meta), path(dnacomp_genome) ]
+    mapdamage2_pctot_freq                       = MAPDAMAGE2.out.pctot_freq                                        // channel: [ val(meta), path(pctot_freq) ]
+    mapdamage2_pgtoa_freq                       = MAPDAMAGE2.out.pgtoa_freq                                        // channel: [ val(meta), path(pgtoa_freq) ]
+    mapdamage2_fasta                            = MAPDAMAGE2.out.fasta                                             // channel: [ val(meta), path(fasta) ]
+    mapdamage2_folder                           = MAPDAMAGE2.out.folder                                            // channel: [ val(meta), path(folder) ]
+    merged_bam_sample                           = SAMTOOLS_MERGE_SAMPLE.out.bam                                                     // channel: [ val(meta), [ bam ] ]
+    merged_bam_sample_index                     = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                               // channel: [ val(meta), [ bai ] ]
+    dedup_sample                                = SAMREMOVEDUP_SAMPLE.out.dedup                                                     // channel: [ val(meta), [ bam ] ]
+    dedup_sample_index                          = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                 // channel: [ val(meta), [ bai ] ]
+    versions                                    = ch_versions                                                                   // channel: [ versions.yml ]
 }

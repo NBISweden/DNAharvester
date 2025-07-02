@@ -39,12 +39,15 @@ process MAPDAMAGE2 {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     def library_type = meta.library_type
+    def rescale = task.ext.mapdamage2_rescale ?: params.mapdamage2_rescale ? '--rescale' : '--no-stats'
+
 
     """
     ## Run mapDamage for library type = double
     if [ "$library_type" == "double" ]; then
         mapDamage \\
             $args \\
+            $rescale \\
             -d $prefix \\
             -i $bam \\
             -r $fasta
@@ -52,6 +55,7 @@ process MAPDAMAGE2 {
         ## Run mapDamage for library type = single
         mapDamage \\
             $args \\
+            $rescale \\
             -d $prefix \\
             -i $bam \\
             -r $fasta \\
