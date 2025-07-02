@@ -98,7 +98,7 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
 
     // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
-    MAPDAMAGE2 ( SAMREMOVEDUP_LIB.out.bam , reference )
+    MAPDAMAGE2 ( SAMREMOVEDUP_LIB.out.dedup , reference )
     ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
     if (params.mapdamage2_rescale) {
         MAPDAMAGE2_INDEX ( MAPDAMAGE2.out.rescaled )

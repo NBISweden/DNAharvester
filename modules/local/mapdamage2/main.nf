@@ -8,7 +8,7 @@ process MAPDAMAGE2 {
         'community.wave.seqera.io/library/mapdamage2:2.2.2--1896a93613624741' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
     tuple val(meta2), path(fasta)
 
     output:
