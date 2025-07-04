@@ -17,7 +17,8 @@ include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
-include { VARIANT_CALLING            } from "$projectDir/subworkflows/local/variant_calling/main"
+include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
+include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
 
@@ -184,12 +185,22 @@ workflow {
 
     // Variant calling with ANGSD and bcftools
     if ( 'variant_calling' in workflow_steps ) {
-        VARIANT_CALLING (
-            BAM_PROCESSING.out.dedup_sample,
-            ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
-        )
-        ch_all_versions = ch_all_versions.mix(VARIANT_CALLING.out.versions)
+        if (params.variant_calling_bcftools) {
+            VARIANT_CALLING_BCFTOOLS (
+                BAM_PROCESSING.out.dedup_sample,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
+        }
+        if (params.variant_calling_angsd) {
+            VARIANT_CALLING_ANGSD (
+                BAM_PROCESSING.out.dedup_sample,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
+        }
     }
 
     // Output stats
