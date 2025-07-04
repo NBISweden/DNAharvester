@@ -35,6 +35,7 @@ process BCFTOOLS_CALL {
         -B \\
         -Ou \\
         -f ${fasta} \\
+        -a FORMAT/DP \\
         ${bam} \\
         --ignore-RG \\
         $args \\
