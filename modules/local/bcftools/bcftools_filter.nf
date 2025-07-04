@@ -29,7 +29,7 @@ process BCFTOOLS_FILTER {
 
     """
     bcftools filter \\
-        -e 'QUAL<${variant_quality} || DP<${variant_min_depth} || DP>${variant_max_depth}' \\
+        -e 'QUAL<${variant_quality} || FMT/DP<${variant_min_depth} || FMT/DP>${variant_max_depth}' \\
         -g ${variant_gap_indels} \\
         -Oz \\
         -o ${prefix}_sorted_qual${variant_quality}_dp${variant_min_depth}-${variant_max_depth}_gapindels${variant_gap_indels}.bcf \\
