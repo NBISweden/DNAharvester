@@ -29,6 +29,9 @@ process BCFTOOLS_CALL {
 
 
     """
+
+
+
     bcftools mpileup \\
         -q ${mapQ} \\
         -Q ${baseQ} \\
