@@ -17,23 +17,19 @@ include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
+include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
+include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
 
 workflow {
 
-    // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'iterative_assembly', 'stats_output']
-
-    // Check input
-    def workflow_steps = params.steps.tokenize(",")
-    if ( ! workflow_steps.every { it in recognized_workflow_stages } ) {
-        error "Unrecognised workflow step in $params.steps ( $recognized_workflow_stages )"
-    }
+    // Set the workflow name
+    def workflow_name = params.workflowname ?: workflow.runName
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
-    Running DNAharvester.
+    Running DNAharvester. Workflow name: $workflow_name
     """)
 
     ch_all_versions = Channel.empty()
@@ -70,7 +66,7 @@ workflow {
     ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
     // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
-    if ( 'fastq_processing' in workflow_steps ) {
+    if ( params.fastq_processing.toBoolean() ) {
         INPUT_CHECK ( params.samplesheet )
         ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
@@ -82,7 +78,7 @@ workflow {
     }
 
     // Run FastQC, MultiQC and read statistics on processed reads
-    if ( 'processed_fastq_qc' in workflow_steps ) {
+    if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
             FASTQ_PROCESSING.out.reads,
             FASTQ_PROCESSING.out.json
@@ -91,7 +87,7 @@ workflow {
     }
 
     // Map with bwa-aln (aDNA parameters) and convert to bam
-    if ( 'mapping' in workflow_steps ) {
+    if ( params.mapping.toBoolean() ) {
         // Competitive mapping to a concatenated reference (target plus decoy)
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
@@ -111,7 +107,7 @@ workflow {
     }
 
     // MIA - Mapping Iterative Assembler
-    if ( 'iterative_assembly' in workflow_steps ) {
+    if ( params.iterative_assembly.toBoolean() ) {
         ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
                 .map { it -> [[id:it.Name], it] }.collect()
 
@@ -120,7 +116,7 @@ workflow {
     }
 
     // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites
-    if ( 'repeat_cpg_identification' in workflow_steps ) {
+    if ( params.repeat_cpg_identification.toBoolean() ) {
         REPEAT_CPG_IDENTIFICATION ( ch_reference )
         ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
     }
@@ -128,10 +124,10 @@ workflow {
     // Create a channel from repeat masked bed file
     ch_intervals = params.intervals ? Channel.fromPath(params.intervals, checkIfExists: true)
         .map { it -> [[id: it.name], it] }.collect()
-        : ('repeat_cpg_identification' in workflow_steps ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
+        : (params.repeat_cpg_identification.toBoolean() ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
 
     // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
-    if ( 'raw_bam_qc' in workflow_steps ) {
+    if ( params.raw_bam_qc.toBoolean() ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
@@ -140,7 +136,7 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
     // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates
-    if ( 'bam_processing' in workflow_steps ) {
+    if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
@@ -152,7 +148,7 @@ workflow {
     }
 
     // Run flagstat and MultiQC on processed bam files
-    if ( 'processed_bam_qc' in workflow_steps ) {
+    if ( params.processed_bam_qc.toBoolean() ) {
         PROCESSED_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
             BAM_PROCESSING.out.mq_filtered_bam,
@@ -173,7 +169,7 @@ workflow {
     }
 
     // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
-    if ( 'random_sampling_bam' in workflow_steps ) {
+    if ( params.random_sampling_bam.toBoolean() ) {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.dedup_sample,
             ch_reference,
@@ -182,8 +178,35 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
+    // Variant calling with ANGSD and bcftools
+    if ( params.variant_calling.toBoolean() ) {
+        // Collecting processed BAM files for all samples
+        ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
+            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .groupTuple()
+
+        // Variant calling with BCFTOOLS
+        if (params.variant_calling_bcftools) {
+            VARIANT_CALLING_BCFTOOLS (
+                ch_all_dedup_samples,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
+        }
+        // Variant calling with ANGSD
+        if (params.variant_calling_angsd) {
+            VARIANT_CALLING_ANGSD (
+                ch_all_dedup_samples,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
+        }
+    }
+
     // Output stats
-    if ( 'stats_output' in workflow_steps ) {
+    if ( params.stats_output.toBoolean() ) {
         STATS_OUTPUT (
             INPUT_CHECK.out.reads,
             FASTQ_PROCESSING.out.fastp_log,
