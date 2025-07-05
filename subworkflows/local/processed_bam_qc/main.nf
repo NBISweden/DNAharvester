@@ -101,7 +101,7 @@ workflow PROCESSED_BAM_QC {
     ch_versions                              = ch_versions.mix(MULTIQC_MERGED_BAM_LIB.out.versions)
 
     // PRESEQ
-    if (params.preseq == true || params.preseq == 'true') {
+    if ( params.preseq.toBoolean() ) {
         ch_preseq_merged_bam_lib           = merged_bam_lib.join(merged_bam_lib_index)
 
         PRESEQ ( ch_preseq_merged_bam_lib )
@@ -180,7 +180,7 @@ workflow PROCESSED_BAM_QC {
     dpstats                                  = SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
     mq_filtered_bam_flagstat                 = FLAGSTAT_MQ_FILTERED_BAM.out.flagstat                                                               // channel: [ val(meta), path(flagstat) ]
     dedup_lib_flagstat                       = FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
-    preseq_txt                               = params.preseq == true ? PRESEQ.out.preseq_txt : Channel.empty()                                     // channel: [ val(meta), path(preseq_txt) ]
-    preseq_plot                              = params.preseq == true ? PLOT_PRESEQ.out.preseq_plot : Channel.empty()                               // channel: [ val(meta), path(preseq_plot) ]
+    preseq_txt                               = params.preseq.toBoolean() ? PRESEQ.out.preseq_txt : Channel.empty()                                 // channel: [ val(meta), path(preseq_txt) ]
+    preseq_plot                              = params.preseq.toBoolean() ? PLOT_PRESEQ.out.preseq_plot : Channel.empty()                           // channel: [ val(meta), path(preseq_plot) ]
     versions                                 = ch_versions                                                                                         // channel: [ versions.yml ]
 }
