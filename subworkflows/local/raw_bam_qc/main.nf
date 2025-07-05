@@ -1,7 +1,7 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FLAGSTAT          } from '../../../modules/local/samtools_flagstat.nf'
-include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools_view_subsample.nf'
+include { SAMTOOLS_FLAGSTAT          } from '../../../modules/local/samtools/samtools_flagstat.nf'
+include { SAMTOOLS_VIEW_SUBSAMPLE    } from '../../../modules/local/samtools/samtools_view_subsample.nf'
 include { CREATE_AMBER_SAMPLESHEET   } from '../../../modules/local/amber/create_amber_samplesheet'
 include { AMBER                      } from '../../../modules/local/amber/amber'
 include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/main'

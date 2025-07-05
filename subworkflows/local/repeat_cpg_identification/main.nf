@@ -2,7 +2,7 @@
 
 include { REPEATMODELER         } from '../../../modules/local/repeat_cpg_identification/repeatmodeler'
 include { REPEATMASKER          } from '../../../modules/local/repeat_cpg_identification/repeatmasker'
-include { SAMTOOLS_FAIDX        } from '../../../modules/local/samtools_faidx.nf'
+include { SAMTOOLS_FAIDX        } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { CREATE_REPEATS_BED    } from '../../../modules/local/repeat_cpg_identification/create_repeats_bed'
 include { CREATE_REPMA_BED      } from '../../../modules/local/repeat_cpg_identification/create_repma_bed'
 include { CREATE_CPG_BED        } from '../../../modules/local/repeat_cpg_identification/create_cpg_bed'
