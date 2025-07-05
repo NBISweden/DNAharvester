@@ -31,6 +31,8 @@ workflow {
     if ( ! workflow_steps.every { it in recognized_workflow_stages } ) {
         error "Unrecognised workflow step in $params.steps ( $recognized_workflow_stages )"
     }
+    // Set the workflow name
+    def workflow_name = params.workflowname ?: workflow.runName
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
@@ -185,9 +187,15 @@ workflow {
 
     // Variant calling with ANGSD and bcftools
     if ( 'variant_calling' in workflow_steps ) {
+        // Collecting processed BAM files for all samples
+        ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
+            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .groupTuple()
+        ch_all_dedup_samples.view()
+
         if (params.variant_calling_bcftools) {
             VARIANT_CALLING_BCFTOOLS (
-                BAM_PROCESSING.out.dedup_sample,
+                ch_all_dedup_samples,
                 ch_reference,
                 params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
             )
@@ -195,7 +203,7 @@ workflow {
         }
         if (params.variant_calling_angsd) {
             VARIANT_CALLING_ANGSD (
-                BAM_PROCESSING.out.dedup_sample,
+                ch_all_dedup_samples,
                 ch_reference,
                 params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
             )
