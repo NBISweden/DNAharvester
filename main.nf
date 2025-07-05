@@ -17,23 +17,26 @@ include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
+include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
+include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
 include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
 
 
 workflow {
 
     // Define workflow stages
-    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'random_sampling_bam', 'iterative_assembly', 'stats_output']
-
+    def recognized_workflow_stages = ['fastq_processing', 'mapping', 'repeat_cpg_identification', 'processed_fastq_qc', 'raw_bam_qc', 'bam_processing', 'processed_bam_qc', 'iterative_assembly', 'random_sampling_bam', 'variant_calling', 'stats_output']
     // Check input
     def workflow_steps = params.steps.tokenize(",")
     if ( ! workflow_steps.every { it in recognized_workflow_stages } ) {
         error "Unrecognised workflow step in $params.steps ( $recognized_workflow_stages )"
     }
+    // Set the workflow name
+    def workflow_name = params.workflowname ?: workflow.runName
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
-    Running DNAharvester.
+    Running DNAharvester. Workflow name: $workflow_name
     """)
 
     ch_all_versions = Channel.empty()
@@ -180,6 +183,33 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
+    }
+
+    // Variant calling with ANGSD and bcftools
+    if ( 'variant_calling' in workflow_steps ) {
+        // Collecting processed BAM files for all samples
+        ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
+            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .groupTuple()
+
+        // Variant calling with BCFTOOLS
+        if (params.variant_calling_bcftools) {
+            VARIANT_CALLING_BCFTOOLS (
+                ch_all_dedup_samples,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
+        }
+        // Variant calling with ANGSD
+        if (params.variant_calling_angsd) {
+            VARIANT_CALLING_ANGSD (
+                ch_all_dedup_samples,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
+        }
     }
 
     // Output stats

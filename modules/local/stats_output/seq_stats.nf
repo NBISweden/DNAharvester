@@ -41,7 +41,7 @@ process SEQ_STATS {
     reference=\$(basename ${reference})
     mapping_program="bwa aln"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
-    mq_filter=${params.mq}
+    mq_filter=${params.mapping_quality}
     filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
 
