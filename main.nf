@@ -36,7 +36,7 @@ workflow {
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
-    Running DNAharvester.
+    Running DNAharvester. Workflow name: $workflow_name
     """)
 
     ch_all_versions = Channel.empty()
