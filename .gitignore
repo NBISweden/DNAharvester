@@ -7,4 +7,4 @@ assets/test-*.config
 assets/samplesheet-*.csv
 assets/samplesheet_*.csv
 !assets/samplesheet-example.csv
-bin/adna_sslib_damage_removal.py
+bin/deamstrip.py
