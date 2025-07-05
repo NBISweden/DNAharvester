@@ -2,14 +2,13 @@ process RM_TRANSITIONS {
     tag "$meta.id"
     label 'process_low'
 
-    conda "bioconda::pysam=0.23.3 conda-forge::tqdm=4.67.1"
+    conda "bioconda::pysam=0.23.3 conda-forge::tqdm=4.67.1 wget=1.21.4"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/pysam_tqdm:64064577e6a6659c' :
-        'community.wave.seqera.io/library/pysam_tqdm:64064577e6a6659c' }"
+        'oras://community.wave.seqera.io/library/pysam_tqdm_wget:c28479ff2635fb54' :
+        'oras://community.wave.seqera.io/library/pysam_tqdm_wget:c28479ff2635fb54' }"
 
     input:
-    tuple val(meta), path(bam)
-    tuple val(meta), path(bai)
+    tuple val(meta), path(bam), path(bai)
 
     output:
     tuple val(meta), path("*rm_trans.bam")   , emit: rm_trans_bam
@@ -24,16 +23,17 @@ process RM_TRANSITIONS {
     def library_type = meta.library_type
 
 
-    adna_sslib_damage_removal = "https://raw.githubusercontent.com/bilalbioinfo/aDNA_Damage/refs/heads/main/adna_sslib_damage_removal.py"
+    adna_sslib_damage_removal = "https://raw.githubusercontent.com/bilalbioinfo/aDNA_Damage/refs/heads/main/deamstrip.py"
     """
-    if [ ! -f ${projectDir}/bin/adna_sslib_damage_removal.py ]; then
+    if [ ! -f ${projectDir}/bin/deamstrip.py ]; then
         wget $adna_sslib_damage_removal &&
-        chmod +x adna_sslib_damage_removal.py &&
-        mv adna_sslib_damage_removal.py ${projectDir}/bin/
+        chmod +x deamstrip.py &&
+        mv deamstrip.py ${projectDir}/bin/
     fi
 
-    adna_sslib_damage_removal.py \\
+    deamstrip.py \\
         --bamfile $bam \\
+        --library $library_type \\
         --output ${prefix}.rm_trans.bam
 
 
