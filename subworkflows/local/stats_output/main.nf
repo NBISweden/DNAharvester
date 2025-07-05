@@ -49,7 +49,7 @@ workflow STATS_OUTPUT {
     // Concatenate all output files
     def all_stats_txt = SEQ_STATS.out.stats_txt
         .map { it[1] }
-        .collectFile(name: "${workflow.runName}_sequencing_stats.txt", keepHeader: true, skip: 1, storeDir: "${params.outdir}/stats")
+        .collectFile(name: "${params.workflowname}_sequencing_stats.txt", keepHeader: true, skip: 1, storeDir: "${params.outdir}/stats")
 
     // Emit channels
     emit:
