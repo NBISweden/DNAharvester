@@ -8,7 +8,7 @@ process MAPDAMAGE2 {
         'community.wave.seqera.io/library/mapdamage2:2.2.2--1896a93613624741' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(fasta)
 
     output:
@@ -25,7 +25,7 @@ process MAPDAMAGE2 {
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_post_pred.pdf"), optional: true       ,emit: stats_out_mcmc_post_pred
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_correct_prob.csv"), optional: true    ,emit: stats_out_mcmc_correct_prob
     tuple val(meta), path("${prefix}/${prefix}_dnacomp_genome.csv"), optional: true                 ,emit: dnacomp_genome
-    tuple val(meta), path("${prefix}/${prefix}*.rescaled.bam"), optional: true                      ,emit: rescaled
+    tuple val(meta), path("${prefix}/${prefix}*.rescaled.bam"), optional: true                      ,emit: rescaled_bam
     tuple val(meta), path("${prefix}/${prefix}_5pCtoT_freq.txt"), optional: true                    ,emit: pctot_freq
     tuple val(meta), path("${prefix}/${prefix}_3pGtoA_freq.txt"), optional: true                    ,emit: pgtoa_freq
     tuple val(meta), path("${prefix}/${prefix}_*.fasta"), optional: true                            ,emit: fasta
@@ -39,7 +39,7 @@ process MAPDAMAGE2 {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     def library_type = meta.library_type
-    def rescale = task.ext.mapdamage2_rescale ?: params.mapdamage2_rescale ? '--rescale' : '--no-stats'
+    def rescale = params.mapdamage2_rescale.toBoolean() ? '--rescale' : '--no-stats'
 
 
     """
