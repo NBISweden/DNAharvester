@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FAIDX } from '../../../modules/local/samtools/faidx/main'
+include { SAMTOOLS_FAIDX } from '../../../modules/local/samtools_faidx.nf'
 include { BWA_INDEX      } from '../../../modules/local/bwa/index.nf'
 include { BWA_ALN        } from '../../../modules/local/bwa/aln.nf'
 include { BWA_SAMSE      } from '../../../modules/local/bwa/samse.nf'

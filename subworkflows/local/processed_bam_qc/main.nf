@@ -1,20 +1,20 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MQ_FILTERED_BAM    } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MQ_FILTERED_BAM    } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_MQ_FILTERED_BAM               } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_RM_SHORT_READS_BAM } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_RM_SHORT_READS_BAM } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_RM_SHORT_READS_BAM            } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MERGED_BAM_LIB     } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MERGED_BAM_LIB     } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_MERGED_BAM_LIB                } from '../../../modules/nf-core/multiqc/main'
 include { PRESEQ                                           } from '../../../modules/local/preseq/preseq'
 include { PLOT_PRESEQ                                      } from '../../../modules/local/preseq/plot_preseq'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_LIB          } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_LIB          } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_DEDUP_LIB                     } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MERGED_BAM_SAMPLE  } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_MERGED_BAM_SAMPLE  } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_MERGED_BAM_SAMPLE             } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_SAMPLE       } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DEDUP_SAMPLE       } from '../../../modules/local/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_DEDUP_SAMPLE                  } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_DEPTH_MEAN                              } from '../../../modules/local/samtools/depth_mean/main'
+include { SAMTOOLS_DEPTH_MEAN                              } from '../../../modules/local/samtools_depth_mean.nf'
 
 workflow PROCESSED_BAM_QC {
     take:

@@ -1,16 +1,16 @@
 #! /usr/bin/env nextflow
 
 // Mapping quality filter
-include { SAMTOOLS_VIEW_MQ                              } from '../../../modules/local/samtools/view_mq/main'
+include { SAMTOOLS_VIEW_MQ                              } from '../../../modules/local/samtools_view_mq.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_VIEW_MQ_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 
 // Read Length threshold
 include { ESTIMATE_READ_LEN_CUTOFF                      } from '../../../modules/local/amber/estimate_read_len_cutoff'
-include { RM_SHORT_READS                                } from '../../../modules/local/samtools/rm_short_reads/main'
+include { RM_SHORT_READS                                } from '../../../modules/local/samtools_rm_short_reads.nf'
 include { SAMTOOLS_INDEX as RM_SHORT_READS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
 
 // Merge BAM files per library/PCR
-include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools/merge/main'
+include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools_merge.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules/nf-core/samtools/index/main'
 
 // Remove duplicates from BAM files merged per library/PCR
@@ -26,7 +26,7 @@ include { RM_TRANSITIONS                                } from '../../../modules
 include { SAMTOOLS_INDEX as RM_TRANSITIONS_INDEX  } from '../../../modules/nf-core/samtools/index/main'
 
 // Merge BAM files per sample
-include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE       } from '../../../modules/local/samtools/merge/main'
+include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE       } from '../../../modules/local/samtools_merge.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_SAMPLE_INDEX } from '../../../modules/nf-core/samtools/index/main'
 
 // Remove duplicates from BAM files merged per sample
