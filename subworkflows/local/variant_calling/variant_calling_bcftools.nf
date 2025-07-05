@@ -43,7 +43,7 @@ workflow VARIANT_CALLING_BCFTOOLS {
 
 
     // Remove indels
-    if (params.remove_indels.toBoolean()) {
+    if (params.bcftools_remove_indels.toBoolean()) {
         BCFTOOLS_RM_INDELS ( ch_bcf )
         ch_bcf                      = BCFTOOLS_RM_INDELS.out.rm_indels_bcf
         ch_versions                 = ch_versions.mix(BCFTOOLS_RM_INDELS.out.versions)
@@ -54,7 +54,7 @@ workflow VARIANT_CALLING_BCFTOOLS {
 
 
     // Remove allelic imbalance
-    if (params.remove_allelic_imbalance.toBoolean()) {
+    if (params.bcftools_remove_allelic_imbalance.toBoolean()) {
         BCFTOOLS_RM_ALLELIC_IMBALANCE ( ch_bcf )
         ch_bcf                      = BCFTOOLS_RM_ALLELIC_IMBALANCE.out.rm_allelic_imbalance_bcf
         ch_versions                 = ch_versions.mix(BCFTOOLS_RM_ALLELIC_IMBALANCE.out.versions)
@@ -64,13 +64,13 @@ workflow VARIANT_CALLING_BCFTOOLS {
     }
 
     emit:
-    bcftools_sorted_bcf             = BCFTOOLS_CALL.out.sorted_bcf                                                                                                  // channel: [ val(meta), sorted.bcf ]
-    raw_bcf_stats                   = RAW_BCF_STATS.out.bcf_stats                                                                                                   // channel: [ val(meta), raw-bcf-stats.txt ]
-    bcftools_filtered_bcf           = BCFTOOLS_FILTER.out.filtered_bcf                                                                                              // channel: [ val(meta), filtered.bcf ]
-    filtered_bcf_stats              = FILTERED_BCF_STATS.out.bcf_stats                                                                                              // channel: [ val(meta), filtered-bcf-stats.txt ]
-    bcftools_rm_indels_bcf          = params.remove_indels.toBoolean() ? BCFTOOLS_RM_INDELS.out.rm_indels_bcf : Channel.empty()                                     // channel: [ val(meta), rm-indels.bcf ]
-    rm_indels_bcf_stats             = params.remove_indels.toBoolean() ? RM_INDELS_BCF_STATS.out.bcf_stats : Channel.empty()                                        // channel: [ val(meta), rm-indels-bcf-stats.txt ]
-    bcftools_rm_allelic_imbalance   = params.remove_allelic_imbalance.toBoolean() ? BCFTOOLS_RM_ALLELIC_IMBALANCE.out.rm_allelic_imbalance_bcf : Channel.empty()    // channel: [ val(meta), rm-allelic-imbalance.bcf ]
-    rm_allelic_imbalance_bcf_stats  = params.remove_allelic_imbalance.toBoolean() ? RM_ALLELIC_IMBALANCE_BCF_STATS.out.bcf_stats : Channel.empty()                  // channel: [ val(meta), rm-allelic-imbalance-bcf-stats.txt ]
-    versions                        = ch_versions                                                                                                                   // channel: [ versions.yml ]
+    bcftools_sorted_bcf             = BCFTOOLS_CALL.out.sorted_bcf                                                                                                          // channel: [ val(meta), sorted.bcf ]
+    raw_bcf_stats                   = RAW_BCF_STATS.out.bcf_stats                                                                                                           // channel: [ val(meta), raw-bcf-stats.txt ]
+    bcftools_filtered_bcf           = BCFTOOLS_FILTER.out.filtered_bcf                                                                                                      // channel: [ val(meta), filtered.bcf ]
+    filtered_bcf_stats              = FILTERED_BCF_STATS.out.bcf_stats                                                                                                      // channel: [ val(meta), filtered-bcf-stats.txt ]
+    bcftools_rm_indels_bcf          = params.bcftools_remove_indels.toBoolean() ? BCFTOOLS_RM_INDELS.out.rm_indels_bcf : Channel.empty()                                    // channel: [ val(meta), rm-indels.bcf ]
+    rm_indels_bcf_stats             = params.bcftools_remove_indels.toBoolean() ? RM_INDELS_BCF_STATS.out.bcf_stats : Channel.empty()                                       // channel: [ val(meta), rm-indels-bcf-stats.txt ]
+    bcftools_rm_allelic_imbalance   = params.bcftools_remove_allelic_imbalance.toBoolean() ? BCFTOOLS_RM_ALLELIC_IMBALANCE.out.rm_allelic_imbalance_bcf : Channel.empty()   // channel: [ val(meta), rm-allelic-imbalance.bcf ]
+    rm_allelic_imbalance_bcf_stats  = params.bcftools_remove_allelic_imbalance.toBoolean() ? RM_ALLELIC_IMBALANCE_BCF_STATS.out.bcf_stats : Channel.empty()                 // channel: [ val(meta), rm-allelic-imbalance-bcf-stats.txt ]
+    versions                        = ch_versions                                                                                                                           // channel: [ versions.yml ]
 }

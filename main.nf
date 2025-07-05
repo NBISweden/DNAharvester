@@ -191,8 +191,8 @@ workflow {
         ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
             .map { meta, bam -> tuple([id: workflow_name], bam)}
             .groupTuple()
-        ch_all_dedup_samples.view()
 
+        // Variant calling with BCFTOOLS
         if (params.variant_calling_bcftools) {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
@@ -201,6 +201,7 @@ workflow {
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
+        // Variant calling with ANGSD
         if (params.variant_calling_angsd) {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples,

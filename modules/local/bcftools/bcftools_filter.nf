@@ -21,10 +21,10 @@ process BCFTOOLS_FILTER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def variant_quality = task.ext.variant_quality ?: "${params.variant_quality}"
-    def variant_min_depth = task.ext.variant_min_depth ?: "${params.variant_min_depth}"
-    def variant_max_depth = task.ext.variant_max_depth ?: "${params.variant_max_depth}"
-    def variant_gap_indels = task.ext.variant_gap_indels ?: "${params.variant_gap_indels}"
+    def variant_quality = task.ext.variant_quality ?: "${params.bcftools_variant_quality}"
+    def variant_min_depth = task.ext.variant_min_depth ?: "${params.bcftools_variant_min_depth}"
+    def variant_max_depth = task.ext.variant_max_depth ?: "${params.bcftools_variant_max_depth}"
+    def variant_gap_indels = task.ext.variant_gap_indels ?: "${params.bcftools_variant_gap_indels}"
 
 
     """
