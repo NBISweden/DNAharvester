@@ -186,7 +186,7 @@ workflow {
             .groupTuple()
 
         // Variant calling with BCFTOOLS
-        if (params.variant_calling_bcftools) {
+        if ( params.variant_calling_bcftools.toBoolean() ) {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
                 ch_reference,
@@ -195,7 +195,7 @@ workflow {
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
         // Variant calling with ANGSD
-        if (params.variant_calling_angsd) {
+        if ( params.variant_calling_angsd.toBoolean() ) {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples,
                 ch_reference,
