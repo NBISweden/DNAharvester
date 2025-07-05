@@ -25,7 +25,7 @@ process MAPDAMAGE2 {
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_post_pred.pdf"), optional: true       ,emit: stats_out_mcmc_post_pred
     tuple val(meta), path("${prefix}/${prefix}_Stats_out_MCMC_correct_prob.csv"), optional: true    ,emit: stats_out_mcmc_correct_prob
     tuple val(meta), path("${prefix}/${prefix}_dnacomp_genome.csv"), optional: true                 ,emit: dnacomp_genome
-    tuple val(meta), path("${prefix}/${prefix}_*rescaled.bam"), optional: true                      ,emit: rescaled
+    tuple val(meta), path("${prefix}/${prefix}*.rescaled.bam"), optional: true                      ,emit: rescaled_bam
     tuple val(meta), path("${prefix}/${prefix}_5pCtoT_freq.txt"), optional: true                    ,emit: pctot_freq
     tuple val(meta), path("${prefix}/${prefix}_3pGtoA_freq.txt"), optional: true                    ,emit: pgtoa_freq
     tuple val(meta), path("${prefix}/${prefix}_*.fasta"), optional: true                            ,emit: fasta
@@ -39,12 +39,15 @@ process MAPDAMAGE2 {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     def library_type = meta.library_type
+    def rescale = params.mapdamage2_rescale.toBoolean() ? '--rescale' : '--no-stats'
+
 
     """
     ## Run mapDamage for library type = double
     if [ "$library_type" == "double" ]; then
         mapDamage \\
             $args \\
+            $rescale \\
             -d $prefix \\
             -i $bam \\
             -r $fasta
@@ -52,6 +55,7 @@ process MAPDAMAGE2 {
         ## Run mapDamage for library type = single
         mapDamage \\
             $args \\
+            $rescale \\
             -d $prefix \\
             -i $bam \\
             -r $fasta \\
@@ -60,6 +64,7 @@ process MAPDAMAGE2 {
 
     # Rename files to include the prefix
     for file in ${prefix}/*; do
+        [[ "\$file" == *.bam ]] && continue
         basefile=\$(basename "\$file")
         mv "\$file" "${prefix}/${prefix}_\${basefile}"
     done
