@@ -1,4 +1,6 @@
 sample,library_id,lane,library_type,flowcell_id,seq_platform,fastq_1,fastq_2
-AB1,01,L001,single-stranded,XYZ0123456,Illumina,/path/to/data/AB1_R1.fq.gz,/path/to/data/AB1_R2.fq.gz
-AB2,01,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB2_R1.fq.gz,/path/to/data/AB2_R2.fq.gz
-AB3,01,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB3.fq.gz,
+Sample_1,library_1,L001,single-stranded,XYZ0123456,Illumina,/path/to/data/AB1_R1.fq.gz,/path/to/data/AB1_R2.fq.gz
+Sample_1,library_2,L001,single-stranded,XYZ0123456,Illumina,/path/to/data/AB1_R1.fq.gz,/path/to/data/AB1_R2.fq.gz
+Sample_2,library_1,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB2_R1.fq.gz,/path/to/data/AB2_R2.fq.gz
+Sample_2,library_1,L002,double-stranded,XYZ0123456,Illumina,/path/to/data/AB2_R1.fq.gz,/path/to/data/AB2_R2.fq.gz
+Sample_3,library_1,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB3.fq.gz,
