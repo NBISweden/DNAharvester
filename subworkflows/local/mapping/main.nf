@@ -24,10 +24,7 @@ workflow MAPPING {
     ch_versions         = ch_versions.mix(BWA_INDEX.out.versions)
     ch_reference_index  = BWA_INDEX.out.index_dir
 
-
-    reads.view()
-
-    // Map the reads to the reference genome
+    // Map the reads to the reference genome using BWA
     if (params.mapping_tool == 'bwa-aln') {
         BWA_ALN ( reads, ch_reference_index )
         ch_versions         = ch_versions.mix(BWA_ALN.out.versions)

@@ -67,6 +67,9 @@ process BWA_ALN_MEM {
     samtools merge -@ ${task.cpus} -o ${prefix}.${ref_prefix}.bam \\
         short_reads.bam long_reads.bam
 
+    ## remove intermediate files
+    rm -f short_reads.fastq short_reads.sai short_reads.bam long_reads.fastq long_reads.bam
+
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         bwa: \$(echo \$(bwa 2>&1) | sed 's/^.*Version: //; s/Contact:.*\$//')
