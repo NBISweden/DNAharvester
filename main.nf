@@ -35,7 +35,7 @@ workflow {
     ch_all_versions = Channel.empty()
 
     // Input channels for reference genome
-    ch_reference_raw = Channel.fromPath(params.reference, checkIfExists: true)
+    ch_reference_raw = params.reference ? Channel.fromPath(params.reference, checkIfExists: true) : Channel.empty()
     // Unzip the gzipped reference genome if it is gzipped
     if (params.reference.endsWith('.gz')) {
         ch_reference = ch_reference_raw
