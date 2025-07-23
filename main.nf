@@ -12,6 +12,7 @@ include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/proc
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
+include { MYSTERY_SAMPLE             } from "$projectDir/subworkflows/local/mystery_sample/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
@@ -86,7 +87,7 @@ workflow {
         ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
 
-    // Map with bwa-aln (aDNA parameters) and convert to bam
+    // Map reads to the reference genome
     if ( params.mapping.toBoolean() ) {
         // Competitive mapping to a concatenated reference (target plus decoy)
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
@@ -113,6 +114,15 @@ workflow {
 
         ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.reads, ch_mt_reference)
         ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
+    }
+
+    // Mystery sample mapping
+    if ( params.mystery_sample.toBoolean() ) {
+        ch_reference_database = Channel.fromPath( params.reference_database, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+
+        MYSTERY_SAMPLE (ch_reference_database, FASTQ_PROCESSING.out.reads)
+        ch_all_versions = ch_all_versions.mix(MYSTERY_SAMPLE.out.versions)
     }
 
     // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites
