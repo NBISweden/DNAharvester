@@ -118,7 +118,7 @@ workflow {
 
     // Mystery sample mapping
     if ( params.mystery_sample.toBoolean() ) {
-        ch_reference_database = Channel.fromPath( params.reference_database, checkIfExists: true )
+        ch_reference_database = Channel.fromPath( params.ms_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
         MYSTERY_SAMPLE (ch_reference_database, FASTQ_PROCESSING.out.reads)
