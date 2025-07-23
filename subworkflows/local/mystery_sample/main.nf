@@ -1,6 +1,5 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FAIDX                                    } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { BOWTIE2_BUILD                                     } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BOWTIE2 as MS_BOWTIE2                             } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX as MS_BOWTIE2_INDEX                } from '../../../modules/nf-core/samtools/index/main'
@@ -37,17 +36,14 @@ workflow MYSTERY_SAMPLE {
     main:
     ch_versions         = Channel.empty()
 
-    // SAMTOOLS_FAIDX ( reference )
-    // ch_versions         = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
-    // ch_reference_fai    = reference.join(SAMTOOLS_FAIDX.out.fai).collect()
 
     // Index the reference genome if it is not already indexed
-    BOWTIE2_BUILD (reference, file(params.reference).getParent())
+    BOWTIE2_BUILD (reference, file(params.ms_reference_database).getParent())
     ch_versions             = ch_versions.mix(BOWTIE2_BUILD.out.versions)
-    ch_reference_index      = BOWTIE2_BUILD.out.index_dir
+
 
     // Map the reads to the reference genome
-    MS_BOWTIE2 ( reads, ch_reference_index )
+    MS_BOWTIE2 ( reads, BOWTIE2_BUILD.out.index_dir )
     ch_versions             = ch_versions.mix(MS_BOWTIE2.out.versions)
     ch_bam                  = MS_BOWTIE2.out.bam
     // Index the BAM file
@@ -115,12 +111,19 @@ workflow MYSTERY_SAMPLE {
 
 
     emit:
-    index                   = ch_reference_index                 // channel: path(index)
-    bam                     = ch_bam                              // channel: [ val(meta), [ bam ] ]
-    dedup_bam               = MS_SAMREMOVEDUP_SAMPLE.out.dedup    // channel: [ val(meta), [ dedup_bam ] ]
-    merged_bam_lib          = MS_SAMTOOLS_MERGE_LIB.out.bam       // channel: [ val(meta), [ merged_bam_lib ] ]
-    merged_bam_lib_index    = MS_SAMTOOLS_MERGE_LIB_INDEX.out.bai // channel: [ val(meta), [ merged_bam_lib_index ] ]
-
-    idxstats                = MS_SAMTOOLS_IDXSTATS.out.idxstats   // channel: [ val(meta), [ idxstats ] ]
-    versions                = ch_versions                        // channel: [ versions.yml ]
+    reference_index         = BOWTIE2_BUILD.out.index_dir                 // channel: path(index)
+    raw_bam                 = ch_bam                                      // channel: [ val(meta), [ bam ] ]
+    raw_bam_bai             = MS_BOWTIE2_INDEX.out.bai                    // channel: [ val(meta), [ raw_bam_bai ] ]
+    mq_filtered_bam         = MS_SAMTOOLS_VIEW_MQ.out.bam                 // channel: [ val(meta), [ mq_filtered_bam ] ]
+    mq_filtered_bam_bai     = MS_SAMTOOLS_VIEW_MQ_INDEX.out.bai           // channel: [ val(meta), [ mq_filtered_bam_bai ] ]
+    merged_bam_lib          = MS_SAMTOOLS_MERGE_LIB.out.bam               // channel: [ val(meta), [ merged_bam_lib ] ]
+    merged_bam_lib_bai      = MS_SAMTOOLS_MERGE_LIB_INDEX.out.bai         // channel: [ val(meta), [ merged_bam_lib_bai ] ]
+    dedup_bam_lib           = MS_SAMREMOVEDUP_LIB.out.dedup               // channel: [ val(meta), [ dedup_bam_lib ] ]
+    dedup_bam_lib_bai       = MS_SAMREMOVEDUP_LIB_INDEX.out.bai           // channel: [ val(meta), [ dedup_bam_lib_bai ] ]
+    merged_bam_sample       = MS_SAMTOOLS_MERGE_SAMPLE.out.bam            // channel: [ val(meta), [ merged_bam_sample ] ]
+    merged_bam_sample_bai   = MS_SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai      // channel: [ val(meta), [ merged_bam_sample_bai ] ]
+    dedup_bam_sample        = MS_SAMREMOVEDUP_SAMPLE.out.dedup            // channel: [ val(meta), [ dedup_bam_sample ] ]
+    dedup_bam_sample_bai    = MS_SAMREMOVEDUP_SAMPLE_INDEX.out.bai        // channel: [ val(meta), [ dedup_bam_sample_bai ] ]
+    idxstats                = MS_SAMTOOLS_IDXSTATS.out.idxstats           // channel: [ val(meta), [ idxstats ] ]
+    versions                = ch_versions                                 // channel: [ versions.yml ]
 }
