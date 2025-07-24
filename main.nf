@@ -149,9 +149,7 @@ workflow {
     if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
             RAW_BAM_QC.out.amber_txt
         )
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)

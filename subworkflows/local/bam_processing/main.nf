@@ -37,20 +37,14 @@ include { SAMTOOLS_INDEX as SAMREMOVEDUP_SAMPLE_INDEX   } from '../../../modules
 workflow BAM_PROCESSING {
     take:
     reference
-    fai
     bam
-    bai
     amber_txt
 
     main:
     ch_versions = Channel.empty()
 
-    // Create channels
-    ch_reference_fai = reference.join(fai).collect()
-    ch_samtools_view_mq = bam.join(bai)
-
     // Filter for mapping quality (provided in custom.config)
-    SAMTOOLS_VIEW_MQ ( ch_samtools_view_mq )
+    SAMTOOLS_VIEW_MQ ( bam )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
 
     SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )
@@ -85,19 +79,18 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, ch_reference_fai )
+    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
 
     SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB_INDEX.out.versions)
 
     // Remove duplicates from BAM files merged per library/PCR
-    SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam, ch_reference_fai )
+    SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam, reference )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB.out.versions)
 
     SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
-
 
     ch_merged_bam_lib_bai = SAMREMOVEDUP_LIB.out.dedup.join(SAMREMOVEDUP_LIB_INDEX.out.bai)
 
@@ -136,14 +129,14 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ch_reference_fai )
+    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
 
     SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
 
     // Remove duplicates from BAM files merged per sample
-    SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam, ch_reference_fai )
+    SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam, reference )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
 
     SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
