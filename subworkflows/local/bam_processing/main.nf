@@ -43,12 +43,13 @@ workflow BAM_PROCESSING {
     main:
     ch_versions = Channel.empty()
 
+
     // Filter for mapping quality (provided in custom.config)
     SAMTOOLS_VIEW_MQ ( bam )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
-
     SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ_INDEX.out.versions )
+
 
     // Filter for minimum read length estimated from AMBER output
     if (params.readlength == "auto") {
@@ -79,39 +80,41 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
+
+    // Merge BAM files per library/PCR
     SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
-
     SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB_INDEX.out.versions)
+
 
     // Remove duplicates from BAM files merged per library/PCR
     SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam, reference )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB.out.versions)
-
     SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
+    ch_dedup_lib_bai = SAMREMOVEDUP_LIB.out.dedup.join(SAMREMOVEDUP_LIB_INDEX.out.bai)
 
-    ch_merged_bam_lib_bai = SAMREMOVEDUP_LIB.out.dedup.join(SAMREMOVEDUP_LIB_INDEX.out.bai)
 
     // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
-    MAPDAMAGE2 ( ch_merged_bam_lib_bai , reference )
-    ch_versions                              = ch_versions.mix(MAPDAMAGE2.out.versions)
+    MAPDAMAGE2 ( ch_dedup_lib_bai , reference )
+    ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
 
+
+    // use rescaled BAM files if params.mapdamage2_rescale is set to true
     if ( params.mapdamage2_rescale.toBoolean() ) {
         MAPDAMAGE2_INDEX ( MAPDAMAGE2.out.rescaled_bam )
         ch_versions = ch_versions.mix(MAPDAMAGE2_INDEX.out.versions)
+
         // Prepare BAM files for merging per sample
         ch_bam_sample_to_merge = MAPDAMAGE2.out.rescaled_bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
             [['id': meta.id.split("_")[0]], bam]
         }.groupTuple()
-    }
-    else if ( params.remove_transitions.toBoolean() ) {
+    } else if ( params.remove_transitions.toBoolean() ) { // remove transitions from BAM files if params.remove_transitions is set to true
         // Remove transitions from BAM files
-        RM_TRANSITIONS ( ch_merged_bam_lib_bai )
+        RM_TRANSITIONS ( ch_dedup_lib_bai )
         ch_versions = ch_versions.mix(RM_TRANSITIONS.out.versions)
-
         RM_TRANSITIONS_INDEX ( RM_TRANSITIONS.out.rm_trans_bam,  )
         ch_versions = ch_versions.mix(RM_TRANSITIONS_INDEX.out.versions)
 
@@ -120,27 +123,27 @@ workflow BAM_PROCESSING {
             // update only the 'id' field in meta, keep all other fields
             [['id': meta.id.split("_")[0]], bam]
         }.groupTuple()
-    }
-    else {
+    } else { // if params.mapdamage2_rescale is false and params.remove_transitions is false, use deduplicated BAM files merged per library/PCR
         // Merge BAM files per sample
-        ch_bam_sample_to_merge = SAMTOOLS_MERGE_LIB.out.bam.map { meta, bam ->
+        ch_bam_sample_to_merge = SAMREMOVEDUP_LIB.out.dedup.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
             [['id': meta.id.split("_")[0]], bam]
         }.groupTuple()
     }
 
+    // Merge BAM files per sample
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
-
     SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
     ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
+
 
     // Remove duplicates from BAM files merged per sample
     SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam, reference )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
-
     SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
+
 
 
     emit:
