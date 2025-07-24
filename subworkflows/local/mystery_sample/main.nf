@@ -26,6 +26,7 @@ include { SAMTOOLS_INDEX as MS_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../mod
 
 // SAMTOOLS_IDXSTATS
 include { SAMTOOLS_IDXSTATS as MS_SAMTOOLS_IDXSTATS         } from '../../../modules/local/samtools/samtools_idxstats.nf'
+include { MERGE_IDXSTATS as MS_MERGE_IDXSTATS               } from '../../../modules/local/merge_idxstats/merge_idxstats.nf'
 
 
 workflow MYSTERY_SAMPLE {
@@ -35,6 +36,8 @@ workflow MYSTERY_SAMPLE {
 
     main:
     ch_versions         = Channel.empty()
+    // define workflow name to be used in summary stats output
+    def workflow_name = params.workflowname ?: workflow.runName
 
 
     // Index the reference genome if it is not already indexed
@@ -109,6 +112,12 @@ workflow MYSTERY_SAMPLE {
     MS_SAMTOOLS_IDXSTATS ( MS_SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions         = ch_versions.mix(MS_SAMTOOLS_IDXSTATS.out.versions)
 
+    // Merge idxstats from all samples
+    ch_merged_input = MS_SAMTOOLS_IDXSTATS.out.idxstats
+        .map { it -> [['id': "$workflow_name"], it[1]] }
+        .groupTuple()
+
+    MS_MERGE_IDXSTATS ( ch_merged_input )
 
     emit:
     reference_index         = BOWTIE2_BUILD.out.index_dir                 // channel: path(index)
@@ -125,5 +134,6 @@ workflow MYSTERY_SAMPLE {
     dedup_bam_sample        = MS_SAMREMOVEDUP_SAMPLE.out.dedup            // channel: [ val(meta), [ dedup_bam_sample ] ]
     dedup_bam_sample_bai    = MS_SAMREMOVEDUP_SAMPLE_INDEX.out.bai        // channel: [ val(meta), [ dedup_bam_sample_bai ] ]
     idxstats                = MS_SAMTOOLS_IDXSTATS.out.idxstats           // channel: [ val(meta), [ idxstats ] ]
+    merged_idxstats         = MS_MERGE_IDXSTATS.out.merged_idxstats       // channel: [ val(meta), [ merged_idxstats ] ]
     versions                = ch_versions                                 // channel: [ versions.yml ]
 }
