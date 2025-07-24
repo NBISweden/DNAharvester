@@ -9,14 +9,14 @@ process SAMTOOLS_MERGE {
 
     input:
     tuple val(meta), path(input_files, stageAs: "?/*")
-    tuple val(meta2), path(fasta), path(fai)
+    tuple val(meta2), path(fasta)
 
     output:
-    tuple val(meta), path("${prefix}*.bam") , optional:true, emit: bam
-    tuple val(meta), path("${prefix}*.cram"), optional:true, emit: cram
-    tuple val(meta), path("*.csi")         , optional:true, emit: csi
-    tuple val(meta), path("*.crai")        , optional:true, emit: crai
-    path  "versions.yml"                                  , emit: versions
+    tuple val(meta), path("${prefix}*.bam")     , optional:true, emit: bam
+    tuple val(meta), path("${prefix}*.cram")    , optional:true, emit: cram
+    tuple val(meta), path("*.csi")              , optional:true, emit: csi
+    tuple val(meta), path("*.crai")             , optional:true, emit: crai
+    path  "versions.yml"                        , emit: versions
 
 
     when:
@@ -26,33 +26,15 @@ process SAMTOOLS_MERGE {
     def args = task.ext.args   ?: ''
     prefix   = task.ext.prefix ?: "${meta.id}"
     def file_type = input_files instanceof List ? input_files[0].getExtension() : input_files.getExtension()
-    def reference = fasta ? "--reference ${fasta}" : ""
-    def ref_prefix = task.ext.reference ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
+    def ref_prefix = task.ext.ref_prefix ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
     samtools \\
         merge \\
         --threads ${task.cpus-1} \\
         $args \\
-        ${reference} \\
         ${prefix}.${ref_prefix}.${file_type} \\
         $input_files
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-    END_VERSIONS
-    """
-
-    stub:
-    def args = task.ext.args   ?: ''
-    prefix = task.ext.suffix ? "${meta.id}${task.ext.suffix}" : "${meta.id}"
-    def file_type = input_files instanceof List ? input_files[0].getExtension() : input_files.getExtension()
-    def index_type = file_type == "bam" ? "csi" : "crai"
-    def index = args.contains("--write-index") ? "touch ${prefix}.${ref_prefix}.${index_type}" : ""
-    """
-    touch ${prefix}.${ref_prefix}.${file_type}
-    ${index}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

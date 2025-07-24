@@ -1,6 +1,6 @@
-process SAMTOOLS_VIEW_MQ {
+process SAMTOOLS_IDXSTATS {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_medium'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
@@ -8,25 +8,23 @@ process SAMTOOLS_VIEW_MQ {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta), path(input)
+    tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*.bam"),                                    emit: bam
-    path  "versions.yml",                                              emit: versions
+    tuple val(meta), path ("${meta.id}.idxstats"), emit: idxstats
+    path "versions.yml"                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    prefix = task.ext.prefix ?: "${meta.id}"
+
     """
-    samtools \\
-        view \\
-        --threads ${task.cpus-1} \\
-        $args \\
-        -o ${prefix}-mq.bam \\
-        $input \\
+    samtools idxstats \\
+        ${args} \\
+        ${bam} > ${meta.id}.idxstats
+
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
