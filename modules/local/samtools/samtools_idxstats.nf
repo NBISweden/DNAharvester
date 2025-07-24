@@ -11,7 +11,7 @@ process SAMTOOLS_IDXSTATS {
     tuple val(meta), path(bam)
 
     output:
-    path "${meta.id}.idxstats"          , emit: idxstats
+    tuple val(meta), path ("${meta.id}.idxstats"), emit: idxstats
     path "versions.yml"                 , emit: versions
 
     when:
