@@ -3,7 +3,7 @@ process MERGE_IDXSTATS {
     label 'process_medium'
 
     conda "conda-forge::gawk=5.3.1"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/gawk:5.3.0' :
         'quay.io/biocontainers/gawk:5.3.1' }"
 
@@ -37,7 +37,5 @@ process MERGE_IDXSTATS {
     "${task.process}":
         awk: \$(awk --version | head -n 1 | awk '{print \$1, \$2, \$3}')
     END_VERSIONS
-
-
     """
 }
