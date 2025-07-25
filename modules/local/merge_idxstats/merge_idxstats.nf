@@ -12,7 +12,8 @@ process MERGE_IDXSTATS {
     tuple val(meta), path(input_files, stageAs: "?/*")
 
     output:
-    tuple val(meta), path("${meta.id}.idxstats.txt"), emit: merged_idxstats
+    tuple val(meta), path("${meta.id}.idxstats.txt")    , emit: merged_idxstats
+    path "versions.yml"                                 , emit: versions
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
