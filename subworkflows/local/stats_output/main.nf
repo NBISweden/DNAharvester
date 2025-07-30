@@ -60,13 +60,7 @@ workflow STATS_OUTPUT {
         }.groupTuple()
     }
 
-
-
-    ch_decoy_flagstat.view()
-
     ch_seq_stats = ch_seq_stats.join(ch_decoy_flagstat)
-
-
 
     // run the SEQ_STATS process
     SEQ_STATS_LIB ( ch_seq_stats )
