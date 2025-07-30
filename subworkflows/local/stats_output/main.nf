@@ -15,6 +15,7 @@ workflow STATS_OUTPUT {
     dedup_lib
     dedup_sample_flagstat
     dedup_sample
+    decoy_flagstat
 
 
     main:
@@ -49,6 +50,14 @@ workflow STATS_OUTPUT {
         .join(dedup_lib_flagstat)
         .join(dedup_lib)
 
+    if (params.competitive_reference) {
+        ch_decoy_flagstat = decoy_flagstat.map { meta, data ->
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], data ]
+        }.groupTuple()
+        ch_seq_stats = ch_seq_stats.join(ch_decoy_flagstat)
+    }
+
+
     // run the SEQ_STATS process
     SEQ_STATS_LIB ( ch_seq_stats )
     ch_versions = ch_versions.mix(SEQ_STATS_LIB.out.versions)
@@ -81,6 +90,8 @@ workflow STATS_OUTPUT {
         [['id': meta.id.split("_")[0]], data ]
     }.groupTuple()
 
+
+
     // merging different channels
     ch_seq_stats_sample = ch_reads_sample
         .join(ch_fastp_log_sample)
@@ -88,6 +99,15 @@ workflow STATS_OUTPUT {
         .join(ch_mq_filtered_bam_flagstat_sample)
         .join(dedup_sample_flagstat)
         .join(dedup_sample)
+
+
+    if (params.competitive_reference) {
+        ch_decoy_flagstat_sample = decoy_flagstat.map { meta, data ->
+            [['id': meta.id.split("_")[0]], data ]
+        }.groupTuple()
+        ch_seq_stats_sample = ch_seq_stats_sample.join(ch_decoy_flagstat_sample)
+    }
+
 
 
     // run the SEQ_STATS process
@@ -103,7 +123,5 @@ workflow STATS_OUTPUT {
 
     // Emit channels
     emit:
-    seq_stats_lib       = SORT_STATS_LIB.out.sorted_file        // channel: [ ${params.workflowname}_lib_stats.sorted.txt ]
-    seq_stats_sample    = SORT_STATS_SAMPLE.out.sorted_file     // channel: [ ${params.workflowname}_sample_stats.sorted.txt ]
     versions            = ch_versions                           // channel: [ versions.yml ]
 }
