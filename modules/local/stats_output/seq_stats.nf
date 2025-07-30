@@ -28,7 +28,8 @@ process SEQ_STATS {
 
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
-    reference = params.reference.split('/')[-1].replaceFirst(/\.fasta$|\.fa$/, '')
+    def reference = task.ext.prefix ?: params.reference.split('/')[-1].replaceFirst(/\.fasta$|\.fa$/, '')
+    def mapping_tool = task.ext.mapping_tool ?: params.mapping_tool
 
     """
 
@@ -37,7 +38,7 @@ process SEQ_STATS {
     raw_reads=\$(zcat ${reads} | wc -l | awk '{print \$1 / 4}')
     merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {if (sum == "") print "NA"; else print sum}')
     reference=\$(basename ${reference})
-    mapping_program="bwa aln"
+    mapping_tool="${mapping_tool}"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
@@ -50,8 +51,8 @@ process SEQ_STATS {
     median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=\$3} END {median=total/2; sum=0; for (len in lengths) {sum+=lengths[len]; if (sum>=median) {print len; break}}}' ${prefix}-samtools-stats)
 
     ## write header and row
-    HEADER="id\\traw_reads\\tmerged_reads\\tref_genome\\tmapping_program\\tmapped_reads"
-    ROW="\$id\\t\$raw_reads\\t\$merged_reads\\t\$reference\\t\$mapping_program\\t\$mapped_reads"
+    HEADER="id\\traw_reads\\tmerged_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
+    ROW="\$id\\t\$raw_reads\\t\$merged_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
 
     ## add optional decoy
 
