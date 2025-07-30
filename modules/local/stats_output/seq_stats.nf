@@ -35,7 +35,7 @@ process SEQ_STATS {
     ## collect stats
     id="${prefix}"
     raw_reads=\$(zcat ${reads} | wc -l | awk '{print \$1 / 4}')
-    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {print sum}')
+    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {if (sum == "") print "NA"; else print sum}')
     reference=\$(basename ${reference})
     mapping_program="bwa aln"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
@@ -55,9 +55,7 @@ process SEQ_STATS {
 
     ## add optional decoy
 
-    echo "DEBUG: decoy_flagstat = ${decoy_flagstat}"
-
-    if [[ ${decoy_flagstat} != "null" ]]; then
+    if [[ "${decoy_flagstat}" != "null" && "${decoy_flagstat}" != "/dev/null" ]]; then
         HEADER+="\\tdecoy_reads"
         decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
         ROW+="\\t\$decoy_reads"
