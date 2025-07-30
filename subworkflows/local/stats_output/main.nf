@@ -50,11 +50,13 @@ workflow STATS_OUTPUT {
         .join(dedup_lib_flagstat)
         .join(dedup_lib)
 
+    // If competitive reference is used, include decoy flagstat
     if (params.competitive_reference) {
         ch_decoy_flagstat = decoy_flagstat.map { meta, data ->
             [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], data ]
         }.groupTuple()
     } else {
+        // If no decoy flagstat is provided, use a dummy path. using id from reads to ensure .join works correctly
         ch_decoy_flagstat = ch_reads.map { meta, data ->
             [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], '/dev/null']
         }.groupTuple()
@@ -104,12 +106,13 @@ workflow STATS_OUTPUT {
         .join(dedup_sample_flagstat)
         .join(dedup_sample)
 
-
+    // If competitive reference is used, include decoy flagstat
     if (params.competitive_reference) {
         ch_decoy_flagstat_sample = decoy_flagstat.map { meta, data ->
             [['id': meta.id.split("_")[0]], data ]
         }.groupTuple()
     } else {
+        // If no decoy flagstat is provided, use a dummy path. using id from reads to ensure .join works correctly
         ch_decoy_flagstat_sample = ch_reads_sample.map { meta, data ->
             [['id': meta.id.split("_")[0]], '/dev/null' ]
         }.groupTuple()
