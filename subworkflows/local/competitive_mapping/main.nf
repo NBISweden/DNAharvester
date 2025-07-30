@@ -125,11 +125,14 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
-    competitive_reference_index      = ch_competitive_reference_index        // channel: path(index)
-    competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai    // channel: path(index)
-    target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
-    multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]
-    bam                              = SAMTOOLS_VIEW_TARGET.out.bam          // channel: [ val(meta), [ bam ] ]
-    bai                              = SAMTOOLS_INDEX_TARGET.out.bai         // channel: [ val(meta), [ bai ] ]
-    versions                         = ch_versions                           // channel: [ versions.yml ]
+    competitive_reference_index      = ch_competitive_reference_index           // channel: path(index)
+    competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai       // channel: path(index)
+    target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai            // channel: path(index)
+    multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()        // channel: [ val(meta), path(report) ]
+    decoy_bam                        = SAMTOOLS_VIEW_DECOY.out.bam              // channel: [ val(meta), [ bam ] ]
+    decoy_bai                        = SAMTOOLS_INDEX_DECOY.out.bai             // channel: [ val(meta), [ bai ] ]
+    decoy_flagstat                   = FLAGSTAT_DECOY.out.flagstat              // channel: [ val(meta), [ flagstat ] ]
+    bam                              = SAMTOOLS_VIEW_TARGET.out.bam             // channel: [ val(meta), [ bam ] ]
+    bai                              = SAMTOOLS_INDEX_TARGET.out.bai            // channel: [ val(meta), [ bai ] ]
+    versions                         = ch_versions                              // channel: [ versions.yml ]
 }
