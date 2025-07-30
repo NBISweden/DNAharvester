@@ -54,15 +54,16 @@ process SEQ_STATS {
     ROW="\$id\\t\$raw_reads\\t\$merged_reads\\t\$reference\\t\$mapping_program\\t\$mapped_reads"
 
     ## add optional decoy
-    decoy_files=( ${decoy_flagstat} )
 
-    if [[ \${#decoy_files[@]} -gt 0 ]]; then
+    echo "DEBUG: decoy_flagstat = ${decoy_flagstat}"
+
+    if [[ ${decoy_flagstat} != "null" ]]; then
         HEADER+="\\tdecoy_reads"
         decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
         ROW+="\\t\$decoy_reads"
     fi
 
-    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_lenth"
+    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
     ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
 
     ## write output

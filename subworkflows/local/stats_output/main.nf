@@ -54,8 +54,18 @@ workflow STATS_OUTPUT {
         ch_decoy_flagstat = decoy_flagstat.map { meta, data ->
             [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], data ]
         }.groupTuple()
-        ch_seq_stats = ch_seq_stats.join(ch_decoy_flagstat)
+    } else {
+        ch_decoy_flagstat = ch_reads.map { meta, data ->
+            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], '/dev/null']
+        }.groupTuple()
     }
+
+
+
+    ch_decoy_flagstat.view()
+
+    ch_seq_stats = ch_seq_stats.join(ch_decoy_flagstat)
+
 
 
     // run the SEQ_STATS process
@@ -105,10 +115,13 @@ workflow STATS_OUTPUT {
         ch_decoy_flagstat_sample = decoy_flagstat.map { meta, data ->
             [['id': meta.id.split("_")[0]], data ]
         }.groupTuple()
-        ch_seq_stats_sample = ch_seq_stats_sample.join(ch_decoy_flagstat_sample)
+    } else {
+        ch_decoy_flagstat_sample = ch_reads_sample.map { meta, data ->
+            [['id': meta.id.split("_")[0]], '/dev/null' ]
+        }.groupTuple()
     }
 
-
+    ch_seq_stats_sample = ch_seq_stats_sample.join(ch_decoy_flagstat_sample)
 
     // run the SEQ_STATS process
     SEQ_STATS_SAMPLE ( ch_seq_stats_sample )
