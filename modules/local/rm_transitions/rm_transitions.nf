@@ -5,7 +5,7 @@ process RM_TRANSITIONS {
     conda "bioconda::pysam=0.23.3 conda-forge::tqdm=4.67.1 wget=1.21.4"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pysam_tqdm_wget:c28479ff2635fb54' :
-        'oras://community.wave.seqera.io/library/pysam_tqdm_wget:c28479ff2635fb54' }"
+        'community.wave.seqera.io/library/pysam_tqdm_wget:854394b0b7ab4567' }"
 
     input:
     tuple val(meta), path(bam), path(bai)

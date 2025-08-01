@@ -5,7 +5,7 @@ process REPEATMODELER {
     conda "bioconda::repeatmodeler=2.0.6"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/repeatmodeler:2.0.6--33ecba32dc152693' :
-        'quay.io/biocontainers/repeatmodeler:2.0.6--pl5321hdfd78af_0' }"
+        'community.wave.seqera.io/library/repeatmodeler:2.0.6--64a830a44f180fb9' }"
 
     input:
     tuple val(meta2), path(fasta)
