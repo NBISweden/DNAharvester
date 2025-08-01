@@ -25,8 +25,15 @@ process ESTIMATE_READ_LEN_CUTOFF {
     def cutoff_threshold = meta.single_end ? 0.01 : 0.05
 
     """
-    select_read_len_cutoff_amber.py \\
-        $amber_txt ${cutoff_threshold} > ${prefix}_read_len_cutoff_${cutoff_threshold}.txt
+
+    number_reads=\$(basename ${amber_txt} | cut -d'_' -f4)
+
+    if [ "\$number_reads" -gt 10000 ]; then
+        select_read_len_cutoff_amber.py \\
+            $amber_txt ${cutoff_threshold} > ${prefix}_read_len_cutoff_${cutoff_threshold}.txt
+    else
+        echo "Number of mapped reads are not sufficient to estimate cutoff, using default value of: 30" > ${prefix}_read_len_cutoff_${cutoff_threshold}.txt
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
