@@ -5,7 +5,7 @@ process BOWTIE2 {
     conda "bioconda::bowtie2=2.5.4, bioconda::samtools=1.20"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/bowtie2_samtools:4f429f1a3a2a870a' :
-        'quay.io/viascientific/bowtie2-samtools' }"
+        'community.wave.seqera.io/library/bowtie2_samtools:ea581343bbe90572' }"
 
     input:
     tuple val(meta) , path(reads)
