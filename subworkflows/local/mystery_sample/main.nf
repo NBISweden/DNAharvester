@@ -37,7 +37,7 @@ workflow MYSTERY_SAMPLE {
     main:
     ch_versions         = Channel.empty()
     // define workflow name to be used in summary stats output
-    def workflow_name = params.workflowname ?: workflow.runName
+    def workflow_name = params.workflow_run_name ?: workflow.runName
 
 
     // Index the reference genome if it is not already indexed

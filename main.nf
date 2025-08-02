@@ -26,7 +26,7 @@ include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stat
 workflow {
 
     // Set the workflow name
-    def workflow_name = params.workflowname ?: workflow.runName
+    def workflow_name = params.workflow_run_name ?: workflow.runName
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
