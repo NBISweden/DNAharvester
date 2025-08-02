@@ -75,7 +75,7 @@ knee = KneeLocator(read_lengths_sub_sorted, mismatch_rates_sub_sorted, curve=cur
 
 # Check if a knee point was found
 if knee.knee:
-    print(f"Selected read length cutoff: {knee.knee}")
+    print(f"Selected read length cutoff: {knee.knee + 1}") ## add 1 to the knee point to get the cutoff.
 else:
     print("Error: No suitable read length cutoff found.")
     sys.exit(1)
