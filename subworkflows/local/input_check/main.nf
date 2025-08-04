@@ -33,12 +33,6 @@ workflow INPUT_CHECK {
     System.exit(1)
     }
 
-
-
-
-
-
-
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )
