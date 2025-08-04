@@ -2,17 +2,17 @@ process ESTIMATE_READ_LEN_CUTOFF {
     tag "$meta.id"
     label 'process_single'
 
-    conda "conda-forge::python=3.13.0"
+    conda "conda-forge::kneed=0.8.5"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/python:3.13.0--a8086dc1de1c4e39' :
-        'community.wave.seqera.io/library/python:3.13.0--a025ad9838d75455' }"
+        'oras://community.wave.seqera.io/library/kneed:0.8.5--b648f8184207cf07' :
+        'community.wave.seqera.io/library/kneed:0.8.5--5e26e0f3d57da086' }"
 
     input:
     tuple val(meta), path(amber_txt)
 
     output:
-    tuple val(meta), path("*.txt")       , emit: read_len_cutoff
-    path "versions.yml"                  , emit: versions
+    tuple val(meta), path("*_read_len_cutoff.txt")       , emit: read_len_cutoff
+    path "versions.yml"                                  , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -20,13 +20,24 @@ process ESTIMATE_READ_LEN_CUTOFF {
     script: // This script is bundled with the pipeline, in {{ name }}/bin/
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-
-    // Define read lenght cutoff threshold 0.05 (5%) for paired-end and 0.01 (1%) for single-end
-    def cutoff_threshold = meta.single_end ? 0.01 : 0.05
+    def curve = task.ext.curve ?: ((params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') ? 'convex' :
+                (params.mapping_tool == 'bowtie2' ? 'concave' : null))
+    def direction = task.ext.direction ?: ((params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') ? 'decreasing' :
+                    (params.mapping_tool == 'bowtie2' ? 'increasing' : null))
 
     """
-    select_read_len_cutoff_amber.py \\
-        $amber_txt ${cutoff_threshold} > ${prefix}_read_len_cutoff_${cutoff_threshold}.txt
+    ## get the number of reads from filename
+    number_reads=\$(cat ${amber_txt} | awk -F': ' '/^sample:/ {print \$2}' | cut -d'_' -f4)
+
+    if [ "\$number_reads" -gt 10000 ]; then
+        select_read_len_cutoff_amber.py \\
+            ${amber_txt} \\
+            ${curve} \\
+            ${direction} \\
+            > ${prefix}_read_len_cutoff.txt
+    else
+        echo "Insufficient mapped reads to estimate cutoff (\$number_reads). Using default value of: 30" > ${prefix}_read_len_cutoff.txt
+    fi
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
