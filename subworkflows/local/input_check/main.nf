@@ -15,6 +15,30 @@ workflow INPUT_CHECK {
     main:
     ch_versions                              = Channel.empty()
 
+    // Check if `variant_calling` is set to true but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled
+    if (params.variant_calling.toBoolean()) {
+        if (!(params.variant_calling_bcftools.toBoolean() || params.variant_calling_angsd.toBoolean())) {
+            log.error """`variant_calling` is set to true, but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled. Please set at least one of them to true.
+            Exiting the pipeline......!
+            """
+            System.exit(1)
+        }
+    }
+
+    // Check if both `mapdamage2_rescale` and `remove_transitions` are set to true
+    if ( params.mapdamage2_rescale.toBoolean() && params.remove_transitions.toBoolean() ) {
+        log.error """Both `mapdamage2_rescale` and `remove_transitions` are set to true. Please select only one option.
+        Exiting the pipeline......!
+        """
+    System.exit(1)
+    }
+
+
+
+
+
+
+
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )
