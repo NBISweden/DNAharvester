@@ -33,6 +33,15 @@ workflow INPUT_CHECK {
     System.exit(1)
     }
 
+    // Dont allow readlength set to auto for mystery_sample analysis
+     if (params.mystery_sample.toBoolean() && params.readlength == 'auto') {
+        log.error """For mystery_sample analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
+        Please set `readlength` to a specific value.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )
