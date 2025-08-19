@@ -21,6 +21,9 @@ workflow STATS_OUTPUT {
     main:
     ch_versions = Channel.empty()
 
+    // Set the workflow name
+    def workflow_name = params.workflow_run_name ?: workflow.runName
+
     ////////////////////////////////////////
     // Generating seq stats per library
     ////////////////////////////////////////
@@ -70,7 +73,7 @@ workflow STATS_OUTPUT {
     // Concatenate all output files
     def seq_stats_lib = SEQ_STATS_LIB.out.stats_txt
         .map { it[1] }
-        .collectFile(name: "${params.workflow_run_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
+        .collectFile(name: "${workflow_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
     SORT_STATS_LIB ( seq_stats_lib )
@@ -126,7 +129,7 @@ workflow STATS_OUTPUT {
     // Concatenate all output files
     def seq_stats_sample = SEQ_STATS_SAMPLE.out.stats_txt
         .map { it[1] }
-        .collectFile(name: "${params.workflow_run_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
+        .collectFile(name: "${workflow_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
     SORT_STATS_SAMPLE ( seq_stats_sample )
