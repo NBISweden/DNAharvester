@@ -11,7 +11,7 @@ process filterBAM {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path("*_filterBAM.csv"),       emit: bam
+    tuple val(meta), path("*_filterBAM.csv"),       emit: filterBAM_stats
     path  "versions.yml",                           emit: versions
 
     when:
