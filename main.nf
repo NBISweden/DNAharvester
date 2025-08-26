@@ -11,6 +11,7 @@ include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fast
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
+include { PATHOGEN_SCREENING         } from "$projectDir/subworkflows/local/pathogen_screening/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
 include { MYSTERY_SAMPLE             } from "$projectDir/subworkflows/local/mystery_sample/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
@@ -106,6 +107,20 @@ workflow {
             ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
     }
+
+
+    // Pathogen screening
+    if ( params.pathogen_screening.toBoolean() ) {
+        ch_pathogen_reference_database = Channel.fromPath ( params.pathogen_reference_database, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+
+        PATHOGEN_SCREENING (
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            ch_pathogen_reference_database
+        )
+        ch_all_versions = ch_all_versions.mix(PATHOGEN_SCREENING.out.versions)
+    }
+
 
     // MIA - Mapping Iterative Assembler
     if ( params.iterative_assembly.toBoolean() ) {
