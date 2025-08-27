@@ -4,9 +4,8 @@ include { SAMTOOLS_UNMAPPED_READS   } from '../../../modules/local/samtools/samt
 include { BOWTIE2_BUILD             } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BOWTIE2 as PS_BOWTIE2     } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/index/main'
-include { FILTERBAM                 }   from '../../../modules/local/stats_output/filterbam.nf'
-include { FILTERBAM_PLOT            }   from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
-
+include { FILTERBAM                 } from '../../../modules/local/stats_output/filterbam.nf'
+include { FILTERBAM_PLOT            } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
 
 
 workflow PATHOGEN_SCREENING {
