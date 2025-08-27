@@ -15,9 +15,6 @@ workflow PATHOGEN_SCREENING {
 
     main:
     ch_versions             = Channel.empty()
-    // define workflow name to be used in summary stats output
-    def workflow_name       = params.workflow_run_name ?: workflow.runName
-
 
     // get unmapped reads from the raw BAM file
     SAMTOOLS_UNMAPPED_READS ( raw_bam )
