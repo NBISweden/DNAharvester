@@ -41,7 +41,6 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-
     // Dont allow readlength set to auto for species_identification analysis
     if (params.species_identification.toBoolean() && params.readlength == 'auto') {
         log.error """For species_identification analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
@@ -51,6 +50,13 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // if iterative_assembly is set to true, check if mtDNA_reference is provided
+    if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
+        log.error """`iterative_assembly` is set to true, but `mtDNA_reference` is not provided. Please provide the path to the mitochondrial reference genome from any closely related species.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
 
 
     SAMPLESHEET_CHECK ( samplesheet )
