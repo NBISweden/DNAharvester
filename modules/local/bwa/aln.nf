@@ -2,10 +2,10 @@ process BWA_ALN {
     tag "$meta.id"
     label 'process_bwa_aln'
 
-    conda "bioconda::bwa=0.7.18"
+    conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/bwa:0.7.18--4543b4091f454101' :
-        'community.wave.seqera.io/library/bwa:0.7.18--324359fbc6e00dba' }"
+        'oras://community.wave.seqera.io/library/bwa_samtools:813d9b5fea3890ec' :
+        'community.wave.seqera.io/library/bwa_samtools:3938c84206f62975' }"
 
     input:
     tuple val(meta) , path(reads)
@@ -22,14 +22,15 @@ process BWA_ALN {
     def args = task.ext.args ?: '' // ancient DNA parameters are added via args in the configs/modules.config file
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = task.ext.reference ?: "${meta2.id}"
+    def ref_prefix = reference.replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
-    INDEX=`find -L ./ -name "${reference}.amb" | sed 's/\\.amb\$//'`
+    INDEX=`find -L ./ -maxdepth 2 -name "${reference}.amb" | sed 's/\\.amb\$//'`
 
     bwa aln \\
         $args \\
         -t $task.cpus \\
-        -f ${prefix}.sai \\
+        -f ${prefix}.${ref_prefix}.sai \\
         \${INDEX} \\
         ${reads}
 

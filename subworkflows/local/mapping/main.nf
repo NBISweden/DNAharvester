@@ -1,9 +1,12 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FAIDX } from '../../../modules/local/samtools/faidx/main'
+include { SAMTOOLS_FAIDX } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { BWA_INDEX      } from '../../../modules/local/bwa/index.nf'
+include { BOWTIE2_BUILD  } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BWA_ALN        } from '../../../modules/local/bwa/aln.nf'
 include { BWA_SAMSE      } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN_MEM    } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { BOWTIE2        } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index/main'
 
 
@@ -13,36 +16,56 @@ workflow MAPPING {
     reads // merged paired-end reads or trimmed single-end reads
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions         = Channel.empty()
 
     SAMTOOLS_FAIDX ( reference )
-    ch_versions = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
+    ch_versions         = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-    // This will run only if the index is not already present
-    BWA_INDEX ( reference )
+    // Index the reference genome if it is not already indexed
+    if (params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') {
+        // Build the BWA index
+        BWA_INDEX (reference, file(params.reference).getParent())
+        ch_versions         = ch_versions.mix(BWA_INDEX.out.versions)
+        ch_reference_index  = BWA_INDEX.out.index_dir
+    } else if (params.mapping_tool == 'bowtie2') {
+        // Build the Bowtie2 index
+        BOWTIE2_BUILD (reference, file(params.reference).getParent())
+        ch_versions         = ch_versions.mix(BOWTIE2_BUILD.out.versions)
+        ch_reference_index  = BOWTIE2_BUILD.out.index_dir
+    } else {
+        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
+    }
 
-    ch_reference_index = BWA_INDEX.out.index
-        .map { id, files ->
-            // Extracting the parent directory from the first file in the list
-            def parentDir = files[0].getParent()
-            return [id, parentDir] // Return necessary data
-        }
-        .collect()
+    // Map the reads to the reference genome
+    if (params.mapping_tool == 'bwa-aln') {
+        BWA_ALN ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
+        ch_bwa_samse        = reads.join(BWA_ALN.out.sai)
 
-    BWA_ALN ( reads, ch_reference_index )
-    ch_versions = ch_versions.mix(BWA_ALN.out.versions)
+        BWA_SAMSE ( ch_bwa_samse, ch_reference_index )
+        ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
+        ch_bam              = BWA_SAMSE.out.bam
 
-    ch_bwa_samse         = reads.join(BWA_ALN.out.sai)
-    BWA_SAMSE ( ch_bwa_samse, ch_reference_index )
-    ch_versions = ch_versions.mix(BWA_SAMSE.out.versions)
+    } else if (params.mapping_tool == 'bwa-aln-mem') {
+        BWA_ALN_MEM ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(BWA_ALN_MEM.out.versions)
+        ch_bam              = BWA_ALN_MEM.out.bam
+    } else if (params.mapping_tool == 'bowtie2') {
+        BOWTIE2 ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
+        ch_bam              = BOWTIE2.out.bam
+    } else {
+        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
+    }
 
-    SAMTOOLS_INDEX ( BWA_SAMSE.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
+    // Index the BAM file
+    SAMTOOLS_INDEX ( ch_bam )
+    ch_versions         = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     emit:
-    fai            = SAMTOOLS_FAIDX.out.fai                      // channel: path(index)
-    index          = ch_reference_index                          // channel: path(index)
-    bam            = BWA_SAMSE.out.bam                           // channel: [ val(meta), [ bam ] ]
-    bai            = SAMTOOLS_INDEX.out.bai                      // channel: [ val(meta), [ bai ] ]
-    versions       = ch_versions                                 // channel: [ versions.yml ]
+    fai                 = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
+    index               = ch_reference_index                 // channel: path(index)
+    bam                 = ch_bam                              // channel: [ val(meta), [ bam ] ]
+    bai                 = SAMTOOLS_INDEX.out.bai             // channel: [ val(meta), [ bai ] ]
+    versions            = ch_versions                        // channel: [ versions.yml ]
 }

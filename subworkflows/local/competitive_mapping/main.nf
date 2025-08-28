@@ -1,45 +1,77 @@
 #! /usr/bin/env nextflow
 
+include { BWA_INDEX                                      } from '../../../modules/local/bwa/index.nf'
+include { BOWTIE2_BUILD                                  } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/aln.nf'
 include { BWA_SAMSE as BWA_SAMSE_COMPETITIVE             } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN_MEM as BWA_ALN_MEM_COMPETITIVE         } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { BOWTIE2 as BOWTIE2_COMPETITIVE                 } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE   } from '../../../modules/local/samtools/faidx/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE   } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { FAI_TO_BED as FAI_TO_BED_COMPETITIVE           } from '../../../modules/local/fai2bed/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET        } from '../../../modules/local/samtools/faidx/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET        } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { FAI_TO_BED as FAI_TO_BED_TARGET                } from '../../../modules/local/fai2bed/main'
 include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET  } from '../../../modules/local/bedtools/subtract/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/samtools_view_regions.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY         } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/local/samtools/flagstat/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/local/samtools/samtools_flagstat.nf'
 include { MULTIQC as MULTIQC_DECOY                       } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/view_regions/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/samtools_view_regions.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../modules/nf-core/samtools/index/main'
 
 workflow COMPETITIVE_MAPPING {
     take:
     competitive_reference
-    bwa_index_competitive
     reference
     reads
 
     main:
     ch_versions = Channel.empty()
 
+    // Index the competitive reference genome if it is not already indexed
+    if (params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') {
+        // Build the BWA index
+        BWA_INDEX (competitive_reference, file(params.competitive_reference).getParent())
+        ch_versions                     = ch_versions.mix(BWA_INDEX.out.versions)
+        ch_competitive_reference_index  = BWA_INDEX.out.index_dir
+    } else if (params.mapping_tool == 'bowtie2') {
+        // Build the Bowtie2 index
+        BOWTIE2_BUILD (competitive_reference, file(params.competitive_reference).getParent())
+        ch_versions                     = ch_versions.mix(BOWTIE2_BUILD.out.versions)
+        ch_competitive_reference_index  = BOWTIE2_BUILD.out.index_dir
+    } else {
+        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
+    }
+
+
     // Map the reads to the concatenated fasta file
-    BWA_ALN_COMPETITIVE ( reads, bwa_index_competitive )
-    ch_versions                      = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
+    if (params.mapping_tool == 'bwa-aln') {
+        BWA_ALN_COMPETITIVE ( reads, ch_competitive_reference_index )
+        ch_versions                     = ch_versions.mix(BWA_ALN_COMPETITIVE.out.versions)
+        ch_bwa_samse_competitive        = reads.join(BWA_ALN_COMPETITIVE.out.sai)
 
-    ch_bwa_samse_competitive         = reads.join(BWA_ALN_COMPETITIVE.out.sai)
+        BWA_SAMSE_COMPETITIVE ( ch_bwa_samse_competitive, ch_competitive_reference_index )
+        ch_versions                     = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
+        ch_bam                          = BWA_SAMSE_COMPETITIVE.out.bam
 
-    BWA_SAMSE_COMPETITIVE ( ch_bwa_samse_competitive, bwa_index_competitive )
-    ch_versions                      = ch_versions.mix(BWA_SAMSE_COMPETITIVE.out.versions)
+    } else if (params.mapping_tool == 'bwa-aln-mem') {
+        BWA_ALN_MEM_COMPETITIVE ( reads, ch_competitive_reference_index )
+        ch_versions                     = ch_versions.mix(BWA_ALN_MEM_COMPETITIVE.out.versions)
+        ch_bam                          = BWA_ALN_MEM_COMPETITIVE.out.bam
+    } else if (params.mapping_tool == 'bowtie2') {
+        BOWTIE2_COMPETITIVE ( reads, ch_competitive_reference_index )
+        ch_versions                     = ch_versions.mix(BOWTIE2_COMPETITIVE.out.versions)
+        ch_bam                          = BOWTIE2_COMPETITIVE.out.bam
+    } else {
+        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
+    }
 
     // Index the BAM file
-    SAMTOOLS_INDEX_COMPETITIVE ( BWA_SAMSE_COMPETITIVE.out.bam )
+    SAMTOOLS_INDEX_COMPETITIVE ( ch_bam )
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_COMPETITIVE.out.versions)
 
     // Split the BAM file into target genome and decoy genome
-    ch_concatenated_bam_index        = BWA_SAMSE_COMPETITIVE.out.bam.join( SAMTOOLS_INDEX_COMPETITIVE.out.bai )
+    ch_concatenated_bam_index        = ch_bam.join( SAMTOOLS_INDEX_COMPETITIVE.out.bai )
 
     // Generate *.fai index for the concatenated reference
     SAMTOOLS_FAIDX_COMPETITIVE ( competitive_reference )
@@ -93,10 +125,14 @@ workflow COMPETITIVE_MAPPING {
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
 
     emit:
-    competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai    // channel: path(index)
-    target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai         // channel: path(index)
-    multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()     // channel: [ val(meta), path(report) ]
-    bam                              = SAMTOOLS_VIEW_TARGET.out.bam          // channel: [ val(meta), [ bam ] ]
-    bai                              = SAMTOOLS_INDEX_TARGET.out.bai         // channel: [ val(meta), [ bai ] ]
-    versions                         = ch_versions                           // channel: [ versions.yml ]
+    competitive_reference_index      = ch_competitive_reference_index           // channel: path(index)
+    competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai       // channel: path(index)
+    target_fai                       = SAMTOOLS_FAIDX_TARGET.out.fai            // channel: path(index)
+    multiqc_decoy_report             = MULTIQC_DECOY.out.report.toList()        // channel: [ val(meta), path(report) ]
+    decoy_bam                        = SAMTOOLS_VIEW_DECOY.out.bam              // channel: [ val(meta), [ bam ] ]
+    decoy_bai                        = SAMTOOLS_INDEX_DECOY.out.bai             // channel: [ val(meta), [ bai ] ]
+    decoy_flagstat                   = FLAGSTAT_DECOY.out.flagstat              // channel: [ val(meta), [ flagstat ] ]
+    bam                              = SAMTOOLS_VIEW_TARGET.out.bam             // channel: [ val(meta), [ bam ] ]
+    bai                              = SAMTOOLS_INDEX_TARGET.out.bai            // channel: [ val(meta), [ bai ] ]
+    versions                         = ch_versions                              // channel: [ versions.yml ]
 }

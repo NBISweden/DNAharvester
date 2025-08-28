@@ -15,6 +15,50 @@ workflow INPUT_CHECK {
     main:
     ch_versions                              = Channel.empty()
 
+    // Check if `variant_calling` is set to true but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled
+    if (params.variant_calling.toBoolean()) {
+        if (!(params.variant_calling_bcftools.toBoolean() || params.variant_calling_angsd.toBoolean())) {
+            log.error """`variant_calling` is set to true, but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled. Please set at least one of them to true.
+            Exiting the pipeline......!
+            """
+            System.exit(1)
+        }
+    }
+
+    // Check if both `mapdamage2_rescale` and `remove_transitions` are set to true
+    if ( params.mapdamage2_rescale.toBoolean() && params.remove_transitions.toBoolean() ) {
+        log.error """Both `mapdamage2_rescale` and `remove_transitions` are set to true. Please select only one option.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    // If species_identification is set to true, check if si_reference_database is provided
+    if (params.species_identification.toBoolean() && !params.si_reference_database) {
+        log.error """`species_identification` is set to true, but `si_reference_database` is not provided. Please provide the path to the species identification reference database.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    // Dont allow readlength set to auto for species_identification analysis
+    if (params.species_identification.toBoolean() && params.readlength == 'auto') {
+        log.error """For species_identification analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
+        Please set `readlength` to a specific value.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    // if iterative_assembly is set to true, check if mtDNA_reference is provided
+    if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
+        log.error """`iterative_assembly` is set to true, but `mtDNA_reference` is not provided. Please provide the path to the mitochondrial reference genome from any closely related species.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
         .splitCsv ( header:true, sep:',' )

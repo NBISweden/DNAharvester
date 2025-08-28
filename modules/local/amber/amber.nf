@@ -11,9 +11,9 @@ process AMBER {
     tuple val(meta), path(bam), path(tsv)
 
     output:
-    tuple val(meta), path("*.amber_plot.pdf"), emit: plot
-    tuple val(meta), path("*.amber_plot.txt"), emit: txt
-    path "versions.yml"                      , emit: versions
+    tuple val(meta), path("*.amber.pdf"), optional: true    , emit: plot
+    tuple val(meta), path("*.amber.txt")                    , emit: txt
+    path "versions.yml"                                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -32,7 +32,9 @@ process AMBER {
     AMBER \\
         $args \\
         --bamfiles $tsv \\
-        --output ${prefix}.amber_plot
+        --output ${prefix}.amber \\
+        || echo "No AMBER output was generated, likely due to an insufficient number of mapped reads.\n \\
+        Please check the sequencing statistics!." >> ${prefix}.amber_plot.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

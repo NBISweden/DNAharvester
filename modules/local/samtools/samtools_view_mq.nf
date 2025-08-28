@@ -8,7 +8,7 @@ process SAMTOOLS_VIEW_MQ {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta), path(input), path(index)
+    tuple val(meta), path(input)
 
     output:
     tuple val(meta), path("*.bam"),                                    emit: bam
