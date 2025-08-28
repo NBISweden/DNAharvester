@@ -11,6 +11,8 @@ The documentation can be found in the Github [wiki](https://github.com/NBISweden
 
 ## Pipeline map
 
+Main workflow of DNAharvester is shown below. see the [wiki](https://github.com/NBISweden/DNAharvester/wiki) for additional optional workflows.
+
 <img src="docs/images/DNAharvester_metromap.png"/>
 
 
@@ -22,7 +24,7 @@ If you've used DNAharvester pipeline to produce results, please cite our paper:
 
 DNAharvester - a pipeline for processing and analyzing extremely degraded ancient DNA
 
-Copyright (C) 2025  Verena Kutschera, Muhammad Bilal Sharif
+Copyright (C) 2025  Muhammad Bilal Sharif, Verena Kutschera
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
