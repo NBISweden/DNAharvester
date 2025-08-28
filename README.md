@@ -11,9 +11,17 @@ The documentation can be found in the Github [wiki](https://github.com/NBISweden
 
 ## Pipeline map
 
-Main workflow of DNAharvester is shown below. see the [wiki](https://github.com/NBISweden/DNAharvester/wiki) for additional optional workflows.
+Main workflow of the Pipeline:
 
 <img src="docs/images/DNAharvester_metromap.png"/>
+
+Optional workflows: Iterative assembly of mitogenomes using MIA
+
+<img src="docs/images/DNAharvester_metromap_mia.png"/>
+
+Optional workflows: Species identification by mapping to multiple reference genomes
+
+<img src="docs/images/DNAharvester_metromap_si.png"/>
 
 
 ## Citation
