@@ -8,7 +8,7 @@ process FILTERBAM_PLOT {
         'community.wave.seqera.io/library/pysam_matplotlib_numpy_python_pruned:7a2de054bdadda21' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
     tuple val(meta), path(filterBAM_table)
 
 
