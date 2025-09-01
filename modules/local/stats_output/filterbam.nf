@@ -28,6 +28,10 @@ process FILTERBAM {
         --bam ${bam} \\
         --stats ${bam}_filterBAM.csv
 
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        filterBAM: \$(filterBAM --version 2>&1 | grep filterBAM | head -n 1 | awk '{print \$2}')
+    END_VERSIONS
 
     """
 }
