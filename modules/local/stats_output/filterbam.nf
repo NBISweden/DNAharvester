@@ -8,7 +8,7 @@ process FILTERBAM {
         'community.wave.seqera.io/library/cxx-compiler_python_pip_bam-filter:57f86c8e1a5a2597' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
 
     output:
     tuple val(meta), path("*_filterBAM.csv"),       emit: filterBAM_stats
