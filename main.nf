@@ -13,7 +13,7 @@ include { MAPPING                    } from "$projectDir/subworkflows/local/mapp
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
 include { PATHOGEN_SCREENING         } from "$projectDir/subworkflows/local/pathogen_screening/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
-include { MYSTERY_SAMPLE             } from "$projectDir/subworkflows/local/mystery_sample/main"
+include { SPECIES_IDENTIFICATION     } from "$projectDir/subworkflows/local/species_identification/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
@@ -131,13 +131,13 @@ workflow {
         ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
     }
 
-    // Mystery sample mapping
-    if ( params.mystery_sample.toBoolean() ) {
-        ch_reference_database = Channel.fromPath( params.ms_reference_database, checkIfExists: true )
+    // Species Identification mapping
+    if ( params.species_identification.toBoolean() ) {
+        ch_reference_database = Channel.fromPath( params.si_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
-        MYSTERY_SAMPLE (ch_reference_database, FASTQ_PROCESSING.out.reads)
-        ch_all_versions = ch_all_versions.mix(MYSTERY_SAMPLE.out.versions)
+        SPECIES_IDENTIFICATION (ch_reference_database, FASTQ_PROCESSING.out.reads)
+        ch_all_versions = ch_all_versions.mix(SPECIES_IDENTIFICATION.out.versions)
     }
 
     // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites

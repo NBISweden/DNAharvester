@@ -28,7 +28,7 @@ process BWA_ALN_MEM {
     """
     INDEX=`find -L ./ -maxdepth 2 -name "${reference}.amb" | sed 's/\\.amb\$//'`
 
-    zcat ${reads} | awk -v minlen=70 '
+    zcat ${reads} | awk -v minlen=90 '
     {
         if(NR%4==1) header=\$0;
         else if(NR%4==2) seq=\$0;

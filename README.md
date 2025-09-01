@@ -11,7 +11,17 @@ The documentation can be found in the Github [wiki](https://github.com/NBISweden
 
 ## Pipeline map
 
+Main workflow of the Pipeline:
+
 <img src="docs/images/DNAharvester_metromap.png"/>
+
+Optional workflows: Iterative assembly of mitogenomes using MIA
+
+<img src="docs/images/DNAharvester_metromap_mia.png"/>
+
+Optional workflows: Species identification by mapping to multiple reference genomes
+
+<img src="docs/images/DNAharvester_metromap_si.png"/>
 
 
 ## Citation
@@ -22,7 +32,7 @@ If you've used DNAharvester pipeline to produce results, please cite our paper:
 
 DNAharvester - a pipeline for processing and analyzing extremely degraded ancient DNA
 
-Copyright (C) 2025  Verena Kutschera, Muhammad Bilal Sharif
+Copyright (C) 2025  Muhammad Bilal Sharif, Verena Kutschera
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

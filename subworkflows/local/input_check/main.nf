@@ -30,17 +30,34 @@ workflow INPUT_CHECK {
         log.error """Both `mapdamage2_rescale` and `remove_transitions` are set to true. Please select only one option.
         Exiting the pipeline......!
         """
-    System.exit(1)
+        System.exit(1)
     }
 
-    // Dont allow readlength set to auto for mystery_sample analysis
-    if (params.mystery_sample.toBoolean() && params.readlength == 'auto') {
-        log.error """For mystery_sample analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
+    // If species_identification is set to true, check if si_reference_database is provided
+    if (params.species_identification.toBoolean() && !params.si_reference_database) {
+        log.error """`species_identification` is set to true, but `si_reference_database` is not provided. Please provide the path to the species identification reference database.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    // Dont allow readlength set to auto for species_identification analysis
+    if (params.species_identification.toBoolean() && params.readlength == 'auto') {
+        log.error """For species_identification analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
         Please set `readlength` to a specific value.
         Exiting the pipeline......!
         """
         System.exit(1)
     }
+
+    // if iterative_assembly is set to true, check if mtDNA_reference is provided
+    if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
+        log.error """`iterative_assembly` is set to true, but `mtDNA_reference` is not provided. Please provide the path to the mitochondrial reference genome from any closely related species.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
 
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
