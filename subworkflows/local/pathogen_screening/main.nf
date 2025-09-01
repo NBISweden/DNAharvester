@@ -33,16 +33,17 @@ workflow PATHOGEN_SCREENING {
     ch_bam                  = PS_BOWTIE2.out.bam
     // Index the BAM file
     SAMTOOLS_INDEX ( ch_bam )
+    ch_bam_bai              = ch_bam.join(SAMTOOLS_INDEX.out.bai)
     ch_versions             = ch_versions.mix ( SAMTOOLS_INDEX.out.versions )
 
 
     // run filterBAM to generate stats
-    FILTERBAM ( ch_bam )
+    FILTERBAM ( ch_bam_bai )
     ch_versions             = ch_versions.mix ( FILTERBAM.out.versions )
 
 
     // generate plot from filterBAM output
-    FILTERBAM_PLOT ( ch_bam, FILTERBAM.out.filterBAM_stats )
+    FILTERBAM_PLOT ( ch_bam_bai, FILTERBAM.out.filterBAM_stats )
     ch_versions             = ch_versions.mix ( FILTERBAM_PLOT.out.versions )
 
 
