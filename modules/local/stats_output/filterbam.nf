@@ -1,4 +1,4 @@
-process filterBAM {
+process FILTERBAM {
     tag "$meta.id"
     label 'process_low'
 
