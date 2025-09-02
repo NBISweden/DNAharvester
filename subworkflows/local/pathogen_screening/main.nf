@@ -15,7 +15,7 @@ include { FILTERBAM_PLOT as PS_FILTER_PLOT      } from '../../../modules/local/p
 workflow PATHOGEN_SCREENING {
     take:
     raw_bam
-    reference_database
+    pathogen_reference_database
 
     main:
     ch_versions             = Channel.empty()
@@ -30,12 +30,12 @@ workflow PATHOGEN_SCREENING {
     // Index the reference genome if it is not already indexed
     if (params.ps_mapping_tool == 'bwa-aln' || params.ps_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
-        PS_BWA_INDEX (reference, file(params.reference).getParent())
+        PS_BWA_INDEX (pathogen_reference_database, file(params.pathogen_reference_database).getParent())
         ch_versions         = ch_versions.mix(PS_BWA_INDEX.out.versions)
         ch_reference_index  = PS_BWA_INDEX.out.index_dir
     } else if (params.ps_mapping_tool == 'bowtie2') {
         // Build the Bowtie2 index
-        PS_BOWTIE2_BUILD (reference, file(params.reference).getParent())
+        PS_BOWTIE2_BUILD (pathogen_reference_database, file(params.pathogen_reference_database).getParent())
         ch_versions         = ch_versions.mix(PS_BOWTIE2_BUILD.out.versions)
         ch_reference_index  = PS_BOWTIE2_BUILD.out.index_dir
     } else {
