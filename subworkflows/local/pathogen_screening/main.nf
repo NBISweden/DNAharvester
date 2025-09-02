@@ -9,7 +9,7 @@ include { BWA_ALN_MEM as PS_BWA_ALN_MEM         } from '../../../modules/local/b
 include { BOWTIE2 as PS_BOWTIE2                 } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX                        } from '../../../modules/nf-core/samtools/index/main'
 include { FILTERBAM as PS_FILTERBAM             } from '../../../modules/local/stats_output/filterbam.nf'
-include { FILTERBAM_PLOT as PS_FILTER_PLOT      } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
+include { FILTERBAM_PLOT as PS_FILTERBAM_PLOT   } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
 
 
 workflow PATHOGEN_SCREENING {
@@ -46,20 +46,20 @@ workflow PATHOGEN_SCREENING {
 
     // Map the reads to the reference genome
     if (params.ps_mapping_tool == 'bwa-aln') {
-        PS_BWA_ALN ( reads, ch_reference_index )
+        PS_BWA_ALN ( ch_unmapped_reads, ch_reference_index )
         ch_versions         = ch_versions.mix(PS_BWA_ALN.out.versions)
-        ch_bwa_samse        = reads.join(PS_BWA_ALN.out.sai)
+        ch_bwa_samse        = ch_unmapped_reads.join(PS_BWA_ALN.out.sai)
 
         PS_BWA_SAMSE ( ch_bwa_samse, ch_reference_index )
         ch_versions         = ch_versions.mix(PS_BWA_SAMSE.out.versions)
         ch_bam              = PS_BWA_SAMSE.out.bam
 
     } else if (params.ps_mapping_tool == 'bwa-aln-mem') {
-        PS_BWA_ALN_MEM ( reads, ch_reference_index )
+        PS_BWA_ALN_MEM ( ch_unmapped_reads, ch_reference_index )
         ch_versions         = ch_versions.mix(PS_BWA_ALN_MEM.out.versions)
         ch_bam              = PS_BWA_ALN_MEM.out.bam
     } else if (params.ps_mapping_tool == 'bowtie2') {
-        PS_BOWTIE2 ( reads, ch_reference_index )
+        PS_BOWTIE2 ( ch_unmapped_reads, ch_reference_index )
         ch_versions         = ch_versions.mix(PS_BOWTIE2.out.versions)
         ch_bam              = PS_BOWTIE2.out.bam
     } else {
@@ -75,21 +75,21 @@ workflow PATHOGEN_SCREENING {
 
 
     // run filterBAM to generate stats
-    FILTERBAM ( ch_bam_bai )
-    ch_versions             = ch_versions.mix ( FILTERBAM.out.versions )
+    PS_FILTERBAM ( ch_bam_bai )
+    ch_versions             = ch_versions.mix ( PS_FILTERBAM.out.versions )
 
 
     // generate plot from filterBAM output
-    FILTERBAM_PLOT ( ch_bam_bai, FILTERBAM.out.filterBAM_stats )
-    ch_versions             = ch_versions.mix ( FILTERBAM_PLOT.out.versions )
+    PS_FILTERBAM_PLOT ( ch_bam_bai, PS_FILTERBAM.out.filterBAM_stats )
+    ch_versions             = ch_versions.mix ( PS_FILTERBAM_PLOT.out.versions )
 
 
     emit:
     unmapped_fastq          = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq  // channel: [ val(meta), [ fastq ] ]
-    reference_index         = BOWTIE2_BUILD.out.index_dir                 // channel: path(index)
+    reference_index         = PS_BOWTIE2_BUILD.out.index_dir                 // channel: path(index)
     raw_bam                 = PS_BOWTIE2.out.bam                          // channel: [ val(meta), [ bam ] ]
     raw_bam_bai             = SAMTOOLS_INDEX.out.bai                      // channel: [ val(meta), [ raw_bam_bai ] ]
-    filterBAM_stats         = FILTERBAM.out.filterBAM_stats               // channel: [ val(meta), [ filterBAM.csv ] ]
-    pathogen_screening_plot = FILTERBAM_PLOT.out.pathogen_screening_plot  // channel: [ val(meta), [ pathogen_screening_plot.pdf ] ]
+    filterBAM_stats         = PS_FILTERBAM.out.filterBAM_stats               // channel: [ val(meta), [ filterBAM.csv ] ]
+    pathogen_screening_plot = PS_FILTERBAM_PLOT.out.pathogen_screening_plot  // channel: [ val(meta), [ pathogen_screening_plot.pdf ] ]
     versions                = ch_versions                                 // channel: [ versions.yml ]
 }
