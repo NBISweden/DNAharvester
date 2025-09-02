@@ -26,7 +26,7 @@ process SAMTOOLS_VIEW_MQ {
         --threads ${task.cpus-1} \\
         $args \\
         -o ${prefix}-mq.bam \\
-        $input \\
+        $input
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
