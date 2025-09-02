@@ -1,6 +1,6 @@
 process FILTERBAM {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_filterbam'
 
     conda "genomewalker::bam-filter=1.2.1"
     container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
