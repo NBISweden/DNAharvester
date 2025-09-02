@@ -1,11 +1,15 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_UNMAPPED_READS   } from '../../../modules/local/samtools/samtools_unmapped_reads.nf'
-include { BOWTIE2_BUILD             } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BOWTIE2 as PS_BOWTIE2     } from '../../../modules/local/bowtie2/bowtie2.nf'
-include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/index/main'
-include { FILTERBAM                 } from '../../../modules/local/stats_output/filterbam.nf'
-include { FILTERBAM_PLOT            } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
+include { SAMTOOLS_UNMAPPED_READS               } from '../../../modules/local/samtools/samtools_unmapped_reads.nf'
+include { BWA_INDEX as PS_BWA_INDEX             } from '../../../modules/local/bwa/index.nf'
+include { BOWTIE2_BUILD as PS_BOWTIE2_BUILD     } from '../../../modules/local/bowtie2/bowtie2_build.nf'
+include { BWA_ALN as PS_BWA_ALN                 } from '../../../modules/local/bwa/aln.nf'
+include { BWA_SAMSE as PS_BWA_SAMSE             } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN_MEM as PS_BWA_ALN_MEM         } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { BOWTIE2 as PS_BOWTIE2                 } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { SAMTOOLS_INDEX                        } from '../../../modules/nf-core/samtools/index/main'
+include { FILTERBAM as PS_FILTERBAM             } from '../../../modules/local/stats_output/filterbam.nf'
+include { FILTERBAM_PLOT as PS_FILTER_PLOT      } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
 
 
 workflow PATHOGEN_SCREENING {
@@ -22,15 +26,48 @@ workflow PATHOGEN_SCREENING {
     ch_unmapped_reads       = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq
 
 
-    // Index the pathogen reference database if it is not already indexed
-    BOWTIE2_BUILD (reference_database, file(params.pathogen_reference_database).getParent())
-    ch_versions             = ch_versions.mix(BOWTIE2_BUILD.out.versions)
+
+    // Index the reference genome if it is not already indexed
+    if (params.ps_mapping_tool == 'bwa-aln' || params.ps_mapping_tool == 'bwa-aln-mem') {
+        // Build the BWA index
+        PS_BWA_INDEX (reference, file(params.reference).getParent())
+        ch_versions         = ch_versions.mix(PS_BWA_INDEX.out.versions)
+        ch_reference_index  = PS_BWA_INDEX.out.index_dir
+    } else if (params.ps_mapping_tool == 'bowtie2') {
+        // Build the Bowtie2 index
+        PS_BOWTIE2_BUILD (reference, file(params.reference).getParent())
+        ch_versions         = ch_versions.mix(PS_BOWTIE2_BUILD.out.versions)
+        ch_reference_index  = PS_BOWTIE2_BUILD.out.index_dir
+    } else {
+        error "Invalid mapping tool specified: ${params.ps_mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
+    }
+
 
 
     // Map the reads to the reference genome
-    PS_BOWTIE2 ( ch_unmapped_reads, BOWTIE2_BUILD.out.index_dir )
-    ch_versions             = ch_versions.mix(PS_BOWTIE2.out.versions)
-    ch_bam                  = PS_BOWTIE2.out.bam
+    if (params.ps_mapping_tool == 'bwa-aln') {
+        PS_BWA_ALN ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(PS_BWA_ALN.out.versions)
+        ch_bwa_samse        = reads.join(PS_BWA_ALN.out.sai)
+
+        PS_BWA_SAMSE ( ch_bwa_samse, ch_reference_index )
+        ch_versions         = ch_versions.mix(PS_BWA_SAMSE.out.versions)
+        ch_bam              = PS_BWA_SAMSE.out.bam
+
+    } else if (params.ps_mapping_tool == 'bwa-aln-mem') {
+        PS_BWA_ALN_MEM ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(PS_BWA_ALN_MEM.out.versions)
+        ch_bam              = PS_BWA_ALN_MEM.out.bam
+    } else if (params.ps_mapping_tool == 'bowtie2') {
+        PS_BOWTIE2 ( reads, ch_reference_index )
+        ch_versions         = ch_versions.mix(PS_BOWTIE2.out.versions)
+        ch_bam              = PS_BOWTIE2.out.bam
+    } else {
+        error "Invalid mapping tool specified: ${params.ps_mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
+    }
+
+
+
     // Index the BAM file
     SAMTOOLS_INDEX ( ch_bam )
     ch_bam_bai              = ch_bam.join(SAMTOOLS_INDEX.out.bai)
