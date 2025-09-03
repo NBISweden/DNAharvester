@@ -36,7 +36,7 @@ workflow PROCESSED_BAM_QC {
     main:
     ch_versions                              = Channel.empty()
 
-// mq_filtered_bam
+    // mq_filtered_bam
     ch_flagstat_mq_filtered_bam              = mq_filtered_bam.join(mq_filtered_index)
 
     FLAGSTAT_MQ_FILTERED_BAM ( ch_flagstat_mq_filtered_bam )
