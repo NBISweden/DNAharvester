@@ -31,7 +31,7 @@ workflow PROCESSED_BAM_QC {
     merged_bam_sample_index
     dedup_sample
     dedup_sample_index
-    bed
+    ch_bed_file
 
     main:
     ch_versions                              = Channel.empty()
@@ -162,7 +162,6 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_DEDUP_SAMPLE.out.versions)
 
-    ch_bed_file                              = params.intervals ? Channel.fromPath(params.intervals).collect() : Channel.value([])
     // Calculate mean genome-wide depth
     SAMTOOLS_DEPTH_MEAN (
         ch_dedup_sample_bam_bai,
