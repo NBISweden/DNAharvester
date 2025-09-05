@@ -237,8 +237,10 @@ workflow {
             PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib,
+            BAM_PROCESSING.out.dedup_lib_index,
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
             BAM_PROCESSING.out.dedup_sample,
+            BAM_PROCESSING.out.dedup_sample_index,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty()
         )
         ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
