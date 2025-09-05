@@ -33,10 +33,10 @@ def get_identity_distribution_and_avg_mapq(bam_file):
 
     with pysam.AlignmentFile(bam_file, "rb") as bam:
         for read in bam.fetch():
-            if read.is_unmapped:
+            if read.is_unmapped or read.query_sequence is None:
                 continue
             edit_distance = read.get_tag("NM")
-            read_length = read.query_length
+            read_length = len(read.query_sequence)
             identity = (read_length - edit_distance) / read_length * 100
 
             identity_values_hist.append(identity)
@@ -95,14 +95,14 @@ def reverse_complement(seq):
     return ''.join(complement.get(b,b) for b in reversed(seq))
 
 def calculate_dna_damage(bam_file, max_pos=31):
-    bamfile = pysam.AlignmentFile(bam_file,"rb")
-    dna_damage = {"CpG":[0]*max_pos,"CT":[0]*max_pos,"other":[0]*max_pos}
+    bamfile = pysam.AlignmentFile(bam_file, "rb")
+    dna_damage = {"CpG": [0]*max_pos, "CT": [0]*max_pos, "other": [0]*max_pos}
     cpg_sites = [0]*max_pos
     c_sites = [0]*max_pos
     other_sites = [0]*max_pos
 
     for read in bamfile.fetch():
-        if read.mapping_quality==0 or read.query_sequence is None:
+        if read.mapping_quality == 0 or read.query_sequence is None:
             continue
         seq = read.query_sequence
         if not read.has_tag("MD") or not read.has_tag("NM"):
@@ -110,9 +110,10 @@ def calculate_dna_damage(bam_file, max_pos=31):
         MD = read.get_tag("MD")
         reverse = read.is_reverse
         cigar = read.cigarstring
-        if any(x in seq for x in "N") or any(x in cigar for x in "IDNSHP"):
+        if "N" in seq or any(x in cigar for x in "IDNSHP"):
             continue
 
+        # rebuild reference sequence
         refseq, newread_seq = "", ""
         MDlist = re.findall(r'(\d+|\D+)', MD)
         counter = 0
@@ -132,65 +133,84 @@ def calculate_dna_damage(bam_file, max_pos=31):
             refseq = reverse_complement(refseq)
             newread_seq = reverse_complement(newread_seq)
 
-        for i in range(min(max_pos,len(newread_seq)-1)):
-            if 'N' in refseq[i:i+2] or 'N' in newread_seq[i:i+2]:
+        for i in range(min(max_pos, len(newread_seq)-1)):
+            if "N" in refseq[i:i+2] or "N" in newread_seq[i:i+2]:
                 continue
-            other = True
-            if refseq[i]=="C" and refseq[i+1]!="G":
-                c_sites[i] += 1
-                other=False
-                if newread_seq[i]=="T":
-                    dna_damage["CT"][i] += 1
-            elif refseq[i]=="C" and refseq[i+1]=="G":
-                cpg_sites[i] += 1
-                other=False
-                if newread_seq[i]=="T":
-                    dna_damage["CpG"][i] += 1
-            if other:
-                other_sites[i] += 1
-            if refseq[i]!=newread_seq[i]:
-                dna_damage["other"][i] += 1
 
-    CT = [dna_damage["CT"][i]/c_sites[i] if c_sites[i]>0 else 0 for i in range(max_pos)]
-    CpG = [dna_damage["CpG"][i]/cpg_sites[i] if cpg_sites[i]>0 else 0 for i in range(max_pos)]
-    other = [dna_damage["other"][i]/other_sites[i] if other_sites[i]>0 else 0 for i in range(max_pos)]
+            # CpG and CT mismatches
+            if refseq[i] == "C" and refseq[i+1] != "G":
+                c_sites[i] += 1
+                if newread_seq[i] == "T":
+                    dna_damage["CT"][i] += 1
+            elif refseq[i] == "C" and refseq[i+1] == "G":
+                cpg_sites[i] += 1
+                if newread_seq[i] == "T":
+                    dna_damage["CpG"][i] += 1
+            else:
+                # "other" mismatches (exclude C/T & GA)
+                if refseq[i] not in "CT" and newread_seq[i] not in "CT" and refseq[i]+newread_seq[i] != "GA":
+                    other_sites[i] += 1
+                    if refseq[i] != newread_seq[i]:
+                        dna_damage["other"][i] += 1
+
+    CT = [dna_damage["CT"][i]/c_sites[i] if c_sites[i] > 0 else 0 for i in range(max_pos)]
+    CpG = [dna_damage["CpG"][i]/cpg_sites[i] if cpg_sites[i] > 0 else 0 for i in range(max_pos)]
+    other = [dna_damage["other"][i]/other_sites[i] if other_sites[i] > 0 else 0 for i in range(max_pos)]
     return CT, CpG, other
 
 # ---------- Plot a single BAM ----------
 
 def process_bam_file(bam_file, pdf_pages, stats_row=None):
+    # --- Compute read metrics ---
     identity_values, edit_distances, read_lengths, total_nb_reads, avg_mapq, avg_identity = get_identity_distribution_and_avg_mapq(bam_file)
+    
+    # --- Compute evenness metrics ---
     df_even, boc, mean_coverage, percent_bases_covered, percent_tiles_covered = evenness_data(bam_file)
-    CT,CpG,other = calculate_dna_damage(bam_file)
-
+    
+    # --- Compute DNA damage ---
+    CT, CpG, other = calculate_dna_damage(bam_file)
+    
     fig = plt.figure(figsize=(22,20))
     gs = gridspec.GridSpec(3,2, height_ratios=[1,1,1.5])
-
+    
     if stats_row is not None:
         plt.suptitle(f"{stats_row['reference']}", fontsize=22, weight='bold')
-
+    
+    # --- Edit Distance Histogram ---
     ax0 = plt.subplot(gs[0,0])
-    ax0.hist(edit_distances,bins=50,color='#1f77b4',alpha=0.7, edgecolor='black')
+    ax0.hist(edit_distances, bins=50, color='#1f77b4', alpha=0.7, edgecolor='black')
     ax0.set_title("Edit Distance", fontsize=14, weight='bold')
     ax0.set_xlabel("Edit Distance (NM)", fontsize=12)
     ax0.set_ylabel("Count", fontsize=12)
     ax0.grid(True, linestyle='--', alpha=0.5)
-
+    
+    # --- Identity Histogram ---
     ax1 = plt.subplot(gs[0,1])
-    ax1.hist(identity_values,bins=50,color='#2ca02c',alpha=0.7, edgecolor='black')
+    ax1.hist(identity_values, bins=50, color='#2ca02c', alpha=0.7, edgecolor='black')
     ax1.set_title("% Identity", fontsize=14, weight='bold')
     ax1.set_xlabel("% Identity", fontsize=12)
     ax1.set_ylabel("Count", fontsize=12)
-    ax1.set_xlim(85,100)
+    ax1.set_xlim(85, 100)
     ax1.grid(True, linestyle='--', alpha=0.5)
-
+    
+    # --- Read Length Distribution (number of reads) ---
     ax2 = plt.subplot(gs[1,0])
-    ax2.hist(read_lengths,bins=50,color='#ff7f0e',alpha=0.7, edgecolor='black')
-    ax2.set_title("Read Length", fontsize=14, weight='bold')
-    ax2.set_xlabel("Read Length", fontsize=12)
-    ax2.set_ylabel("Count", fontsize=12)
-    ax2.grid(True, linestyle='--', alpha=0.5)
+    readlen_dict = [0]*301
+    for rl in read_lengths:
+        readlen_dict[min(300, rl)] += 1
+    x_axis_readlen = [i for i in range(301) if readlen_dict[i] > 0]
+    y_axis_readlen = [readlen_dict[i] for i in x_axis_readlen]  # absolute number of reads
 
+    ax2.fill_between(x_axis_readlen, 0, y_axis_readlen, alpha=0.25, color='#ff7f0e')
+    ax2.plot(x_axis_readlen, y_axis_readlen, color='#ff7f0e', linewidth=2, linestyle='-', marker='o', markersize=3)
+    ax2.set_title("Read Length Distribution", fontsize=14, weight='bold')
+    ax2.set_xlabel("Read length (bp)", fontsize=12)
+    ax2.set_ylabel("Number of reads", fontsize=12)
+    xmax = max(100, max(read_lengths))
+    ax2.set_xlim(0, xmax)
+    ax2.grid(True, linestyle='--', alpha=0.5)
+    
+    # --- Evenness plot ---
     ax3 = plt.subplot(gs[1,1])
     ax3.plot(df_even['Position'], boc, color='black', linewidth=1)
     ax3.set_xlabel("Reference position", fontsize=12)
@@ -198,12 +218,13 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax3.set_title(f"Evenness\nMean cov: {mean_coverage}, {percent_bases_covered}% genome, {percent_tiles_covered}% tiles", fontsize=14, weight='bold')
     ax3.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x,_:'{:0.0e}'.format(x)))
     ax3.grid(True, linestyle='--', alpha=0.5)
-
+    
+    # --- DNA damage plot ---
     ax_damage = plt.subplot(gs[2,0])
     x = list(range(31))
-    ax_damage.plot(x, CT,label="C to T",color="#d62728",linewidth=3)
-    ax_damage.plot(x, CpG,label="CpG to TpG",color="#1f77b4",linestyle='--',linewidth=2)
-    ax_damage.plot(x, other,label="Other",color="#2ca02c",linestyle=':',linewidth=2)
+    ax_damage.plot(x, CT, label="C to T", color="#d62728", linewidth=3)
+    ax_damage.plot(x, CpG, label="CpG to TpG", color="#1f77b4", linestyle='--', linewidth=2)
+    ax_damage.plot(x, other, label="Other", color="#2ca02c", linestyle=':', linewidth=2)
     ax_damage.set_xlabel("Distance from read end (bp)", fontsize=12)
     ax_damage.set_ylabel("Mismatch frequency", fontsize=12)
     ax_damage.set_xticks(range(0,31,2))
@@ -211,7 +232,8 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax_damage.set_title("DNA damage by read position", fontsize=14, weight='bold')
     ax_damage.grid(True, linestyle='--', alpha=0.5)
     ax_damage.legend(loc="upper right", fontsize=12)
-
+    
+    # --- Metrics Table ---
     ax_table = plt.subplot(gs[2,1])
     ax_table.axis('off')
     if stats_row is not None:
@@ -256,7 +278,6 @@ def main():
             plt.axis("off")
             plt.text(0.5, 0.7, "No candidate bacteria", ha="center", va="center", fontsize=24, weight="bold")
 
-            # Display current filter settings
             settings_text = (
                 f"Current filtering settings:\n\n"
                 f"Minimum reads: {args.min_reads}\n"
@@ -275,7 +296,6 @@ def main():
                 reference = row['reference']
                 sub_bam_file = f"{os.path.splitext(args.bam_file)[0]}_{reference}.bam"
 
-                # Write sub-BAM in streaming mode
                 with pysam.AlignmentFile(sub_bam_file,"wb",template=bam_in) as bam_out:
                     for read in bam_in.fetch(reference=reference):
                         bam_out.write(read)
@@ -285,3 +305,4 @@ def main():
 
 if __name__=="__main__":
     main()
+
