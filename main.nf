@@ -60,7 +60,7 @@ workflow {
         if (file.size() > 20L * 1024 * 1024 * 1024) {
             log.warn """
             ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
-            Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
+            Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file. However, Pipeline will continue with the current settings.
             """
         }
     }
