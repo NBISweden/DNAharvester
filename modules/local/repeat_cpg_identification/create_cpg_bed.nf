@@ -3,7 +3,7 @@ process CREATE_CPG_BED {
     label 'process_low'
 
     conda "conda-forge::biopython=1.79"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.79' :
         'quay.io/biocontainers/biopython:1.79' }"
 

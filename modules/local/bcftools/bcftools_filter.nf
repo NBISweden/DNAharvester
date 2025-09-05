@@ -3,7 +3,7 @@ process BCFTOOLS_FILTER {
     label 'process_low'
 
     conda "bioconda::bcftools=1.21"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/bcftools:1.21--h3a4d415_1' :
         'quay.io/biocontainers/bcftools:1.21--h3a4d415_1' }"
 

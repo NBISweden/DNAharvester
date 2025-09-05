@@ -3,7 +3,7 @@ process CREATE_REPEATS_BED {
     label 'process_low'
 
     conda "conda-forge::python=3.13.0"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/python:3.13.0--a8086dc1de1c4e39' :
         'community.wave.seqera.io/library/python:3.13.0--a025ad9838d75455' }"
 

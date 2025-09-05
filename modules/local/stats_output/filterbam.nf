@@ -3,7 +3,7 @@ process FILTERBAM {
     label 'process_filterbam'
 
     conda "genomewalker::bam-filter=1.2.1"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/cxx-compiler_python_pip_bam-filter:d381468da6310c10' :
         'community.wave.seqera.io/library/cxx-compiler_python_pip_bam-filter:57f86c8e1a5a2597' }"
 

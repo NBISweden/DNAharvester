@@ -3,7 +3,7 @@ process GUNZIP {
     label 'process_single'
 
     conda "conda-forge::gzip=1.14"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/gzip:1.14--73d1c92b03f0ea38' :
         'community.wave.seqera.io/library/gzip:1.14--19aaa2c84c85ddbc' }"
 

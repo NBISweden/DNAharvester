@@ -3,7 +3,7 @@ process FILTERBAM_PLOT {
     label 'process_single'
 
     conda "conda-forge::matplotlib=3.8.4"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pysam_matplotlib_numpy_python_pruned:84686eb793124fcd' :
         'community.wave.seqera.io/library/pysam_matplotlib_numpy_python_pruned:7a2de054bdadda21' }"
 
