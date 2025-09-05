@@ -1,6 +1,6 @@
 process FILTERBAM_PLOT {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_medium'
 
     conda "conda-forge::matplotlib=3.8.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
