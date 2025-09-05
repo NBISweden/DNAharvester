@@ -11,7 +11,7 @@ process FILTERBAM {
     tuple val(meta), path(bam), path(bai)
 
     output:
-    tuple val(meta), path("*_filterBAM.csv"),       emit: filterBAM_stats
+    tuple val(meta), path("*_filterBAM.txt"),       emit: filterBAM_stats
     path  "versions.yml",                           emit: versions
 
     when:
@@ -26,7 +26,13 @@ process FILTERBAM {
         ${args} \\
         --threads ${task.cpus} \\
         --bam ${bam} \\
-        --stats ${bam}_filterBAM.csv
+        --stats ${prefix}_filterBAM_raw.txt
+
+    ## add sample id to the column 1
+    {
+        echo -e "ID\t\$(head -n1 ${prefix}_filterBAM_raw.txt)"
+        tail -n +2 ${prefix}_filterBAM_raw.txt | sed "s/^/${prefix}\t/"
+    } > ${prefix}_filterBAM.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
