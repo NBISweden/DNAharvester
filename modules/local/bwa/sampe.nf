@@ -1,4 +1,4 @@
-process BWA_SAMSE {
+process BWA_SAMPE {
     tag "$meta.id"
     label 'process_bwa_samse'
 
