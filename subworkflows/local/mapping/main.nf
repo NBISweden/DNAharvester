@@ -12,6 +12,7 @@ include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index/main'
 include { BWA_ALN as BWA_ALN_R1 } from '../../../modules/local/bwa/aln.nf'
 include { BWA_ALN as BWA_ALN_R2 } from '../../../modules/local/bwa/aln.nf'
 include { BWA_SAMPE      } from '../../../modules/local/bwa/sampe.nf'
+include { SAMTOOLS_MERGE } from '../../../modules/local/samtools/samtools_merge.nf'
 
 
 workflow MAPPING {
@@ -76,6 +77,11 @@ workflow MAPPING {
             BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
             ch_bam_unmerged         = BWA_SAMPE.out.bam
+            ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
+            // merge the bam files
+            SAMTOOLS_MERGE ( ch_bam_merged_unmerged )
+            ch_bam = SAMTOOLS_MERGE.out.bam
+            ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
         }
 
 
