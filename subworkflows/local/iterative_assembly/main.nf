@@ -11,8 +11,14 @@ workflow ITERATIVE_ASSEMBLY {
     main:
     ch_versions = Channel.empty()
 
+    // Merge all libraries/lanes per sample
+    ch_reads_per_sample = reads.map { meta, fastq ->
+            // update only the 'id' field in meta, keep all other fields
+            [['id': meta.id.split("_")[0]], fastq]
+        }.groupTuple()
+
     // Run MIA - Mapping Iterative Assembler
-    MAPPING_ITERATIVE_ASSEMBLER (reads, mt_reference)
+    MAPPING_ITERATIVE_ASSEMBLER (ch_reads_per_sample, mt_reference)
     ch_versions         = ch_versions.mix(MAPPING_ITERATIVE_ASSEMBLER.out.versions)
 
     // Consensus call
