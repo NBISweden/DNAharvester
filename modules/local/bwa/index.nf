@@ -16,7 +16,7 @@ process BWA_INDEX {
     output:
     tuple val(meta2), path("${meta2.id}.{amb,ann,bwt,pac,sa}", arity: '5')  , emit: index
     tuple val(meta2), val(output_dir)                                       , emit: index_dir
-    path "versions.yml"                                                     , emit: versions
+    path "versions.yml"                                                     , emit: versions, optional: true
     when:
     task.ext.when == null || task.ext.when
 
