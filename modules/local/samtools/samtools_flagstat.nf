@@ -3,7 +3,7 @@ process SAMTOOLS_FLAGSTAT {
     label 'process_low'
 
     conda "bioconda::samtools=1.20 bioconda::htslib=1.20"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/htslib_samtools:1.20--9fb9031594b6902c' :
         'community.wave.seqera.io/library/htslib_samtools:1.20--11a4e6daa46930ec' }"
 

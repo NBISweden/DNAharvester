@@ -3,7 +3,7 @@ process AMBER {
     label 'process_low'
 
     conda "conda-forge::matplotlib=3.9.3 bioconda::pysam=0.22.1 conda-forge::wget=1.21.4"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pysam_matplotlib_wget:29119c93f69dc707' :
         'community.wave.seqera.io/library/pysam_matplotlib_wget:a20bf1a7f1b8bebe' }"
 

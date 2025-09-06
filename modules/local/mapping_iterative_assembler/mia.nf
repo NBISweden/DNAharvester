@@ -3,7 +3,7 @@ process MAPPING_ITERATIVE_ASSEMBLER {
     label 'process_mia'
 
     conda "bioconda::mapping-iterative-assembler=1.0"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/mapping-iterative-assembler:1.0--1389c10b012e4570' :
         'quay.io/biocontainers/mapping-iterative-assembler:1.0--h503566f_6' }"
 

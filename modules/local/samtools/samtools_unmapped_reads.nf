@@ -1,6 +1,6 @@
-process SAMTOOLS_DEPTH_MEAN {
+process SAMTOOLS_UNMAPPED_READS {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_low'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -8,40 +8,31 @@ process SAMTOOLS_DEPTH_MEAN {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
-    tuple val(meta),path(bed_file)
+    tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path("*.dpstats.txt"), emit: dpstats
-    path "versions.yml"                   , emit: versions
+    tuple val(meta), path("*-unmapped.fastq")   , emit: unmapped_fastq
+    path  "versions.yml"                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
 
     script:
     def args = task.ext.args ?: ''
-    def prefix = task.ext.prefix ?: "${meta.id}"
-    def positions = bed_file ? "-b ${bed_file}" : ""
+    prefix = task.ext.prefix ?: "${meta.id}"
+
     """
     samtools \\
-        depth \\
-        --threads ${task.cpus-1} \\
+        fastq \\
+        -f 4 \\
         $args \\
-        $positions \\
-        -o ${prefix}.tsv \\
-        $bam
-
-    awk \\
-        '{sum+=\$3} END { print sum/NR }' \\
-        ${prefix}.tsv | \\
-        awk \\
-        '{ printf "%.6f", \$1 }' \\
-        > ${prefix}.dpstats.txt
+        --threads ${task.cpus} \\
+        $input \\
+        > ${prefix}-unmapped.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
-        awk: \$(awk --version 2>&1 | head -1 | awk '{print \$1, \$2}')
     END_VERSIONS
     """
 }

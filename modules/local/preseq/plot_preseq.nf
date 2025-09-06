@@ -3,7 +3,7 @@ process PLOT_PRESEQ {
     label 'process_single'
 
     conda "conda-forge::matplotlib=3.8.4"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/matplotlib:df831ede8509d5c2' :
         'community.wave.seqera.io/library/matplotlib:3.8.4--3dafe3963199ad72' }"
 

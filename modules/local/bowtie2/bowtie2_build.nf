@@ -3,7 +3,7 @@ process BOWTIE2_BUILD {
     label 'process_medium'
 
     conda "bioconda::bowtie2=2.5.4"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/bowtie2:2.5.4--2ec535d45cd82f0b' :
         'quay.io/biocontainers/bowtie2:2.5.4--he96a11b_6' }"
 

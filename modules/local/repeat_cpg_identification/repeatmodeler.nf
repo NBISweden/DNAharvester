@@ -3,7 +3,7 @@ process REPEATMODELER {
     label 'process_repeatmodeler'
 
     conda "bioconda::repeatmodeler=2.0.6"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/repeatmodeler:2.0.6--33ecba32dc152693' :
         'community.wave.seqera.io/library/repeatmodeler:2.0.6--64a830a44f180fb9' }"
 

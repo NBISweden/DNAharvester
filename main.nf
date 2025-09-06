@@ -11,6 +11,7 @@ include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fast
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
+include { PATHOGEN_SCREENING         } from "$projectDir/subworkflows/local/pathogen_screening/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
 include { SPECIES_IDENTIFICATION     } from "$projectDir/subworkflows/local/species_identification/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
@@ -33,6 +34,11 @@ workflow {
     Running DNAharvester. Workflow run name: $workflow_name
     """)
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Prepare input channels
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Channel to collect all software versions
     ch_all_versions = Channel.empty()
 
     // Input channels for reference genome
@@ -59,14 +65,17 @@ workflow {
         if (file.size() > 20L * 1024 * 1024 * 1024) {
             log.warn """
             ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
-            Consider increasing the resources or pre-indexing it with BWA index. However, Pipeline will continue with the current settings.
+            Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file. However, Pipeline will continue with the current settings.
             """
         }
     }
     ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
     ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
-    // Input check, Merge paired-end reads, trim adapters and filter for minimum read length
+    ////////////////////////////////////////////////////////////////////////////
+    // Input check and Fastq processing
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.fastq_processing.toBoolean() ) {
         INPUT_CHECK ( params.samplesheet )
         ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
@@ -78,7 +87,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
-    // Run FastQC, MultiQC and read statistics on processed reads
+    ////////////////////////////////////////////////////////////////////////////
+    // Processed Fastq QC - Run FastQC, MultiQC and read statistics on processed reads
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
             FASTQ_PROCESSING.out.reads,
@@ -87,7 +99,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
 
-    // Map reads to the reference genome
+    ////////////////////////////////////////////////////////////////////////////
+    // Mapping/Competitive mapping
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.mapping.toBoolean() ) {
         // Competitive mapping to a concatenated reference (target plus decoy)
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
@@ -107,7 +122,25 @@ workflow {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Pathogen screening
+    ////////////////////////////////////////////////////////////////////////////
+
+    if ( params.pathogen_screening.toBoolean() ) {
+        ch_pathogen_reference_database = Channel.fromPath ( params.pathogen_reference_database, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+
+        PATHOGEN_SCREENING (
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            ch_pathogen_reference_database
+        )
+        ch_all_versions = ch_all_versions.mix(PATHOGEN_SCREENING.out.versions)
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
     // MIA - Mapping Iterative Assembler
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.iterative_assembly.toBoolean() ) {
         ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
                 .map { it -> [[id:it.Name], it] }.collect()
@@ -116,7 +149,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
     }
 
-    // Species Identification mapping
+    ////////////////////////////////////////////////////////////////////////////
+    // Species Identification
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.species_identification.toBoolean() ) {
         ch_reference_database = Channel.fromPath( params.si_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
@@ -125,7 +161,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(SPECIES_IDENTIFICATION.out.versions)
     }
 
-    // Run RepeatModeler and RepeatMasker to identify repeats and a custom script to identify CpG sites
+    ////////////////////////////////////////////////////////////////////////////
+    // Repeat and CpG site identification
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.repeat_cpg_identification.toBoolean() ) {
         REPEAT_CPG_IDENTIFICATION ( ch_reference )
         ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
@@ -136,7 +175,10 @@ workflow {
         .map { it -> [[id: it.name], it] }.collect()
         : (params.repeat_cpg_identification.toBoolean() ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
 
-    // Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
+    ////////////////////////////////////////////////////////////////////////////
+    // Raw BAM QC - Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.raw_bam_qc.toBoolean() ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -145,7 +187,11 @@ workflow {
         )
         ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
-    // Merge bam files per index, remove duplicates, merge bam files per sample, remove duplicates
+
+    ////////////////////////////////////////////////////////////////////////////
+    // BAM processing - Merge bam files and remove duplicates
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -155,7 +201,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
     }
 
-    // Run flagstat and MultiQC on processed bam files
+    ////////////////////////////////////////////////////////////////////////////
+    // Processed BAM QC - Run flagstat and MultiQC on processed bam files
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.processed_bam_qc.toBoolean() ) {
         PROCESSED_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -176,7 +225,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(PROCESSED_BAM_QC.out.versions)
     }
 
-    // Run ANGSD -doHaploCall 1 to sample a random base at each site from bam files
+    ////////////////////////////////////////////////////////////////////////////
+    // Random sampling of BAM files with ANGSD -doHaploCall 1
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.random_sampling_bam.toBoolean() ) {
         RANDOM_SAMPLING_BAM (
             BAM_PROCESSING.out.dedup_sample,
@@ -186,7 +238,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     // Variant calling with ANGSD and bcftools
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.variant_calling.toBoolean() ) {
         // Collecting processed BAM files for all samples
         ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
@@ -213,7 +268,10 @@ workflow {
         }
     }
 
+    ////////////////////////////////////////////////////////////////////////////
     // Output stats
+    ////////////////////////////////////////////////////////////////////////////
+
     if ( params.stats_output.toBoolean() ) {
         STATS_OUTPUT (
             INPUT_CHECK.out.reads,
@@ -222,12 +280,16 @@ workflow {
             PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib,
+            BAM_PROCESSING.out.dedup_lib_index,
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
             BAM_PROCESSING.out.dedup_sample,
+            BAM_PROCESSING.out.dedup_sample_index,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty()
         )
         ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
     }
+
+    //////////////////////////////////////////////////////////////////////////////
 
     // output software versions
     ch_all_versions.collectFile(name: "versions.yml", storeDir: "${params.outdir}")

@@ -4,7 +4,7 @@ process FASTP {
     label 'process_fastp'
 
     conda "bioconda::fastp=0.24.0"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/fastp:0.24.0--0397de619771c7ae' :
         'community.wave.seqera.io/library/fastp:0.24.0--62c97b06e8447690' }"
 

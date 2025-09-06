@@ -3,7 +3,7 @@ process MAPDAMAGE2 {
     label 'process_medium'
 
     conda "bioconda::mapdamage2=2.2.2"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/mapdamage2:2.2.2--8f4bec4a1a18d520' :
         'community.wave.seqera.io/library/mapdamage2:2.2.2--1896a93613624741' }"
 

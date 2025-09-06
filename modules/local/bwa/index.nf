@@ -3,7 +3,7 @@ process BWA_INDEX {
     label 'process_medium'
 
     conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/bwa_samtools:813d9b5fea3890ec' :
         'community.wave.seqera.io/library/bwa_samtools:3938c84206f62975' }"
 
@@ -16,7 +16,7 @@ process BWA_INDEX {
     output:
     tuple val(meta2), path("${meta2.id}.{amb,ann,bwt,pac,sa}", arity: '5')  , emit: index
     tuple val(meta2), val(output_dir)                                       , emit: index_dir
-    path "versions.yml"                                                     , emit: versions
+    path "versions.yml"                                                     , emit: versions, optional: true
     when:
     task.ext.when == null || task.ext.when
 

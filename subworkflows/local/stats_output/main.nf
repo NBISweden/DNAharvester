@@ -2,8 +2,10 @@
 
 include { SEQ_STATS as SEQ_STATS_LIB        } from '../../../modules/local/stats_output/seq_stats.nf'
 include { SORT_STATS as SORT_STATS_LIB      } from '../../../modules/local/stats_output/sort_stats.nf'
+include { FILTERBAM as FILTERBAM_LIB        } from '../../../modules/local/stats_output/filterbam.nf'
 include { SEQ_STATS as SEQ_STATS_SAMPLE     } from '../../../modules/local/stats_output/seq_stats.nf'
 include { SORT_STATS as SORT_STATS_SAMPLE   } from '../../../modules/local/stats_output/sort_stats.nf'
+include { FILTERBAM as FILTERBAM_SAMPLE     } from '../../../modules/local/stats_output/filterbam.nf'
 
 workflow STATS_OUTPUT {
     take:
@@ -13,8 +15,10 @@ workflow STATS_OUTPUT {
     mq_filtered_bam_flagstat
     dedup_lib_flagstat
     dedup_lib
+    dedup_lib_index
     dedup_sample_flagstat
     dedup_sample
+    dedup_sample_index
     decoy_flagstat
 
 
@@ -27,6 +31,16 @@ workflow STATS_OUTPUT {
     ////////////////////////////////////////
     // Generating seq stats per library
     ////////////////////////////////////////
+
+    // Run filterbam of deduplicated BAM files
+    ch_dedup_lib_bai = dedup_lib.join(dedup_lib_index)
+    FILTERBAM_LIB ( ch_dedup_lib_bai )
+    ch_versions             = ch_versions.mix ( FILTERBAM_LIB.out.versions )
+
+    // Concatenate all the filtered BAM files per library
+    FILTERBAM_LIB.out.filterBAM_stats
+        .map { it[1] }
+        .collectFile(name: "${workflow_name}_lib_filterBAM_stats.txt", keepHeader: true, skip: 1, storeDir: "${params.outdir}/sequencing_stats")
 
     // Processing channel for merging
     ch_reads = reads.map { meta, data ->
@@ -64,7 +78,6 @@ workflow STATS_OUTPUT {
             [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], '/dev/null']
         }.groupTuple()
     }
-
     ch_seq_stats = ch_seq_stats.join(ch_decoy_flagstat)
 
     // run the SEQ_STATS process
@@ -81,6 +94,16 @@ workflow STATS_OUTPUT {
     /////////////////////////////////////////
     // Generating seq stats per sample
     /////////////////////////////////////////
+
+    // Run filterbam of deduplicated BAM files
+    ch_dedup_sample_bai = dedup_sample.join(dedup_sample_index)
+    FILTERBAM_SAMPLE ( ch_dedup_sample_bai )
+    ch_versions             = ch_versions.mix ( FILTERBAM_SAMPLE.out.versions )
+
+    // Concatenate all the filtered BAM files per sample
+    def filterBAM_sample_stats = FILTERBAM_SAMPLE.out.filterBAM_stats
+        .map { it[1] }
+        .collectFile(name: "${workflow_name}_sample_filterBAM_stats.txt", keepHeader: true, skip: 1, storeDir: "${params.outdir}/sequencing_stats")
 
     // Prepare channels for sample statistics
     ch_reads_sample = reads.map { meta, data ->

@@ -58,6 +58,15 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // Make sure either repeat_cpg_identification is set to true or intervals (repeats_masked.bed) is provided. both cannot be true
+    if (params.repeat_cpg_identification.toBoolean() && params.intervals) {
+        log.error """Both `repeat_cpg_identification` is set to true and `intervals` (file: ${params.intervals}) is provided. Please select only one option.
+        Either provide path to BED file with reference genome positions to include in the downstream analysis OR
+        set `repeat_cpg_identification` to identify repeats and use the generated repeats_masked.bed file for downstream analysis.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
 
     SAMPLESHEET_CHECK ( samplesheet )
         .csv
