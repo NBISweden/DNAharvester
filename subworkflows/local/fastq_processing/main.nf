@@ -13,9 +13,11 @@ workflow FASTQ_PROCESSING {
     main:
     ch_versions = Channel.empty()
 
+    // Run FASTP for adapter trimming and read merging
     FASTP ( reads )
     ch_versions = ch_versions.mix(FASTP.out.versions)
 
+    // If Kraken2 classification is enabled, run Kraken2 and filter out classified reads
     if ( params.kraken2.toBoolean() ) {
         KRAKEN2 ( FASTP.out.reads, kraken2_db )
         ch_versions = ch_versions.mix(KRAKEN2.out.versions)
@@ -28,12 +30,12 @@ workflow FASTQ_PROCESSING {
 
 
     emit:
-    reads          = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads     // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
-    json           = FASTP.out.json                                                                     // channel: [ val(meta), [ reads ] ]
-    fastp_log      = FASTP.out.log                                                                      // channel: [ val(meta), [ reads ] ]
-    reads_unmerged_R1 = FASTP.out.reads_unmerged_R1                                                     // channel: [ val(meta), [ reads ] ]
-    reads_unmerged_R2 = FASTP.out.reads_unmerged_R2                                                     // channel: [ val(meta), [ reads ] ]
-    kraken2_output  = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()         // channel: [ val(meta), [ reads ] ]
-    kraken2_report  = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()         // channel: [ val(meta), [ reads ] ]
-    versions       = ch_versions                                                                        // channel: [ versions.yml ]
+    reads               = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads        // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
+    json                = FASTP.out.json                                                                        // channel: [ val(meta), [ reads ] ]
+    fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ reads ] ]
+    reads_unmerged_R1   = FASTP.out.reads_unmerged_R1                                                           // channel: [ val(meta), [ reads ] ]
+    reads_unmerged_R2   = FASTP.out.reads_unmerged_R2                                                           // channel: [ val(meta), [ reads ] ]
+    kraken2_output      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()             // channel: [ val(meta), [ reads ] ]
+    kraken2_report      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()             // channel: [ val(meta), [ reads ] ]
+    versions            = ch_versions                                                                           // channel: [ versions.yml ]
 }
