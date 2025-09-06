@@ -19,7 +19,7 @@ workflow MAPPING {
     take:
     reference
     reads // merged paired-end reads or trimmed single-end reads
-    unmerged_reads optional true // unmerged paired-end reads
+    unmerged_reads // unmerged paired-end reads
 
     main:
     ch_versions         = Channel.empty()
@@ -65,24 +65,26 @@ workflow MAPPING {
     }
 
     // processed unmerged reads if provided
-    if (params.keep_unmerged.toBoolean() && unmerged_reads) {
+    if (params.keep_unmerged.toBoolean()) {
         ch_R1 = unmerged_reads.map { meta, file1, file2 -> [meta, file1] }
         ch_R2 = unmerged_reads.map { meta, file1, file2 -> [meta, file2] }
+
         if (params.mapping_tool == 'bwa-aln') {
             BWA_ALN_R1 ( ch_R1, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
             BWA_ALN_R2 ( ch_R2, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-            ch_bwa_sampe_unmerged   = unmerged_reads.join(BWA_ALN_R1.out.sai, BWA_ALN_R2.out.sai)
+            ch_bwa_sampe_unmerged   = unmerged_reads.join(BWA_ALN_R1.out.sai).join(BWA_ALN_R2.out.sai)
             BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
             ch_bam_unmerged         = BWA_SAMPE.out.bam
             ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
             // merge the bam files
-            SAMTOOLS_MERGE ( ch_bam_merged_unmerged )
+            SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
             ch_bam = SAMTOOLS_MERGE.out.bam
             ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
         }
+    }
 
 
 
