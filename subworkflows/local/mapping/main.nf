@@ -67,7 +67,6 @@ workflow MAPPING {
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
 
-
         ch_R1 = unmerged_reads.map { meta, file1, file2 ->
             def new_meta = meta.clone()
             new_meta.id = "${meta.id}-R1"
@@ -84,13 +83,30 @@ workflow MAPPING {
         if (params.mapping_tool == 'bwa-aln') {
             BWA_ALN_R1 ( ch_R1, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
-
             BWA_ALN_R2 ( ch_R2, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-            ch_bwa_sai_r1           = BWA_ALN_R1.out.sai
-            ch_bwa_sai_r2           = BWA_ALN_R2.out.sai
 
-            ch_bwa_sampe_unmerged = unmerged_reads.join(ch_bwa_sai_r1).join(ch_bwa_sai_r2)
+            ch_R1_fixed = ch_R1.map { meta, file ->
+                meta.id = meta.id.replaceAll(/-R1$/, '')
+                [meta, file]
+            }
+
+            ch_R2_fixed = ch_R2.map { meta, file ->
+                meta.id = meta.id.replaceAll(/-R2$/, '')
+                [meta, file]
+            }
+
+            ch_R2_fixed.view()
+
+            ch_bwa_sampe_unmerged = unmerged_reads.join(BWA_ALN_R1.out.sai).join(BWA_ALN_R2.out.sai)
+
+            ch_bwa_sampe_unmerged.view()
+
+
+
+
+
+
             BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
             ch_bam_unmerged         = BWA_SAMPE.out.bam
