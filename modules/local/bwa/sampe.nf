@@ -33,7 +33,7 @@ process BWA_SAMPE {
         $read_group \\
         \${INDEX} \\
         $sai_1 $sai_2 \\
-        $read_1 $read_2 | samtools sort -@ ${task.cpus - 1} -O bam - > ${prefix}.${ref_prefix}.bam
+        $read_1 $read_2 | samtools sort -@ ${task.cpus - 1} -O bam - > ${prefix}.${ref_prefix}.sampe.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
