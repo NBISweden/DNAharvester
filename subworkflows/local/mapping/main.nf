@@ -27,7 +27,11 @@ workflow MAPPING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions         = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
+
+    ////////////////////////////////////////////////////////////////////////////
     // Index the reference genome if it is not already indexed
+    ////////////////////////////////////////////////////////////////////////////
+
     if (params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
         BWA_INDEX (reference, file(params.reference).getParent())
@@ -42,7 +46,10 @@ workflow MAPPING {
         error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
     }
 
-    // Map the reads to the reference genome
+    ////////////////////////////////////////////////////////////////////////////
+    // Mapping merged reads or single-end reads
+    ////////////////////////////////////////////////////////////////////////////
+
     if (params.mapping_tool == 'bwa-aln') {
         BWA_ALN ( reads, ch_reference_index)
         ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
@@ -63,6 +70,10 @@ workflow MAPPING {
     } else {
         error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Mapping unmerged reads if params.keep_unmerged is true
+    ////////////////////////////////////////////////////////////////////////////
 
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
@@ -110,7 +121,7 @@ workflow MAPPING {
         }
     }
 
-
+    ////////////////////////////////////////////////////////////////////////////
 
     // Index the BAM file
     SAMTOOLS_INDEX ( ch_bam )
