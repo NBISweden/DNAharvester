@@ -77,7 +77,7 @@ workflow MAPPING {
 
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
-
+        // Split channels into paired-end and single-end reads
         ch_paired_end_reads = ch_bam.filter { meta, file -> !meta.single_end }
         ch_single_end_reads = ch_bam.filter { meta, file -> meta.single_end }
 
@@ -119,10 +119,11 @@ workflow MAPPING {
                 // merge merged and unmerged bam files
                 ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
                         .map { meta, file1, file2 -> [meta, [file1, file2]] }
-
                 SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
-                ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
                 ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
+
+                // Final BAM channel with both merged and unmerged reads
+                ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
             }
         }
     }
