@@ -1,18 +1,17 @@
 #! /usr/bin/env nextflow
 
-include { SAMTOOLS_FAIDX } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { BWA_INDEX      } from '../../../modules/local/bwa/index.nf'
-include { BOWTIE2_BUILD  } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN               } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE      } from '../../../modules/local/bwa/samse.nf'
-include { BWA_ALN_MEM    } from '../../../modules/local/bwa/bwa_aln_mem.nf'
-include { BOWTIE2        } from '../../../modules/local/bowtie2/bowtie2.nf'
-include { SAMTOOLS_INDEX } from '../../../modules/nf-core/samtools/index/main'
-
-include { BWA_ALN as BWA_ALN_R1 } from '../../../modules/local/bwa/aln.nf'
-include { BWA_ALN as BWA_ALN_R2 } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMPE      } from '../../../modules/local/bwa/sampe.nf'
-include { SAMTOOLS_MERGE } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_FAIDX            } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { BWA_INDEX                 } from '../../../modules/local/bwa/index.nf'
+include { BOWTIE2_BUILD             } from '../../../modules/local/bowtie2/bowtie2_build.nf'
+include { BWA_ALN                   } from '../../../modules/local/bwa/aln.nf'
+include { BWA_ALN as BWA_ALN_R1     } from '../../../modules/local/bwa/aln.nf'
+include { BWA_ALN as BWA_ALN_R2     } from '../../../modules/local/bwa/aln.nf'
+include { BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
+include { BWA_SAMPE                 } from '../../../modules/local/bwa/sampe.nf'
+include { BWA_ALN_MEM               } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { BOWTIE2                   } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { SAMTOOLS_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/index/main'
 
 
 workflow MAPPING {
@@ -94,7 +93,7 @@ workflow MAPPING {
                 [new_meta, file2]
             }
 
-            // Align unmerged reads
+            // Align unmerged reads with BWA ALN and then run BWA SAMPE
             if (params.mapping_tool == 'bwa-aln') {
                 BWA_ALN_R1 ( ch_R1, ch_reference_index)
                 ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
