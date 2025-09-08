@@ -35,7 +35,7 @@ workflow FASTQ_PROCESSING {
     reads               = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : FASTP.out.reads        // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
     json                = FASTP.out.json                                                                        // channel: [ val(meta), [ reads ] ]
     fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ reads ] ]
-    unmerged_reads      = ch_unmerged_reads                                                                       // channel: [ val(meta), [ reads ] ]
+    unmerged_reads      = ch_unmerged_reads                                                                     // channel: [ val(meta), [ reads ] ]
     kraken2_output      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()             // channel: [ val(meta), [ reads ] ]
     kraken2_report      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()             // channel: [ val(meta), [ reads ] ]
     versions            = ch_versions                                                                           // channel: [ versions.yml ]

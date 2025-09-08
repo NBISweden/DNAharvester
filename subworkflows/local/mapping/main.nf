@@ -77,47 +77,53 @@ workflow MAPPING {
 
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
-        // Prepare channels for unmerged reads. Add R1 and R2 labels to the meta.id. This is needed to avoid file name clashes in the BWA_ALN process output
-        ch_R1 = unmerged_reads.map { meta, file1, file2 ->
-            def new_meta = meta.clone()
-            new_meta.id = "${meta.id}-R1"
-            [new_meta, file1]
-        }
-        ch_R2 = unmerged_reads.map { meta, file1, file2 ->
-            def new_meta = meta.clone()
-            new_meta.id = "${meta.id}-R2"
-            [new_meta, file2]
-        }
 
-        // Align unmerged reads
-        if (params.mapping_tool == 'bwa-aln') {
-            BWA_ALN_R1 ( ch_R1, ch_reference_index)
-            ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
-            BWA_ALN_R2 ( ch_R2, ch_reference_index)
-            ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-            // Fix meta.id to original id without -R1 or -R2 suffix after alignment
-            ch_sai_R1 = BWA_ALN_R1.out.sai.map { meta, file ->
-                meta.id = meta.id.replaceAll(/-R1$/, '')
-                [meta, file]
+        ch_paired_end_reads = ch_bam.filter { meta, file -> !meta.single_end }
+        ch_single_end_reads = ch_bam.filter { meta, file -> meta.single_end }
+
+        if (ch_paired_end_reads) {
+            // Prepare channels for unmerged reads. Add R1 and R2 labels to the meta.id. This is needed to avoid file name clashes in the BWA_ALN process output
+            ch_R1 = unmerged_reads.map { meta, file1, file2 ->
+                def new_meta = meta.clone()
+                new_meta.id = "${meta.id}-R1"
+                [new_meta, file1]
             }
-            ch_sai_R2 = BWA_ALN_R2.out.sai.map { meta, file ->
-                meta.id = meta.id.replaceAll(/-R2$/, '')
-                [meta, file]
+            ch_R2 = unmerged_reads.map { meta, file1, file2 ->
+                def new_meta = meta.clone()
+                new_meta.id = "${meta.id}-R2"
+                [new_meta, file2]
             }
-            // Join the aligned unmerged reads with their respective SAI files
-            ch_bwa_sampe_unmerged = unmerged_reads.join(ch_sai_R1).join(ch_sai_R2)
-            // Run BWA SAMPE
-            BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
-            ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
-            ch_bam_unmerged         = BWA_SAMPE.out.bam
 
-            // merge merged and unmerged bam files
-            ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
-                    .map { meta, file1, file2 -> [meta, [file1, file2]] }
+            // Align unmerged reads
+            if (params.mapping_tool == 'bwa-aln') {
+                BWA_ALN_R1 ( ch_R1, ch_reference_index)
+                ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
+                BWA_ALN_R2 ( ch_R2, ch_reference_index)
+                ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
+                // Fix meta.id to original id without -R1 or -R2 suffix after alignment
+                ch_sai_R1 = BWA_ALN_R1.out.sai.map { meta, file ->
+                    meta.id = meta.id.replaceAll(/-R1$/, '')
+                    [meta, file]
+                }
+                ch_sai_R2 = BWA_ALN_R2.out.sai.map { meta, file ->
+                    meta.id = meta.id.replaceAll(/-R2$/, '')
+                    [meta, file]
+                }
+                // Join the aligned unmerged reads with their respective SAI files
+                ch_bwa_sampe_unmerged = unmerged_reads.join(ch_sai_R1).join(ch_sai_R2)
+                // Run BWA SAMPE
+                BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
+                ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
+                ch_bam_unmerged         = BWA_SAMPE.out.bam
 
-            SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
-            ch_bam = SAMTOOLS_MERGE.out.bam
-            ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
+                // merge merged and unmerged bam files
+                ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
+                        .map { meta, file1, file2 -> [meta, [file1, file2]] }
+
+                SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
+                ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
+                ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
+            }
         }
     }
 
