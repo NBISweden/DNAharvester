@@ -67,6 +67,7 @@ workflow MAPPING {
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
 
+        // Prepare channels for unmerged reads. Add R1 and R2 labels to the meta.id. This is needed to avoid file name clashes in the BWA_ALN process output
         ch_R1 = unmerged_reads.map { meta, file1, file2 ->
             def new_meta = meta.clone()
             new_meta.id = "${meta.id}-R1"
@@ -79,13 +80,13 @@ workflow MAPPING {
             [new_meta, file2]
         }
 
-
+        // Align unmerged reads
         if (params.mapping_tool == 'bwa-aln') {
             BWA_ALN_R1 ( ch_R1, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
             BWA_ALN_R2 ( ch_R2, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-
+            // Fix meta.id to original id without -R1 or -R2 suffix after alignment
             ch_R1_fixed = ch_R1.map { meta, file ->
                 meta.id = meta.id.replaceAll(/-R1$/, '')
                 [meta, file]
