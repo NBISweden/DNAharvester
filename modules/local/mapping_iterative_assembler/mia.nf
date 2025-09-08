@@ -24,7 +24,7 @@ process MAPPING_ITERATIVE_ASSEMBLER {
     def ref_prefix = task.ext.ref_prefix ?: "${meta4.id.replaceAll(/\.(fasta|fna|fa)$/, '')}"
 
     """
-    gunzip -c ${reads} > ${prefix}.unzipped.fastq
+    zcat ${reads} > ${prefix}.unzipped.fastq
 
     mia -c -C -U -i -F -k 14  \\
         $args \\
