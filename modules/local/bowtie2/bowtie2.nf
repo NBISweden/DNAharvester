@@ -8,7 +8,7 @@ process BOWTIE2 {
         'community.wave.seqera.io/library/bowtie2_samtools:ea581343bbe90572' }"
 
     input:
-    tuple val(meta) , path(reads)
+    tuple val(meta), path(reads)
     tuple val(meta2), path(index)
 
     output:
@@ -63,4 +63,5 @@ process BOWTIE2 {
             samtools: \$(echo \$(samtools --version 2>&1) | head -n 1 | sed 's/samtools //')
         END_VERSIONS
         """
+    }
 }

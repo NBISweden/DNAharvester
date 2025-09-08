@@ -114,16 +114,22 @@ workflow MAPPING {
                 BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
                 ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
                 ch_bam_unmerged         = BWA_SAMPE.out.bam
-
-                // merge merged and unmerged bam files
-                ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
-                        .map { meta, file1, file2 -> [meta, [file1, file2]] }
-                SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
-                ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
-
-                // Final BAM channel with both merged and unmerged reads
-                ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
+            } else if (params.mapping_tool == 'bowtie2') {
+                // Align unmerged reads with Bowtie2
+                BOWTIE2 ( unmerged_reads, ch_reference_index )
+                ch_versions             = ch_versions.mix(BOWTIE2.out.versions)
+                ch_bam_unmerged         = BOWTIE2.out.bam
             }
+
+            // merge merged and unmerged bam files
+            ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
+                    .map { meta, file1, file2 -> [meta, [file1, file2]] }
+            SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
+            ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
+
+            // Final BAM channel with both merged and unmerged reads
+            ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
+
         }
     }
 
