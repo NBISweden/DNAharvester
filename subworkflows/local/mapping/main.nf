@@ -44,7 +44,7 @@ workflow MAPPING {
 
     // Map the reads to the reference genome
     if (params.mapping_tool == 'bwa-aln') {
-        BWA_ALN ( reads, ch_reference_index )
+        BWA_ALN ( reads, ch_reference_index)
         ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
         ch_bwa_samse        = reads.join(BWA_ALN.out.sai)
 
@@ -66,15 +66,31 @@ workflow MAPPING {
 
     // processed unmerged reads if provided
     if (params.keep_unmerged.toBoolean()) {
-        ch_R1 = unmerged_reads.map { meta, file1, file2 -> [meta, file1] }
-        ch_R2 = unmerged_reads.map { meta, file1, file2 -> [meta, file2] }
+
+
+        ch_R1 = unmerged_reads.map { meta, file1, file2 ->
+            def new_meta = meta.clone()
+            new_meta.id = "${meta.id}-R1"
+            [new_meta, file1]
+        }
+
+        ch_R2 = unmerged_reads.map { meta, file1, file2 ->
+            def new_meta = meta.clone()
+            new_meta.id = "${meta.id}-R2"
+            [new_meta, file2]
+        }
+
 
         if (params.mapping_tool == 'bwa-aln') {
-            BWA_ALN_R1 ( ch_R1, ch_reference_index )
+            BWA_ALN_R1 ( ch_R1, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
-            BWA_ALN_R2 ( ch_R2, ch_reference_index )
+
+            BWA_ALN_R2 ( ch_R2, ch_reference_index)
             ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-            ch_bwa_sampe_unmerged   = unmerged_reads.join(BWA_ALN_R1.out.sai).join(BWA_ALN_R2.out.sai)
+            ch_bwa_sai_r1           = BWA_ALN_R1.out.sai
+            ch_bwa_sai_r2           = BWA_ALN_R2.out.sai
+
+            ch_bwa_sampe_unmerged = unmerged_reads.join(ch_bwa_sai_r1).join(ch_bwa_sai_r2)
             BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
             ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
             ch_bam_unmerged         = BWA_SAMPE.out.bam
