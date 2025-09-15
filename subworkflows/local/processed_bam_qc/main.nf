@@ -162,22 +162,6 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_DEDUP_SAMPLE.out.versions)
 
-    // Calculate mean genome-wide depth
-
-    // if (params.intervals || params.repeat_cpg_identification.toBoolean()) {
-    // SAMTOOLS_DEPTH_MEAN(
-    //     ch_dedup_sample_bam_bai,
-    //     ch_bed_file
-    // )
-    // } else {
-    //     // Create an alternative process or just log
-    //     log.info("No intervals provided, calculating depth for entire genome")
-
-    //     // You could call a different process here that doesn't need intervals
-    //     SAMTOOLS_DEPTH_MEAN(ch_dedup_sample_bam_bai)
-    // }
-
-
     SAMTOOLS_DEPTH_MEAN (
         ch_dedup_sample_bam_bai,
         ch_bed_file
