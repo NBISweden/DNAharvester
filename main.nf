@@ -171,9 +171,13 @@ workflow {
     }
 
     // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ? Channel.fromPath(params.intervals, checkIfExists: true)
-        .map { it -> [[id: it.name], it] }.collect()
-        : (params.repeat_cpg_identification.toBoolean() ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
 
     ////////////////////////////////////////////////////////////////////////////
     // Raw BAM QC - Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files

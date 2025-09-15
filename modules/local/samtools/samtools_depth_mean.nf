@@ -9,7 +9,7 @@ process SAMTOOLS_DEPTH_MEAN {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    tuple val(meta),path(bed_file)
+    tuple val(meta2), path(bed_file)
 
     output:
     tuple val(meta), path("*.dpstats.txt"), emit: dpstats
@@ -21,13 +21,13 @@ process SAMTOOLS_DEPTH_MEAN {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def positions = bed_file ? "-b ${bed_file}" : ""
+    def intervals = (meta2.id == 'null' && bed_file.name == 'null') ? "" : "-b ${bed_file}"
     """
     samtools \\
         depth \\
         --threads ${task.cpus-1} \\
         $args \\
-        $positions \\
+        $intervals \\
         -o ${prefix}.tsv \\
         $bam
 
