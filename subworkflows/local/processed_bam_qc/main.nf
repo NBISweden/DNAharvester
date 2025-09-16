@@ -162,6 +162,7 @@ workflow PROCESSED_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_DEDUP_SAMPLE.out.versions)
 
+    // samtools depth mean
     SAMTOOLS_DEPTH_MEAN (
         ch_dedup_sample_bam_bai,
         ch_bed_file

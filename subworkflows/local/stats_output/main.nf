@@ -1,9 +1,9 @@
 #! /usr/bin/env nextflow
 
-include { SEQ_STATS as SEQ_STATS_LIB        } from '../../../modules/local/stats_output/seq_stats.nf'
+include { SEQ_STATS_LIB                     } from '../../../modules/local/stats_output/seq_stats_lib.nf'
 include { SORT_STATS as SORT_STATS_LIB      } from '../../../modules/local/stats_output/sort_stats.nf'
 include { FILTERBAM as FILTERBAM_LIB        } from '../../../modules/local/stats_output/filterbam.nf'
-include { SEQ_STATS as SEQ_STATS_SAMPLE     } from '../../../modules/local/stats_output/seq_stats.nf'
+include { SEQ_STATS_SAMPLE                  } from '../../../modules/local/stats_output/seq_stats_sample.nf'
 include { SORT_STATS as SORT_STATS_SAMPLE   } from '../../../modules/local/stats_output/sort_stats.nf'
 include { FILTERBAM as FILTERBAM_SAMPLE     } from '../../../modules/local/stats_output/filterbam.nf'
 
@@ -20,7 +20,7 @@ workflow STATS_OUTPUT {
     dedup_sample
     dedup_sample_index
     decoy_flagstat
-
+    dpstats
 
     main:
     ch_versions = Channel.empty()
@@ -122,8 +122,7 @@ workflow STATS_OUTPUT {
         [['id': meta.id.split("_")[0]], data ]
     }.groupTuple()
 
-
-
+    ch_mq_filtered_bam_flagstat_sample.view()
     // merging different channels
     ch_seq_stats_sample = ch_reads_sample
         .join(ch_fastp_log_sample)
@@ -131,6 +130,7 @@ workflow STATS_OUTPUT {
         .join(ch_mq_filtered_bam_flagstat_sample)
         .join(dedup_sample_flagstat)
         .join(dedup_sample)
+        .join(dpstats)
 
     // If competitive reference is used, include decoy flagstat
     if (params.competitive_reference) {
