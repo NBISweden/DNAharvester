@@ -1,4 +1,4 @@
-process SEQ_STATS {
+process SEQ_STATS_LIB {
     tag "$meta.id"
     label 'process_single'
 

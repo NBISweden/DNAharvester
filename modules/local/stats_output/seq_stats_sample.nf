@@ -1,4 +1,4 @@
-process SEQ_STATS {
+process SEQ_STATS_SAMPLE {
     tag "$meta.id"
     label 'process_single'
 
@@ -16,8 +16,9 @@ process SEQ_STATS {
     path(mq_filtered_bam_flagstat),
     path(dedup_lib_flagstat),
     path(dedup_lib),
-    path(decoy_flagstat),
-    path(dpstats)
+    path(dpstats),
+    path(decoy_flagstat)
+
 
     output:
     tuple val(meta), path("*.stats.txt")    , emit: stats_txt
@@ -46,6 +47,7 @@ process SEQ_STATS {
     filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
+    depth=\$(cat ${dpstats})
     min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
     max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' ${prefix}-samtools-stats)
     mean_reads_len=\$(awk '/^SN/ && /average length/ {print \$4}' ${prefix}-samtools-stats)
@@ -63,8 +65,8 @@ process SEQ_STATS {
         ROW+="\\t\$decoy_reads"
     fi
 
-    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
-    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
+    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tdepth\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
+    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$depth\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
 
     ## write output
     printf "\$HEADER\\n" > ${prefix}.stats.txt
