@@ -7,7 +7,6 @@ include { BWA_ALN as MS_BWA_ALN                     } from '../../../modules/loc
 include { BWA_SAMSE as MS_BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
 include { BWA_ALN_MEM as MS_BWA_ALN_MEM             } from '../../../modules/local/bwa/bwa_aln_mem.nf'
 include { BOWTIE2 as MS_BOWTIE2                     } from '../../../modules/local/bowtie2/bowtie2.nf'
-include { SAMTOOLS_INDEX                            } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ   } from '../../../modules/local/samtools/samtools_view_mq.nf'
 include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE       } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMREMOVEDUP as MS_SAMREMOVEDUP           } from '../../../modules/local/samremovedup/main'
