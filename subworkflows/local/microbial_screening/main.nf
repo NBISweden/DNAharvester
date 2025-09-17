@@ -13,10 +13,10 @@ include { FILTERBAM as PS_FILTERBAM                 } from '../../../modules/loc
 include { FILTERBAM_PLOT as PS_FILTERBAM_PLOT       } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
 
 
-workflow PATHOGEN_SCREENING {
+workflow MICROBIAL_SCREENING {
     take:
     raw_bam
-    pathogen_reference_database
+    ms_reference
 
     main:
     ch_versions             = Channel.empty()
@@ -26,9 +26,9 @@ workflow PATHOGEN_SCREENING {
     ch_versions             = ch_versions.mix(SAMTOOLS_UNMAPPED_READS.out.versions)
     ch_unmapped_reads       = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq
 
-
-
-    // Index the reference genome if it is not already indexed
+    ////////////////////////////////////////////////////////////////////////////
+    // Index the reference database if the index files are not present in the dir
+    ////////////////////////////////////////////////////////////////////////////
     if (params.ps_mapping_tool == 'bwa-aln' || params.ps_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
         PS_BWA_INDEX (pathogen_reference_database, file(params.pathogen_reference_database).getParent())
@@ -43,6 +43,9 @@ workflow PATHOGEN_SCREENING {
         error "Invalid mapping tool specified: ${params.ps_mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
     }
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Map the unmapped reads to the microbial reference database
+    ////////////////////////////////////////////////////////////////////////////
 
 
     // Map the reads to the reference genome
