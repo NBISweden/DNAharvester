@@ -1,16 +1,19 @@
 #! /usr/bin/env nextflow
 
 include { SAMTOOLS_UNMAPPED_READS                   } from '../../../modules/local/samtools/samtools_unmapped_reads.nf'
-include { BWA_INDEX as PS_BWA_INDEX                 } from '../../../modules/local/bwa/index.nf'
-include { BOWTIE2_BUILD as PS_BOWTIE2_BUILD         } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN as PS_BWA_ALN                     } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE as PS_BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
-include { BWA_ALN_MEM as PS_BWA_ALN_MEM             } from '../../../modules/local/bwa/bwa_aln_mem.nf'
-include { BOWTIE2 as PS_BOWTIE2                     } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { BWA_INDEX as MS_BWA_INDEX                 } from '../../../modules/local/bwa/index.nf'
+include { BOWTIE2_BUILD as MS_BOWTIE2_BUILD         } from '../../../modules/local/bowtie2/bowtie2_build.nf'
+include { BWA_ALN as MS_BWA_ALN                     } from '../../../modules/local/bwa/aln.nf'
+include { BWA_SAMSE as MS_BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN_MEM as MS_BWA_ALN_MEM             } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { BOWTIE2 as MS_BOWTIE2                     } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX                            } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_VIEW_MQ as PS_SAMTOOLS_VIEW_MQ   } from '../../../modules/local/samtools/samtools_view_mq.nf'
-include { FILTERBAM as PS_FILTERBAM                 } from '../../../modules/local/stats_output/filterbam.nf'
-include { FILTERBAM_PLOT as PS_FILTERBAM_PLOT       } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
+include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ   } from '../../../modules/local/samtools/samtools_view_mq.nf'
+include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE       } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMREMOVEDUP as MS_SAMREMOVEDUP           } from '../../../modules/local/samremovedup/main'
+include { SAMTOOLS_INDEX as MS_SAMREMOVEDUP_INDEX   } from '../../../modules/nf-core/samtools/index/main'
+include { FILTERBAM as MS_FILTERBAM                 } from '../../../modules/local/stats_output/filterbam.nf'
+include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT       } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
 
 
 workflow MICROBIAL_SCREENING {
@@ -32,14 +35,14 @@ workflow MICROBIAL_SCREENING {
 
     if (params.ms_mapping_tool == 'bwa-aln' || params.ms_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
-        PS_BWA_INDEX (ms_reference_database, file(params.ms_reference_database).getParent())
-        ch_versions         = ch_versions.mix(PS_BWA_INDEX.out.versions)
-        ch_ms_reference_database_index  = PS_BWA_INDEX.out.index_dir
+        MS_BWA_INDEX (ms_reference_database, file(params.ms_reference_database).getParent())
+        ch_versions         = ch_versions.mix(MS_BWA_INDEX.out.versions)
+        ch_ms_reference_database_index  = MS_BWA_INDEX.out.index_dir
     } else if (params.ms_mapping_tool == 'bowtie2') {
         // Build the Bowtie2 index
-        PS_BOWTIE2_BUILD (ms_reference_database, file(params.ms_reference_database).getParent())
-        ch_versions         = ch_versions.mix(PS_BOWTIE2_BUILD.out.versions)
-        ch_ms_reference_database_index  = PS_BOWTIE2_BUILD.out.index_dir
+        MS_BOWTIE2_BUILD (ms_reference_database, file(params.ms_reference_database).getParent())
+        ch_versions         = ch_versions.mix(MS_BOWTIE2_BUILD.out.versions)
+        ch_ms_reference_database_index  = MS_BOWTIE2_BUILD.out.index_dir
     } else {
         error "Invalid mapping tool specified: ${params.ms_mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
     }
@@ -49,22 +52,22 @@ workflow MICROBIAL_SCREENING {
     ////////////////////////////////////////////////////////////////////////////
 
     if (params.ms_mapping_tool == 'bwa-aln') {
-        PS_BWA_ALN ( ch_unmapped_reads, ch_ms_reference_database_index )
-        ch_versions         = ch_versions.mix(PS_BWA_ALN.out.versions)
-        ch_bwa_samse        = ch_unmapped_reads.join(PS_BWA_ALN.out.sai)
+        MS_BWA_ALN ( ch_unmapped_reads, ch_ms_reference_database_index )
+        ch_versions         = ch_versions.mix(MS_BWA_ALN.out.versions)
+        ch_bwa_samse        = ch_unmapped_reads.join(MS_BWA_ALN.out.sai)
 
-        PS_BWA_SAMSE ( ch_bwa_samse, ch_ms_reference_database_index )
-        ch_versions         = ch_versions.mix(PS_BWA_SAMSE.out.versions)
-        ch_raw_bam              = PS_BWA_SAMSE.out.bam
+        MS_BWA_SAMSE ( ch_bwa_samse, ch_ms_reference_database_index )
+        ch_versions         = ch_versions.mix(MS_BWA_SAMSE.out.versions)
+        ch_raw_bam          = MS_BWA_SAMSE.out.bam
 
     } else if (params.ms_mapping_tool == 'bwa-aln-mem') {
-        PS_BWA_ALN_MEM ( ch_unmapped_reads, ch_ms_reference_database_index )
-        ch_versions         = ch_versions.mix(PS_BWA_ALN_MEM.out.versions)
-        ch_raw_bam              = PS_BWA_ALN_MEM.out.bam
+        MS_BWA_ALN_MEM ( ch_unmapped_reads, ch_ms_reference_database_index )
+        ch_versions         = ch_versions.mix(MS_BWA_ALN_MEM.out.versions)
+        ch_raw_bam          = MS_BWA_ALN_MEM.out.bam
     } else if (params.ms_mapping_tool == 'bowtie2') {
-        PS_BOWTIE2 ( ch_unmapped_reads, ch_ms_reference_database_index )
-        ch_versions         = ch_versions.mix(PS_BOWTIE2.out.versions)
-        ch_raw_bam              = PS_BOWTIE2.out.bam
+        MS_BOWTIE2 ( ch_unmapped_reads, ch_ms_reference_database_index )
+        ch_versions         = ch_versions.mix(MS_BOWTIE2.out.versions)
+        ch_raw_bam          = MS_BOWTIE2.out.bam
     } else {
         error "Invalid mapping tool specified: ${params.ms_mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
     }
@@ -74,19 +77,32 @@ workflow MICROBIAL_SCREENING {
     ////////////////////////////////////////////////////////////////////////////
 
     // mapping quality filter
-    PS_SAMTOOLS_VIEW_MQ ( ch_raw_bam )
-    ch_versions             = ch_versions.mix ( PS_SAMTOOLS_VIEW_MQ.out.versions )
+    MS_SAMTOOLS_VIEW_MQ ( ch_raw_bam )
+    ch_versions             = ch_versions.mix ( MS_SAMTOOLS_VIEW_MQ.out.versions )
 
+    // Prepare channel to merge BAM files per sample
+    ch_bam_sample_to_merge  = MS_SAMTOOLS_VIEW_MQ.out.bam { meta, bam ->
+        // update only the 'id' field in meta, keep all other fields
+        [['id': meta.id.split("_")[0]], bam]
+    }.groupTuple()
+    // Merge BAM files per sample
+    MS_SAMTOOLS_MERGE ( ch_bam_sample_to_merge, ms_reference_database )
+    ch_versions             = ch_versions.mix(MS_SAMTOOLS_MERGE.out.versions)
 
-    // Index the BAM file
-    SAMTOOLS_INDEX ( PS_SAMTOOLS_VIEW_MQ.out.bam )
-    ch_bam_bai              = PS_SAMTOOLS_VIEW_MQ.out.bam.join(SAMTOOLS_INDEX.out.bai)
-    ch_versions             = ch_versions.mix ( SAMTOOLS_INDEX.out.versions )
+    // Remove PCR duplicates
+    MS_SAMREMOVEDUP ( MS_SAMTOOLS_MERGE.out.bam, ms_reference_database )
+    ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP.out.versions)
+    MS_SAMREMOVEDUP_INDEX ( MS_SAMREMOVEDUP.out.dedup )
+    ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP_INDEX.out.versions)
+    ch_bam_bai              = MS_SAMREMOVEDUP.out.dedup.join(MS_SAMREMOVEDUP_INDEX.out.bai)
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Generate stats and plots
+    ////////////////////////////////////////////////////////////////////////////
 
     // run filterBAM to generate stats
-    PS_FILTERBAM ( ch_bam_bai )
-    ch_versions             = ch_versions.mix ( PS_FILTERBAM.out.versions )
-
+    MS_FILTERBAM ( ch_bam_bai )
+    ch_versions             = ch_versions.mix ( MS_FILTERBAM.out.versions )
 
     // generate plot from filterBAM output
     PS_FILTERBAM_PLOT ( ch_bam_bai, PS_FILTERBAM.out.filterBAM_stats )
