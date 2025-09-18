@@ -13,7 +13,7 @@ process FILTERBAM_PLOT {
 
 
     output:
-    tuple val(meta), path("*_ms_plot.pdf")       , emit: plot
+    tuple val(meta), path("*_ms_plot.pdf")       , emit: ms_plot
     path "versions.yml"                          , emit: versions
 
     when:

@@ -79,7 +79,6 @@ workflow MICROBIAL_SCREENING {
     MS_SAMTOOLS_VIEW_MQ ( ch_raw_bam )
     ch_versions             = ch_versions.mix ( MS_SAMTOOLS_VIEW_MQ.out.versions )
 
-    MS_SAMTOOLS_VIEW_MQ.out.bam.view()
     // Prepare channel to merge BAM files per sample
     ch_ms_bams_per_sample  = MS_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
         // update only the 'id' field in meta, keep all other fields

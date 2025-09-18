@@ -127,7 +127,7 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////
 
     if ( params.microbial_screening.toBoolean() ) {
-        ch_ms_reference = Channel.fromPath ( params.ms_reference_database, checkIfExists: true )
+        ch_ms_reference = Channel.fromPath ( params.ms_reference, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
         MICROBIAL_SCREENING (
