@@ -100,7 +100,7 @@ workflow STATS_OUTPUT {
         [['id': meta.id.split("_")[0]], data ]
     }.groupTuple()
 
-    ch_mq_filtered_bam_flagstat_sample.view()
+
     // merging different channels
     ch_seq_stats_sample = ch_reads_sample
         .join(ch_fastp_log_sample)
