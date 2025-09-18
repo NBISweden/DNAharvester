@@ -12,7 +12,7 @@ include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE       } from '../../../modules/loc
 include { SAMREMOVEDUP as MS_SAMREMOVEDUP           } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as MS_SAMREMOVEDUP_INDEX   } from '../../../modules/nf-core/samtools/index/main'
 include { FILTERBAM as MS_FILTERBAM                 } from '../../../modules/local/stats_output/filterbam.nf'
-include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT       } from '../../../modules/local/pathogen_screening/filterbam_plot.nf'
+include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT       } from '../../../modules/local/microbial_screening/filterbam_plot.nf'
 
 
 workflow MICROBIAL_SCREENING {
@@ -79,13 +79,15 @@ workflow MICROBIAL_SCREENING {
     MS_SAMTOOLS_VIEW_MQ ( ch_raw_bam )
     ch_versions             = ch_versions.mix ( MS_SAMTOOLS_VIEW_MQ.out.versions )
 
+    MS_SAMTOOLS_VIEW_MQ.out.bam.view()
     // Prepare channel to merge BAM files per sample
-    ch_bam_sample_to_merge  = MS_SAMTOOLS_VIEW_MQ.out.bam { meta, bam ->
+    ch_ms_bams_per_sample  = MS_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
         // update only the 'id' field in meta, keep all other fields
         [['id': meta.id.split("_")[0]], bam]
-    }.groupTuple()
+        }.groupTuple()
+
     // Merge BAM files per sample
-    MS_SAMTOOLS_MERGE ( ch_bam_sample_to_merge, ms_reference )
+    MS_SAMTOOLS_MERGE ( ch_ms_bams_per_sample, ms_reference )
     ch_versions             = ch_versions.mix(MS_SAMTOOLS_MERGE.out.versions)
 
     // Remove PCR duplicates
@@ -95,24 +97,25 @@ workflow MICROBIAL_SCREENING {
     ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP_INDEX.out.versions)
     ch_bam_bai              = MS_SAMREMOVEDUP.out.dedup.join(MS_SAMREMOVEDUP_INDEX.out.bai)
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Generate stats and plots
-    ////////////////////////////////////////////////////////////////////////////
+    // ////////////////////////////////////////////////////////////////////////////
+    // // Generate stats and plots
+    // ////////////////////////////////////////////////////////////////////////////
 
     // run filterBAM to generate stats
     MS_FILTERBAM ( ch_bam_bai )
     ch_versions             = ch_versions.mix ( MS_FILTERBAM.out.versions )
 
     // generate plot from filterBAM output
-    PS_FILTERBAM_PLOT ( ch_bam_bai, PS_FILTERBAM.out.filterBAM_stats )
-    ch_versions             = ch_versions.mix ( PS_FILTERBAM_PLOT.out.versions )
+    MS_FILTERBAM_PLOT ( ch_bam_bai, MS_FILTERBAM.out.filterBAM_stats )
+    ch_versions             = ch_versions.mix ( MS_FILTERBAM_PLOT.out.versions )
 
 
     emit:
     unmapped_fastq                = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq  // channel: [ val(meta), [ fastq ] ]
     ms_reference_index            = ch_ms_reference_index                       // channel: path(index)
-    bam                           = ch_raw_bam                                  // channel: [ val(meta), [ bam ] ]
-    ms_filterBAM_stats            = PS_FILTERBAM.out.filterBAM_stats            // channel: [ val(meta), [ filterBAM.csv ] ]
-    ms_screening_plot             = PS_FILTERBAM_PLOT.out.plot                  // channel: [ val(meta), [ pathogen_screening_plot.pdf ] ]
+    ms_raw_bam                    = ch_raw_bam                                  // channel: [ val(meta), [ bam ] ]
+    ms_bam_bai                    = ch_bam_bai                                  // channel: [ val(meta), [ bai ] ]
+    ms_filterBAM_stats            = MS_FILTERBAM.out.filterBAM_stats            // channel: [ val(meta), [ filterBAM.csv ] ]
+    ms_screening_plot             = MS_FILTERBAM_PLOT.out.ms_plot               // channel: [ val(meta), [ pathogen_screening_plot.pdf ] ]
     versions                      = ch_versions                                 // channel: [ versions.yml ]
 }
