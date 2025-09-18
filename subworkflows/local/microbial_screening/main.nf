@@ -18,7 +18,7 @@ include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT       } from '../../../modules/loc
 workflow MICROBIAL_SCREENING {
     take:
     raw_bam
-    ms_reference_database
+    ms_reference
 
     main:
     ch_versions             = Channel.empty()
@@ -34,14 +34,14 @@ workflow MICROBIAL_SCREENING {
 
     if (params.ms_mapping_tool == 'bwa-aln' || params.ms_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
-        MS_BWA_INDEX (ms_reference_database, file(params.ms_reference_database).getParent())
+        MS_BWA_INDEX (ms_reference, file(params.ms_reference).getParent())
         ch_versions         = ch_versions.mix(MS_BWA_INDEX.out.versions)
-        ch_ms_reference_database_index  = MS_BWA_INDEX.out.index_dir
+        ch_ms_reference_index  = MS_BWA_INDEX.out.index_dir
     } else if (params.ms_mapping_tool == 'bowtie2') {
         // Build the Bowtie2 index
-        MS_BOWTIE2_BUILD (ms_reference_database, file(params.ms_reference_database).getParent())
+        MS_BOWTIE2_BUILD (ms_reference, file(params.ms_reference).getParent())
         ch_versions         = ch_versions.mix(MS_BOWTIE2_BUILD.out.versions)
-        ch_ms_reference_database_index  = MS_BOWTIE2_BUILD.out.index_dir
+        ch_ms_reference_index  = MS_BOWTIE2_BUILD.out.index_dir
     } else {
         error "Invalid mapping tool specified: ${params.ms_mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
     }
@@ -51,20 +51,20 @@ workflow MICROBIAL_SCREENING {
     ////////////////////////////////////////////////////////////////////////////
 
     if (params.ms_mapping_tool == 'bwa-aln') {
-        MS_BWA_ALN ( ch_unmapped_reads, ch_ms_reference_database_index )
+        MS_BWA_ALN ( ch_unmapped_reads, ch_ms_reference_index )
         ch_versions         = ch_versions.mix(MS_BWA_ALN.out.versions)
         ch_bwa_samse        = ch_unmapped_reads.join(MS_BWA_ALN.out.sai)
 
-        MS_BWA_SAMSE ( ch_bwa_samse, ch_ms_reference_database_index )
+        MS_BWA_SAMSE ( ch_bwa_samse, ch_ms_reference_index )
         ch_versions         = ch_versions.mix(MS_BWA_SAMSE.out.versions)
         ch_raw_bam          = MS_BWA_SAMSE.out.bam
 
     } else if (params.ms_mapping_tool == 'bwa-aln-mem') {
-        MS_BWA_ALN_MEM ( ch_unmapped_reads, ch_ms_reference_database_index )
+        MS_BWA_ALN_MEM ( ch_unmapped_reads, ch_ms_reference_index )
         ch_versions         = ch_versions.mix(MS_BWA_ALN_MEM.out.versions)
         ch_raw_bam          = MS_BWA_ALN_MEM.out.bam
     } else if (params.ms_mapping_tool == 'bowtie2') {
-        MS_BOWTIE2 ( ch_unmapped_reads, ch_ms_reference_database_index )
+        MS_BOWTIE2 ( ch_unmapped_reads, ch_ms_reference_index )
         ch_versions         = ch_versions.mix(MS_BOWTIE2.out.versions)
         ch_raw_bam          = MS_BOWTIE2.out.bam
     } else {
@@ -85,11 +85,11 @@ workflow MICROBIAL_SCREENING {
         [['id': meta.id.split("_")[0]], bam]
     }.groupTuple()
     // Merge BAM files per sample
-    MS_SAMTOOLS_MERGE ( ch_bam_sample_to_merge, ms_reference_database )
+    MS_SAMTOOLS_MERGE ( ch_bam_sample_to_merge, ms_reference )
     ch_versions             = ch_versions.mix(MS_SAMTOOLS_MERGE.out.versions)
 
     // Remove PCR duplicates
-    MS_SAMREMOVEDUP ( MS_SAMTOOLS_MERGE.out.bam, ms_reference_database )
+    MS_SAMREMOVEDUP ( MS_SAMTOOLS_MERGE.out.bam, ms_reference )
     ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP.out.versions)
     MS_SAMREMOVEDUP_INDEX ( MS_SAMREMOVEDUP.out.dedup )
     ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP_INDEX.out.versions)
@@ -110,7 +110,7 @@ workflow MICROBIAL_SCREENING {
 
     emit:
     unmapped_fastq                = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq  // channel: [ val(meta), [ fastq ] ]
-    ms_reference_database_index   = ch_ms_reference_database_index              // channel: path(index)
+    ms_reference_index            = ch_ms_reference_index                       // channel: path(index)
     bam                           = ch_raw_bam                                  // channel: [ val(meta), [ bam ] ]
     ms_filterBAM_stats            = PS_FILTERBAM.out.filterBAM_stats            // channel: [ val(meta), [ filterBAM.csv ] ]
     ms_screening_plot             = PS_FILTERBAM_PLOT.out.plot                  // channel: [ val(meta), [ pathogen_screening_plot.pdf ] ]
