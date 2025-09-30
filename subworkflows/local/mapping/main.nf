@@ -60,12 +60,12 @@ workflow MAPPING {
 
     // Index the BAM file
     SAMTOOLS_INDEX ( ch_bam )
-    ch_versions         = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
+    ch_versions             = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
     emit:
-    fai                 = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
-    index               = ch_reference_index                 // channel: path(index)
-    bam                 = ch_bam                              // channel: [ val(meta), [ bam ] ]
-    bai                 = SAMTOOLS_INDEX.out.bai             // channel: [ val(meta), [ bai ] ]
-    versions            = ch_versions                        // channel: [ versions.yml ]
+    fai                     = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
+    index                   = ch_reference_index                 // channel: path(index)
+    bam                     = ch_bam                             // channel: [ val(meta), [ bam ] ]
+    bai                     = SAMTOOLS_INDEX.out.bai             // channel: [ val(meta), [ bai ] ]
+    versions                = ch_versions                        // channel: [ versions.yml ]
 }

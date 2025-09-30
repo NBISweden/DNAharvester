@@ -3,13 +3,13 @@ process SAMTOOLS_DEPTH_MEAN {
     label 'process_medium'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://community-cr-prod.seqera.io/docker/registry/v2/blobs/sha256/9e/9edc2564215d5cd137a8b25ca8a311600987186d406b092022444adf3c4447f7/data' :
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
     tuple val(meta), path(bam), path(bai)
-    path(intervals)
+    tuple val(meta2), path(bed_file)
 
     output:
     tuple val(meta), path("*.dpstats.txt"), emit: dpstats
@@ -21,13 +21,13 @@ process SAMTOOLS_DEPTH_MEAN {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def positions = intervals ? "-b ${intervals}" : ""
+    def intervals = (meta2.id == 'null' && bed_file.name == 'null') ? "" : "-b ${bed_file}"
     """
     samtools \\
         depth \\
         --threads ${task.cpus-1} \\
         $args \\
-        $positions \\
+        $intervals \\
         -o ${prefix}.tsv \\
         $bam
 

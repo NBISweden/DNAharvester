@@ -1,4 +1,4 @@
-process SAMTOOLS_VIEW_REGIONS {
+process SAMTOOLS_UNMAPPED_READS {
     tag "$meta.id"
     label 'process_low'
 
@@ -8,12 +8,11 @@ process SAMTOOLS_VIEW_REGIONS {
         'community.wave.seqera.io/library/htslib_samtools:1.21--6cb89bfd40cbaabf' }"
 
     input:
-    tuple val(meta), path(input), path(index)
-    tuple val(meta2), path(intervals)
+    tuple val(meta), path(input)
 
     output:
-    tuple val(meta), path("*.bam"),                                    emit: bam
-    path  "versions.yml",                                              emit: versions
+    tuple val(meta), path("*-unmapped.fastq")   , emit: unmapped_fastq
+    path  "versions.yml"                        , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -21,16 +20,15 @@ process SAMTOOLS_VIEW_REGIONS {
     script:
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
-    prefix2 = task.ext.prefix2 ?: "${meta2.id}"
-    def positions = intervals ? "-L ${intervals}" : ""
+
     """
     samtools \\
-        view \\
-        --threads ${task.cpus-1} \\
+        fastq \\
+        -f 4 \\
         $args \\
-        $positions \\
-        -o ${prefix}-${prefix2}-regions.bam \\
+        --threads ${task.cpus} \\
         $input \\
+        > ${prefix}-unmapped.fastq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

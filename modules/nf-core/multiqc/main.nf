@@ -2,7 +2,7 @@ process MULTIQC {
     label 'process_single'
 
     conda "bioconda::multiqc=1.25.1 conda-forge::python=3.13.0"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/multiqc_python:ab3ea06ab1e1c8ce' :
         'community.wave.seqera.io/library/multiqc_python:55d471fe2a6184bc' }"
 

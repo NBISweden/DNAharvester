@@ -1,9 +1,9 @@
-process SEQ_STATS {
+process SEQ_STATS_LIB {
     tag "$meta.id"
     label 'process_single'
 
     conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/samtools_gawk:47334f042a11e64b' :
         'community.wave.seqera.io/library/samtools_gawk:2f6ad5ac0a3fef78' }"
 

@@ -3,7 +3,7 @@ process ESTIMATE_READ_LEN_CUTOFF {
     label 'process_single'
 
     conda "conda-forge::kneed=0.8.5"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/kneed:0.8.5--b648f8184207cf07' :
         'community.wave.seqera.io/library/kneed:0.8.5--5e26e0f3d57da086' }"
 
