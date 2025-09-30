@@ -1,6 +1,6 @@
 process FILTERBAM_PLOT {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_filterbam_plot'
 
     conda "conda-forge::matplotlib=3.8.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -13,8 +13,8 @@ process FILTERBAM_PLOT {
 
 
     output:
-    tuple val(meta), path("*_pathogen_screening_plot.pdf")       , emit: pathogen_screening_plot
-    path "versions.yml"                                          , emit: versions
+    tuple val(meta), path("*_ms_plot.pdf")       , emit: ms_plot
+    path "versions.yml"                          , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -24,9 +24,9 @@ process FILTERBAM_PLOT {
     def prefix = task.ext.prefix ?: "${meta.id}"
 
     """
-    pathogen_screening_plot.py \\
+    microbial_screening_plot.py \\
         --bam_file ${bam} \\
-        --out ${prefix}_pathogen_screening_plot.pdf \\
+        --out ${prefix}_ms_plot.pdf \\
         --filterBAM_table ${filterBAM_table}
 
 
