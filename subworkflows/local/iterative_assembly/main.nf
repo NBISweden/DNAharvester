@@ -1,6 +1,6 @@
 #! /usr/bin/env nextflow
 
-include { MAPPING_ITERATIVE_ASSEMBLER   } from '../../../modules/local/mapping_iterative_assembler/mia.nf'
+include { MAPPING_ITERATIVE_ASSEMBLER   } from '../../../modules/local/mapping_iterative_assembler/mapping_iterative_assembler.nf'
 include { CONSENSUS_CALL_MIA            } from '../../../modules/local/mapping_iterative_assembler/consensus_call_mia.nf'
 
 workflow ITERATIVE_ASSEMBLY {
