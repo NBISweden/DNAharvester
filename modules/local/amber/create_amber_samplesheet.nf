@@ -1,6 +1,6 @@
 process CREATE_AMBER_SAMPLESHEET {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_create_amber_samplesheet'
 
     conda "conda-forge::python=3.13.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

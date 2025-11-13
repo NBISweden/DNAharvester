@@ -1,6 +1,6 @@
 process BCFTOOLS_RM_INDELS {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_bcftools_rm_indels'
 
     conda "bioconda::bcftools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

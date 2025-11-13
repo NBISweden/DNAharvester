@@ -1,6 +1,6 @@
 process CONSENSUS_CALL_MIA {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_consensus_call_mia'
 
     conda "conda-forge::python=3.13.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

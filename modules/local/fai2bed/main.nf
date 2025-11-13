@@ -1,6 +1,6 @@
 process FAI_TO_BED {
     tag "$meta2.id"
-    label 'process_single'
+    label 'process_fai2bed'
 
     input:
     tuple val(meta2), path(fai)

@@ -1,5 +1,5 @@
 process MULTIQC {
-    label 'process_single'
+    label 'process_multiqc'
 
     conda "bioconda::multiqc=1.25.1 conda-forge::python=3.13.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

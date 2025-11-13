@@ -1,6 +1,6 @@
 process BCFTOOLS_STATS {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_bcftools_stats'
 
     conda "bioconda::bcftools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

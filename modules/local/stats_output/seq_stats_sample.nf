@@ -1,6 +1,6 @@
 process SEQ_STATS_SAMPLE {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_seq_stats_sample'
 
     conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

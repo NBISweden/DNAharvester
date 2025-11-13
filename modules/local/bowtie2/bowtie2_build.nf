@@ -1,6 +1,6 @@
 process BOWTIE2_BUILD {
     tag "$fasta"
-    label 'process_medium'
+    label 'process_bowtie2_build'
 
     conda "bioconda::bowtie2=2.5.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

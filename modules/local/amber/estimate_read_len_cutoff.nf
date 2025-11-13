@@ -1,6 +1,6 @@
 process ESTIMATE_READ_LEN_CUTOFF {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_estimate_read_len_cutoff'
 
     conda "conda-forge::kneed=0.8.5"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
