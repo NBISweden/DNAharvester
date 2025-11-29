@@ -1,6 +1,6 @@
 process MAPDAMAGE2 {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_mapdamage2'
 
     conda "bioconda::mapdamage2=2.2.2"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

@@ -2,7 +2,7 @@
 
 process SAMREMOVEDUP {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_samremovedup'
 
     conda "conda-forge::python=3.13.0 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

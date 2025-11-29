@@ -18,8 +18,7 @@ def clean_fasta_sequence(fasta_file):
         with open(fasta_file, 'w') as f:
             for line in lines:
                 if line.startswith('>'):
-                    header = line.strip()
-                    header = header.replace(", complete genome", "")
+                    header = line.strip().split(",")[0]
                     header = header.replace(" ", "_")
                     f.write(header + '\n')
                 else:

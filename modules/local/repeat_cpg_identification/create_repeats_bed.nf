@@ -1,6 +1,6 @@
 process CREATE_REPEATS_BED {
     tag "$fasta"
-    label 'process_low'
+    label 'process_create_repeats_bed'
 
     conda "conda-forge::python=3.13.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

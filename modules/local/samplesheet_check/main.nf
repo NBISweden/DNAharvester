@@ -2,7 +2,7 @@
 
 process SAMPLESHEET_CHECK {
     tag "$samplesheet"
-    label 'process_single'
+    label 'process_samplesheet_check'
 
     conda "conda-forge::python=3.13.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

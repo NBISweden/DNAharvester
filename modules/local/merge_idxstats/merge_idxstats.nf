@@ -1,6 +1,6 @@
 process MERGE_IDXSTATS {
     tag "${meta.id}"
-    label 'process_medium'
+    label 'process_merge_idxstats'
 
     conda "conda-forge::gawk=5.3.1"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

@@ -1,6 +1,6 @@
 process PRESEQ {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_preseq'
 
     conda "bioconda::preseq=3.2.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

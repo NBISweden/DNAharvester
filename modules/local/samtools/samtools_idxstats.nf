@@ -1,6 +1,6 @@
 process SAMTOOLS_IDXSTATS {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_samtools_idxstats'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

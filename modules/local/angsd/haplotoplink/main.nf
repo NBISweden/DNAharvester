@@ -1,6 +1,6 @@
 process ANGSD_HAPLOTOPLINK {
     tag "$meta.id"
-    label 'process_angsd'
+    label 'process_angsd_haplotoplink'
 
     conda "bioconda::angsd=0.939"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

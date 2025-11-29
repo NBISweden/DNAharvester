@@ -1,6 +1,6 @@
 process GUNZIP {
     tag "$fasta"
-    label 'process_single'
+    label 'process_gunzip'
 
     conda "conda-forge::gzip=1.14"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

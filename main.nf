@@ -11,7 +11,7 @@ include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fast
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
-include { PATHOGEN_SCREENING         } from "$projectDir/subworkflows/local/pathogen_screening/main"
+include { MICROBIAL_SCREENING        } from "$projectDir/subworkflows/local/microbial_screening/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
 include { SPECIES_IDENTIFICATION     } from "$projectDir/subworkflows/local/species_identification/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
@@ -124,18 +124,18 @@ workflow {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Pathogen screening
+    // Microbial screening
     ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.pathogen_screening.toBoolean() ) {
-        ch_pathogen_reference_database = Channel.fromPath ( params.pathogen_reference_database, checkIfExists: true )
+    if ( params.microbial_screening.toBoolean() ) {
+        ch_ms_reference = Channel.fromPath ( params.ms_reference, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
-        PATHOGEN_SCREENING (
+        MICROBIAL_SCREENING (
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
-            ch_pathogen_reference_database
+            ch_ms_reference
         )
-        ch_all_versions = ch_all_versions.mix(PATHOGEN_SCREENING.out.versions)
+        ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -172,9 +172,13 @@ workflow {
     }
 
     // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ? Channel.fromPath(params.intervals, checkIfExists: true)
-        .map { it -> [[id: it.name], it] }.collect()
-        : (params.repeat_cpg_identification.toBoolean() ? REPEAT_CPG_IDENTIFICATION.out.repma_bed : Channel.empty())
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
 
     ////////////////////////////////////////////////////////////////////////////
     // Raw BAM QC - Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
@@ -285,7 +289,8 @@ workflow {
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
             BAM_PROCESSING.out.dedup_sample,
             BAM_PROCESSING.out.dedup_sample_index,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty()
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty(),
+            PROCESSED_BAM_QC.out.dpstats
         )
         ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
     }
