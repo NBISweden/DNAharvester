@@ -7,6 +7,7 @@ nextflow.enable.dsl = 2
 // Import subworkflows
 include { GUNZIP                     } from "$projectDir/modules/local/gunzip/main"
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
+include { RAW_FASTQ_QC               } from "$projectDir/subworkflows/local/raw_fastq_qc/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
@@ -76,10 +77,17 @@ workflow {
     // Input check and Fastq processing
     ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.fastq_processing.toBoolean() ) {
-        INPUT_CHECK ( params.samplesheet )
-        ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
+    INPUT_CHECK ( params.samplesheet )
+    ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
+    INPUT_CHECK.out.reads.view()
+
+    if ( params.raw_fastq_qc.toBoolean() ) {
+        RAW_FASTQ_QC ( INPUT_CHECK.out.reads )
+        ch_all_versions = ch_all_versions.mix(RAW_FASTQ_QC.out.versions)
+    }
+
+    if ( params.fastq_processing.toBoolean() ) {
         FASTQ_PROCESSING (
             params.kraken2_db ? file(params.kraken2_db, checkIfExists: true ) : [],
             INPUT_CHECK.out.reads
