@@ -34,6 +34,7 @@ include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE           } from '../../../modules
 include { SAMTOOLS_INDEX as SAMREMOVEDUP_SAMPLE_INDEX   } from '../../../modules/nf-core/samtools/index/main'
 
 // GATK Indel Realignment
+include { CREATE_SEQUENCE_DICTIONARY                    } from '../../../modules/local/picard/create_sequence_dictionary.nf'
 include { GATK_INDEL_REALIGNER                          } from '../../../modules/local/gatk/indel_realigner.nf'
 
 
@@ -42,6 +43,7 @@ workflow BAM_PROCESSING {
     reference
     bam
     amber_txt
+    fai
 
     main:
     ch_versions = Channel.empty()
@@ -146,6 +148,7 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
     SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
+    ch_bam_deup_sample_bai = SAMREMOVEDUP_SAMPLE.out.dedup.join(SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
 
     ////////////////////////////////////////////////////////////////////////////
@@ -153,9 +156,14 @@ workflow BAM_PROCESSING {
     ////////////////////////////////////////////////////////////////////////////
 
     if (params.indel_realignment.toBoolean()) {
+        CREATE_SEQUENCE_DICTIONARY(reference)
+        ch_versions = ch_versions.mix(CREATE_SEQUENCE_DICTIONARY.out.versions)
+
         GATK_INDEL_REALIGNER(
-            SAMREMOVEDUP_SAMPLE.out.dedup,
+            ch_bam_deup_sample_bai,
             reference,
+            fai,
+            CREATE_SEQUENCE_DICTIONARY.out.dict
         )
         GATK_INDEL_REALIGNER.out.realigned_bam.view()
         ch_versions = ch_versions.mix(GATK_INDEL_REALIGNER.out.versions)
