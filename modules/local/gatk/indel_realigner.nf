@@ -8,11 +8,11 @@ process GATK_INDEL_REALIGNER {
         'docker://broadinstitute/gatk3:3.8-1' }"
 
     input:
-    tuple val(meta), path(bam), path(bai)
+    tuple val(meta), path(bam)
     tuple val(meta2), path(reference)
 
     output:
-    tuple val(meta), path("*.realigned.bam")        , emit: bam
+    tuple val(meta), path("*.realigned.bam")        , emit: realigned_bam
     tuple val(meta), path("*.intervals")            , emit: intervals
     path "versions.yml"                             , emit: versions
 

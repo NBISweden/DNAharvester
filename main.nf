@@ -80,8 +80,6 @@ workflow {
     INPUT_CHECK ( params.samplesheet )
     ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
-    INPUT_CHECK.out.reads.view()
-
     if ( params.raw_fastq_qc.toBoolean() ) {
         RAW_FASTQ_QC ( INPUT_CHECK.out.reads )
         ch_all_versions = ch_all_versions.mix(RAW_FASTQ_QC.out.versions)

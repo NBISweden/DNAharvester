@@ -154,10 +154,10 @@ workflow BAM_PROCESSING {
 
     if (params.indel_realignment.toBoolean()) {
         GATK_INDEL_REALIGNER(
-            bam,
+            SAMREMOVEDUP_SAMPLE.out.dedup,
             reference,
         )
-        ch_bam      = GATK_INDEL_REALIGNER.out.bam
+        GATK_INDEL_REALIGNER.out.realigned_bam.view()
         ch_versions = ch_versions.mix(GATK_INDEL_REALIGNER.out.versions)
     }
 

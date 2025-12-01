@@ -5,8 +5,6 @@
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
 include { SAMPLESHEET_CHECK      } from '../../../modules/local/samplesheet_check'
-include { FASTQC as FASTQC_RAW   } from '../../../modules/nf-core/fastqc/main'
-include { MULTIQC as MULTIQC_RAW } from '../../../modules/nf-core/multiqc/main'
 
 workflow INPUT_CHECK {
     take:
