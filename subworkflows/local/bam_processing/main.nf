@@ -33,6 +33,9 @@ include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_SAMPLE_INDEX } from '../../../modules
 include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE           } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as SAMREMOVEDUP_SAMPLE_INDEX   } from '../../../modules/nf-core/samtools/index/main'
 
+// GATK Indel Realignment
+include { GATK_INDEL_REALIGNER                          } from '../../../modules/local/gatk/indel_realigner.nf'
+
 
 workflow BAM_PROCESSING {
     take:
@@ -145,6 +148,18 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
 
 
+    ////////////////////////////////////////////////////////////////////////////
+    // GATK Indel Realignment
+    ////////////////////////////////////////////////////////////////////////////
+
+    if (params.indel_realignment.toBoolean()) {
+        GATK_INDEL_REALIGNER(
+            bam,
+            reference,
+        )
+        ch_bam      = GATK_INDEL_REALIGNER.out.bam
+        ch_versions = ch_versions.mix(GATK_INDEL_REALIGNER.out.versions)
+    }
 
     emit:
     mq_filtered_bam                             = SAMTOOLS_VIEW_MQ.out.bam                                                                  // channel: [ val(meta), [ bam ] ]
