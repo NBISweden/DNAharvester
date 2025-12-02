@@ -94,6 +94,7 @@ def create_fastq_channel(LinkedHashMap row) {
     // TO DO Update to take strandedness and damage treatment
     def meta = [:]
     meta.id                = row.sample_id + "_" + row.library_id + "_" + row.lane
+    meta.sample_type       = row.sample_type
     meta.library_type      = row.library_type
     meta.single_end        = row.single_end.toBoolean()
     // readgroup: ID = ID = readgroup id (flowcell-id.lane-nr.library-index-nr), SM = sample-id, PL = sequencing platform (e.g. Illumina, NovaSeq), LB = library-index-nr based on the number of unique libraries per sample in samplesheet
