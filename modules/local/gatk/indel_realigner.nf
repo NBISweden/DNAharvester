@@ -3,9 +3,9 @@ process GATK_INDEL_REALIGNER {
     label 'process_gatk_indel_realigner'
 
     conda "bioconda::gatk=3.8"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'docker://broadinstitute/gatk3:3.8-1' :
-        'docker://broadinstitute/gatk3:3.8-1' }"
+        'docker://broadinstitute/gatk3:3.8-1' }" // same containers for both all Engines since jar is located at difference places
 
     input:
     tuple val(meta), path(bam), path(bai)
@@ -27,7 +27,7 @@ process GATK_INDEL_REALIGNER {
     def avail_mem = task.memory ? (task.memory.toGiga()).toInteger() : 4
 
     """
-    # Step 1: RealignerTargetCreator - identify regions for realignment
+    ### Step 1: RealignerTargetCreator - identify regions for realignment
     java -Xmx${avail_mem}g -jar /usr/GenomeAnalysisTK.jar \\
         -T RealignerTargetCreator \\
         -R ${reference} \\
@@ -35,7 +35,7 @@ process GATK_INDEL_REALIGNER {
         -o ${prefix}.intervals \\
         ${args}
 
-    # Step 2: IndelRealigner - perform realignment
+    ### Step 2: IndelRealigner
     java -Xmx${avail_mem}g -jar /usr/GenomeAnalysisTK.jar \\
         -T IndelRealigner \\
         -R ${reference} \\
