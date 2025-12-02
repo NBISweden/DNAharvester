@@ -1,13 +1,14 @@
 #! /usr/bin/env nextflow
 
 include { SAMTOOLS_FAIDX            } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { BWA_INDEX                 } from '../../../modules/local/bwa/index.nf'
+include { BWA_INDEX                 } from '../../../modules/local/bwa/bwa_index.nf'
 include { BOWTIE2_BUILD             } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN                   } from '../../../modules/local/bwa/aln.nf'
-include { BWA_ALN as BWA_ALN_R1     } from '../../../modules/local/bwa/aln.nf'
-include { BWA_ALN as BWA_ALN_R2     } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
-include { BWA_SAMPE                 } from '../../../modules/local/bwa/sampe.nf'
+include { BWA_ALN                   } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_ALN as BWA_ALN_R1     } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_ALN as BWA_ALN_R2     } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_SAMSE                 } from '../../../modules/local/bwa/bwa_samse.nf'
+include { BWA_SAMPE                 } from '../../../modules/local/bwa/bwa_sampe.nf'
+include { BWA_MEM                   } from '../../../modules/local/bwa/bwa_mem.nf'
 include { BWA_ALN_MEM               } from '../../../modules/local/bwa/bwa_aln_mem.nf'
 include { BOWTIE2                   } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
@@ -26,49 +27,64 @@ workflow MAPPING {
     SAMTOOLS_FAIDX ( reference )
     ch_versions         = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
-
     ////////////////////////////////////////////////////////////////////////////
     // Index the reference genome if it is not already indexed
     ////////////////////////////////////////////////////////////////////////////
 
-    if (params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') {
-        // Build the BWA index
+    // Build the BWA index - only if BWA is selected as mapping tool
+    def bwa_tools = ['bwa-aln', 'bwa-mem', 'bwa-aln-mem']
+    if (bwa_tools.contains( params.mapping_tool_ancient ) ||
+        bwa_tools.contains( params.mapping_tool_modern )) {
         BWA_INDEX (reference, file(params.reference).getParent())
         ch_versions         = ch_versions.mix(BWA_INDEX.out.versions)
-        ch_reference_index  = BWA_INDEX.out.index_dir
-    } else if (params.mapping_tool == 'bowtie2') {
-        // Build the Bowtie2 index
+        ch_bwa_index        = BWA_INDEX.out.index_dir
+    }
+
+    // Build the Bowtie2 index - only if Bowtie2 is selected as mapping tool
+    def bowtie2_tools = ['bowtie2']
+    if (bowtie2_tools.contains( params.mapping_tool_ancient ) ||
+        bowtie2_tools.contains( params.mapping_tool_modern )) {
         BOWTIE2_BUILD (reference, file(params.reference).getParent())
         ch_versions         = ch_versions.mix(BOWTIE2_BUILD.out.versions)
-        ch_reference_index  = BOWTIE2_BUILD.out.index_dir
-    } else {
-        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln', 'bwa-aln-mem', or 'bowtie2'."
+        ch_bowtie2_index    = BOWTIE2_BUILD.out.index_dir
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Mapping merged reads or single-end reads
     ////////////////////////////////////////////////////////////////////////////
 
-    if (params.mapping_tool == 'bwa-aln') {
-        BWA_ALN ( reads, ch_reference_index)
-        ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
-        ch_bwa_samse        = reads.join(BWA_ALN.out.sai)
+    ch_bam = Channel.empty()
 
-        BWA_SAMSE ( ch_bwa_samse, ch_reference_index )
-        ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
-        ch_bam              = BWA_SAMSE.out.bam
+    reads.view()
+    // Branch reads based on sample type and configured tool
+    reads.branch { meta, reads ->
+        def tool = meta.sample_type == 'ancient' ? params.mapping_tool_ancient :
+                   meta.sample_type == 'modern'  ? params.mapping_tool_modern : null
 
-    } else if (params.mapping_tool == 'bwa-aln-mem') {
-        BWA_ALN_MEM ( reads, ch_reference_index )
-        ch_versions         = ch_versions.mix(BWA_ALN_MEM.out.versions)
-        ch_bam              = BWA_ALN_MEM.out.bam
-    } else if (params.mapping_tool == 'bowtie2') {
-        BOWTIE2 ( reads, ch_reference_index )
-        ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
-        ch_bam              = BOWTIE2.out.bam
-    } else {
-        error "Invalid mapping tool specified: ${params.mapping_tool}. Use 'bwa-aln' or 'bwa-aln-mem' or 'bowtie2'."
-    }
+        bwa_aln: tool == 'bwa-aln'
+        bwa_mem: tool == 'bwa-mem'
+        bowtie2: tool == 'bowtie2'
+        unknown: true
+    }.set { ch_reads_branched }
+
+    // BWA ALN
+    BWA_ALN ( ch_reads_branched.bwa_aln, ch_bwa_index )
+    ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
+    ch_bwa_samse        = ch_reads_branched.bwa_aln.join(BWA_ALN.out.sai)
+
+    BWA_SAMSE ( ch_bwa_samse, ch_bwa_index )
+    ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
+    ch_bam              = ch_bam.mix(BWA_SAMSE.out.bam)
+
+    // BWA MEM
+    BWA_MEM ( ch_reads_branched.bwa_mem, ch_bwa_index )
+    ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
+    ch_bam              = ch_bam.mix(BWA_MEM.out.bam)
+
+    // BOWTIE2
+    BOWTIE2 ( ch_reads_branched.bowtie2, ch_bowtie2_index )
+    ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
+    ch_bam              = ch_bam.mix(BOWTIE2.out.bam)
 
     ////////////////////////////////////////////////////////////////////////////
     // Mapping unmerged reads if params.keep_unmerged is true
