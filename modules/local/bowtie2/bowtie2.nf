@@ -23,6 +23,9 @@ process BOWTIE2 {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = task.ext.reference ?: "${meta2.id}"
     def ref_prefix = reference.replaceAll(/\.(fasta|fna|fa)$/, '')
+    def bowtie2_params =
+        meta.sample_type == 'ancient' ? (params.bowtie2_ancient_params ?: '') :
+        meta.sample_type == 'modern' ? (params.bowtie2_modern_params ?: '') : ''
 
     if (meta.single_end) {
         // Single-end mapping
@@ -31,7 +34,6 @@ process BOWTIE2 {
 
         bowtie2 \\
             ${args} \\
-            --sensitive \\
             -p ${task.cpus} \\
             -x \${INDEX} \\
             -U ${reads} | \\
@@ -50,7 +52,6 @@ process BOWTIE2 {
 
         bowtie2 \\
             ${args} \\
-            --sensitive \\
             -p ${task.cpus} \\
             -x \${INDEX} \\
             -1 ${reads[0]} \\
