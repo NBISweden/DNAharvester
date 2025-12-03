@@ -14,7 +14,7 @@ include { MAPPING                    } from "$projectDir/subworkflows/local/mapp
 include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
 include { MICROBIAL_SCREENING        } from "$projectDir/subworkflows/local/microbial_screening/main"
 include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
-include { SPECIES_IDENTIFICATION     } from "$projectDir/subworkflows/local/species_identification/main"
+include { TAXONOMIC_CLASSIFICATION   } from "$projectDir/subworkflows/local/taxonomic_classification/main"
 include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
@@ -157,15 +157,15 @@ workflow {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Species Identification
+    // Taxonomic Classification
     ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.species_identification.toBoolean() ) {
-        ch_reference_database = Channel.fromPath( params.si_reference_database, checkIfExists: true )
+    if ( params.taxonomic_classification.toBoolean() ) {
+        ch_reference_database = Channel.fromPath( params.tc_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
-        SPECIES_IDENTIFICATION (ch_reference_database, FASTQ_PROCESSING.out.reads)
-        ch_all_versions = ch_all_versions.mix(SPECIES_IDENTIFICATION.out.versions)
+        TAXONOMIC_CLASSIFICATION (ch_reference_database, FASTQ_PROCESSING.out.reads, workflow_name)
+        ch_all_versions = ch_all_versions.mix(TAXONOMIC_CLASSIFICATION.out.versions)
     }
 
     ////////////////////////////////////////////////////////////////////////////
