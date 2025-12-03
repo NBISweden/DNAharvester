@@ -55,36 +55,48 @@ workflow MAPPING {
 
     ch_bam = Channel.empty()
 
-    reads.view()
-    // Branch reads based on sample type and configured tool
-    reads.branch { meta, reads ->
-        def tool = meta.sample_type == 'ancient' ? params.mapping_tool_ancient :
-                   meta.sample_type == 'modern'  ? params.mapping_tool_modern : null
-
-        bwa_aln: tool == 'bwa-aln'
-        bwa_mem: tool == 'bwa-mem'
-        bowtie2: tool == 'bowtie2'
-        unknown: true
+    // Branch reads into ancient and modern based on sample_type metadata
+    reads.branch {
+        ancient: it[0].sample_type == 'ancient'
+        modern : it[0].sample_type == 'modern'
     }.set { ch_reads_branched }
 
+    // Route reads to specific tools
+    ch_reads_bwa_aln = Channel.empty()
+    ch_reads_bwa_mem = Channel.empty()
+    ch_reads_bowtie2 = Channel.empty()
+    // Configure routing for ancient samples
+    if (params.mapping_tool_ancient == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.ancient)
+    if (params.mapping_tool_ancient == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.ancient)
+    if (params.mapping_tool_ancient == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.ancient)
+    // Configure routing for modern samples
+    if (params.mapping_tool_modern == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.modern)
+    if (params.mapping_tool_modern == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.modern)
+    if (params.mapping_tool_modern == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.modern)
+
+
+    // Run Mapping Tools
     // BWA ALN
-    BWA_ALN ( ch_reads_branched.bwa_aln, ch_bwa_index )
-    ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
-    ch_bwa_samse        = ch_reads_branched.bwa_aln.join(BWA_ALN.out.sai)
-
-    BWA_SAMSE ( ch_bwa_samse, ch_bwa_index )
-    ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
-    ch_bam              = ch_bam.mix(BWA_SAMSE.out.bam)
-
+    if (params.mapping_tool_ancient == 'bwa-aln' || params.mapping_tool_modern == 'bwa-aln') {
+        BWA_ALN ( ch_reads_bwa_aln, ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
+        ch_bwa_samse        = ch_reads_bwa_aln.join(BWA_ALN.out.sai)
+        BWA_SAMSE ( ch_bwa_samse, ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
+        ch_bam              = ch_bam.mix(BWA_SAMSE.out.bam)
+    }
     // BWA MEM
-    BWA_MEM ( ch_reads_branched.bwa_mem, ch_bwa_index )
-    ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
-    ch_bam              = ch_bam.mix(BWA_MEM.out.bam)
-
+    if (params.mapping_tool_ancient == 'bwa-mem' || params.mapping_tool_modern == 'bwa-mem') {
+        BWA_MEM ( ch_reads_bwa_mem, ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
+        ch_bam              = ch_bam.mix(BWA_MEM.out.bam)
+    }
     // BOWTIE2
-    BOWTIE2 ( ch_reads_branched.bowtie2, ch_bowtie2_index )
-    ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
-    ch_bam              = ch_bam.mix(BOWTIE2.out.bam)
+    if (params.mapping_tool_ancient == 'bowtie2' || params.mapping_tool_modern == 'bowtie2') {
+        BOWTIE2 ( ch_reads_bowtie2, ch_bowtie2_index )
+        ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
+        ch_bam              = ch_bam.mix(BOWTIE2.out.bam)
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Mapping unmerged reads if params.keep_unmerged is true
@@ -157,7 +169,7 @@ workflow MAPPING {
 
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
-    index                   = ch_reference_index                 // channel: path(index)
+    // index                   = ch_reference_index                 // channel: path(index)
     bam                     = ch_bam                             // channel: [ val(meta), [ bam ] ]
     bai                     = SAMTOOLS_INDEX.out.bai             // channel: [ val(meta), [ bai ] ]
     versions                = ch_versions                        // channel: [ versions.yml ]
