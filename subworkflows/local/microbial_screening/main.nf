@@ -1,10 +1,10 @@
 #! /usr/bin/env nextflow
 
 include { SAMTOOLS_UNMAPPED_READS                   } from '../../../modules/local/samtools/samtools_unmapped_reads.nf'
-include { BWA_INDEX as MS_BWA_INDEX                 } from '../../../modules/local/bwa/index.nf'
+include { BWA_INDEX as MS_BWA_INDEX                 } from '../../../modules/local/bwa/bwa_index.nf'
 include { BOWTIE2_BUILD as MS_BOWTIE2_BUILD         } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN as MS_BWA_ALN                     } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE as MS_BWA_SAMSE                 } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN as MS_BWA_ALN                     } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_SAMSE as MS_BWA_SAMSE                 } from '../../../modules/local/bwa/bwa_samse.nf'
 include { BWA_ALN_MEM as MS_BWA_ALN_MEM             } from '../../../modules/local/bwa/bwa_aln_mem.nf'
 include { BOWTIE2 as MS_BOWTIE2                     } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ   } from '../../../modules/local/samtools/samtools_view_mq.nf'

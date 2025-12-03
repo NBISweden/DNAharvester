@@ -1,9 +1,9 @@
 #! /usr/bin/env nextflow
 
-include { BWA_INDEX                                      } from '../../../modules/local/bwa/index.nf'
+include { BWA_INDEX                                      } from '../../../modules/local/bwa/bwa_index.nf'
 include { BOWTIE2_BUILD                                  } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/aln.nf'
-include { BWA_SAMSE as BWA_SAMSE_COMPETITIVE             } from '../../../modules/local/bwa/samse.nf'
+include { BWA_ALN as BWA_ALN_COMPETITIVE                 } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_SAMSE as BWA_SAMSE_COMPETITIVE             } from '../../../modules/local/bwa/bwa_samse.nf'
 include { BWA_ALN_MEM as BWA_ALN_MEM_COMPETITIVE         } from '../../../modules/local/bwa/bwa_aln_mem.nf'
 include { BOWTIE2 as BOWTIE2_COMPETITIVE                 } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'

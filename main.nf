@@ -7,6 +7,7 @@ nextflow.enable.dsl = 2
 // Import subworkflows
 include { GUNZIP                     } from "$projectDir/modules/local/gunzip/main"
 include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
+include { RAW_FASTQ_QC               } from "$projectDir/subworkflows/local/raw_fastq_qc/main"
 include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
 include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
 include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
@@ -76,10 +77,15 @@ workflow {
     // Input check and Fastq processing
     ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.fastq_processing.toBoolean() ) {
-        INPUT_CHECK ( params.samplesheet )
-        ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
+    INPUT_CHECK ( params.samplesheet )
+    ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
+    if ( params.raw_fastq_qc.toBoolean() ) {
+        RAW_FASTQ_QC ( INPUT_CHECK.out.reads )
+        ch_all_versions = ch_all_versions.mix(RAW_FASTQ_QC.out.versions)
+    }
+
+    if ( params.fastq_processing.toBoolean() ) {
         FASTQ_PROCESSING (
             params.kraken2_db ? file(params.kraken2_db, checkIfExists: true ) : [],
             INPUT_CHECK.out.reads
@@ -116,7 +122,8 @@ workflow {
         } else {
             MAPPING (
                 ch_reference,
-                FASTQ_PROCESSING.out.reads
+                FASTQ_PROCESSING.out.reads,
+                FASTQ_PROCESSING.out.unmerged_reads
             )
             ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
@@ -200,7 +207,8 @@ workflow {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
-            RAW_BAM_QC.out.amber_txt
+            RAW_BAM_QC.out.amber_txt,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
     }
