@@ -9,7 +9,9 @@ include { BWA_ALN as BWA_ALN_R2     } from '../../../modules/local/bwa/bwa_aln.n
 include { BWA_SAMSE                 } from '../../../modules/local/bwa/bwa_samse.nf'
 include { BWA_SAMPE                 } from '../../../modules/local/bwa/bwa_sampe.nf'
 include { BWA_MEM                   } from '../../../modules/local/bwa/bwa_mem.nf'
-include { BWA_ALN_MEM               } from '../../../modules/local/bwa/bwa_aln_mem.nf'
+include { SPLIT_FASTQ               } from '../../../modules/local/awk/split_fastq.nf'
+
+
 include { BOWTIE2                   } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_INDEX            } from '../../../modules/nf-core/samtools/index/main'
@@ -62,16 +64,21 @@ workflow MAPPING {
     }.set { ch_reads_branched }
 
     // Route reads to specific tools
-    ch_reads_bwa_aln = Channel.empty()
-    ch_reads_bwa_mem = Channel.empty()
-    ch_reads_bowtie2 = Channel.empty()
+    ch_reads_bwa_aln        = Channel.empty()
+    ch_reads_bwa_mem        = Channel.empty()
+    ch_reads_bwa_aln_mem    = Channel.empty()
+    ch_reads_bowtie2        = Channel.empty()
+
     // Configure routing for ancient samples
     if (params.mapping_tool_ancient == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.ancient)
     if (params.mapping_tool_ancient == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.ancient)
+    if (params.mapping_tool_ancient == 'bwa-aln-mem') ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.ancient)
     if (params.mapping_tool_ancient == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.ancient)
+
     // Configure routing for modern samples
     if (params.mapping_tool_modern == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.modern)
     if (params.mapping_tool_modern == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.modern)
+    if (params.mapping_tool_modern == 'bwa-aln-mem') ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.modern)
     if (params.mapping_tool_modern == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.modern)
 
 
@@ -90,6 +97,27 @@ workflow MAPPING {
         BWA_MEM ( ch_reads_bwa_mem, ch_bwa_index )
         ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
         ch_bam              = ch_bam.mix(BWA_MEM.out.bam)
+    }
+    // BWA ALN-MEM
+    if (params.mapping_tool_ancient == 'bwa-aln-mem' || params.mapping_tool_modern == 'bwa-aln-mem') {
+        //split fastq
+        SPLIT_FASTQ ( ch_reads_bwa_aln_mem )
+        ch_versions         = ch_versions.mix(SPLIT_FASTQ.out.versions)
+        //align short reads with BWA ALN
+        BWA_ALN ( SPLIT_FASTQ.out.short_reads, ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
+        ch_bwa_samse_short  = SPLIT_FASTQ.out.short_reads.join(BWA_ALN.out.sai)
+        BWA_SAMSE ( ch_bwa_samse_short, ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_SAMSE.out.versions)
+        //align long reads with BWA MEM
+        BWA_MEM ( SPLIT_FASTQ.out.long_reads,  ch_bwa_index )
+        ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
+        //merge BAMs from short and long reads
+        ch_bam_aln_mem      = BWA_SAMSE.out.bam.join(BWA_MEM.out.bam)
+                .map { meta, file1, file2 -> [meta, [file1, file2]] }
+        SAMTOOLS_MERGE ( ch_bam_aln_mem, reference )
+        ch_versions         = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
+        ch_bam              = ch_bam.mix(SAMTOOLS_MERGE.out.bam)
     }
     // BOWTIE2
     if (params.mapping_tool_ancient == 'bowtie2' || params.mapping_tool_modern == 'bowtie2') {
