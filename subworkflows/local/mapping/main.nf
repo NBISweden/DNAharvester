@@ -1,18 +1,19 @@
 #! /usr/bin/env nextflow
 
 // Indexing
-include { SAMTOOLS_FAIDX                        } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { BWA_INDEX                             } from '../../../modules/local/bwa/bwa_index.nf'
-include { BOWTIE2_BUILD                         } from '../../../modules/local/bowtie2/bowtie2_build.nf'
+include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { BWA_INDEX                                     } from '../../../modules/local/bwa/bwa_index.nf'
+include { BOWTIE2_BUILD                                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 // Mapping - BWA-ALN
-include { BWA_ALN                               } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_ALN                                       } from '../../../modules/local/bwa/bwa_aln.nf'
 // Mapping - BWA-MEM
-include { BWA_MEM                               } from '../../../modules/local/bwa/bwa_mem.nf'
+include { BWA_MEM                                       } from '../../../modules/local/bwa/bwa_mem.nf'
 // Mapping - BWA-ALN-MEM
-include { SPLIT_FASTQ                           } from '../../../modules/local/awk/split_fastq.nf'
-include { BWA_ALN as BWA_ALN_SHORT              } from '../../../modules/local/bwa/bwa_aln.nf'
-include { BWA_MEM as BWA_MEM_LONG               } from '../../../modules/local/bwa/bwa_mem.nf'
-include { SAMTOOLS_MERGE as BWA_ALN_MEM_MERGE   } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SPLIT_FASTQ                                   } from '../../../modules/local/awk/split_fastq.nf'
+include { BWA_ALN as BWA_ALN_SHORT                      } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_MEM as BWA_MEM_LONG                       } from '../../../modules/local/bwa/bwa_mem.nf'
+include { SAMTOOLS_MERGE as BWA_ALN_MEM_MERGE           } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_MERGE as MERGED_UNMERGED_READS_BAM   } from '../../../modules/local/samtools/samtools_merge.nf'
 
 
 // include { BWA_ALN as BWA_ALN_R1                 } from '../../../modules/local/bwa/bwa_aln.nf'
@@ -27,8 +28,7 @@ include { SAMTOOLS_INDEX as RAW_BAM_INDEX       } from '../../../modules/nf-core
 workflow MAPPING {
     take:
     reference
-    reads // merged paired-end reads or trimmed single-end reads
-    unmerged_reads // unmerged paired-end reads
+    reads // merged paired-end reads or trimmed single-end reads (and potentially unmerged paired reads)
 
     main:
     ch_versions         = Channel.empty()
@@ -37,7 +37,7 @@ workflow MAPPING {
     ch_versions         = ch_versions.mix(SAMTOOLS_FAIDX.out.versions)
 
     ////////////////////////////////////////////////////////////////////////////
-    // Index the reference genome if it is not already indexed
+    // 1. Index the reference genome if it is not already indexed
     ////////////////////////////////////////////////////////////////////////////
 
     // Build the BWA index - only if BWA is selected as mapping tool
@@ -59,10 +59,10 @@ workflow MAPPING {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Mapping merged reads or single-end reads
+    // 2. Mapping merged reads or single-end reads
     ////////////////////////////////////////////////////////////////////////////
 
-    ch_bam = Channel.empty()
+    ch_raw_bam = Channel.empty()
 
     // Branch reads into ancient and modern based on sample_type metadata
     reads.branch {
@@ -94,13 +94,13 @@ workflow MAPPING {
     if (params.mapping_tool_ancient == 'bwa-aln' || params.mapping_tool_modern == 'bwa-aln') {
         BWA_ALN ( ch_reads_bwa_aln, ch_bwa_index )
         ch_versions         = ch_versions.mix(BWA_ALN.out.versions)
-        ch_bam              = ch_bam.mix(BWA_ALN.out.bam)
+        ch_raw_bam              = ch_raw_bam.mix(BWA_ALN.out.bam)
     }
     // BWA MEM
     if (params.mapping_tool_ancient == 'bwa-mem' || params.mapping_tool_modern == 'bwa-mem') {
         BWA_MEM ( ch_reads_bwa_mem, ch_bwa_index )
         ch_versions         = ch_versions.mix(BWA_MEM.out.versions)
-        ch_bam              = ch_bam.mix(BWA_MEM.out.bam)
+        ch_raw_bam              = ch_raw_bam.mix(BWA_MEM.out.bam)
     }
     // BWA ALN-MEM
     if (params.mapping_tool_ancient == 'bwa-aln-mem' || params.mapping_tool_modern == 'bwa-aln-mem') {
@@ -114,91 +114,57 @@ workflow MAPPING {
         BWA_MEM_LONG ( SPLIT_FASTQ.out.long_reads,  ch_bwa_index )
         ch_versions         = ch_versions.mix(BWA_MEM_LONG.out.versions)
         //merge BAMs from short and long reads
-        ch_bam_aln_mem      = BWA_ALN_SHORT.out.bam.join(BWA_MEM_LONG.out.bam)
+        ch_raw_bam_aln_mem      = BWA_ALN_SHORT.out.bam.join(BWA_MEM_LONG.out.bam)
                 .map { meta, file1, file2 -> [meta, [file1, file2]] }
-        BWA_ALN_MEM_MERGE ( ch_bam_aln_mem, reference )
+        BWA_ALN_MEM_MERGE ( ch_raw_bam_aln_mem, reference )
         ch_versions         = ch_versions.mix(BWA_ALN_MEM_MERGE.out.versions)
-        ch_bam              = ch_bam.mix(BWA_ALN_MEM_MERGE.out.bam)
+        ch_raw_bam          = ch_raw_bam.mix(BWA_ALN_MEM_MERGE.out.bam)
     }
     // BOWTIE2
     if (params.mapping_tool_ancient == 'bowtie2' || params.mapping_tool_modern == 'bowtie2') {
         BOWTIE2 ( ch_reads_bowtie2, ch_bowtie2_index )
         ch_versions         = ch_versions.mix(BOWTIE2.out.versions)
-        ch_bam              = ch_bam.mix(BOWTIE2.out.bam)
+        ch_raw_bam          = ch_raw_bam.mix(BOWTIE2.out.bam)
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Mapping unmerged reads if params.keep_unmerged is true
+    // 3. Merge the mapped unmerged reads if provided
     ////////////////////////////////////////////////////////////////////////////
 
-    // // processed unmerged reads if provided
-    // if (params.keep_unmerged.toBoolean()) {
-    //     // Split channels into paired-end and single-end reads
-    //     ch_paired_end_reads = ch_bam.filter { meta, file -> !meta.single_end }
-    //     ch_single_end_reads = ch_bam.filter { meta, file -> meta.single_end }
+    def ch_final_bam = null
+    if (params.merge_reads.toBoolean() && params.map_unmerged_reads.toBoolean()) {
+        // Group the unmerged reads BAMs by sample ID (removing the '-unmerged' suffix)
+        ch_raw_bam_grouped = ch_raw_bam.map { meta, bam ->
+                def new_meta = meta.clone()
+                new_meta.id = meta.id.replace("-unmerged", "")
+                tuple(new_meta.id, new_meta, bam)
+            }
+            .groupTuple()
+            .map { id, metas, bams ->
+                // pick one meta; choose the one with single_end == false if present
+                def final_meta = metas.find { !it.single_end } ?: metas[0]
+                // remove grouping id, return meta + joined bam list
+                tuple(final_meta, bams)
+            }
 
-    //     if (ch_paired_end_reads) {
-    //         // Prepare channels for unmerged reads. Add R1 and R2 labels to the meta.id. This is needed to avoid file name clashes in the BWA_ALN process output
-    //         ch_R1 = unmerged_reads.map { meta, file1, file2 ->
-    //             def new_meta = meta.clone()
-    //             new_meta.id = "${meta.id}-R1"
-    //             [new_meta, file1]
-    //         }
-    //         ch_R2 = unmerged_reads.map { meta, file1, file2 ->
-    //             def new_meta = meta.clone()
-    //             new_meta.id = "${meta.id}-R2"
-    //             [new_meta, file2]
-    //         }
-
-    //         // Align unmerged reads with BWA ALN and then run BWA SAMPE
-    //         if (params.mapping_tool == 'bwa-aln') {
-    //             BWA_ALN_R1 ( ch_R1, ch_reference_index)
-    //             ch_versions             = ch_versions.mix(BWA_ALN_R1.out.versions)
-    //             BWA_ALN_R2 ( ch_R2, ch_reference_index)
-    //             ch_versions             = ch_versions.mix(BWA_ALN_R2.out.versions)
-    //             // Fix meta.id to original id without -R1 or -R2 suffix after alignment
-    //             ch_sai_R1 = BWA_ALN_R1.out.sai.map { meta, file ->
-    //                 meta.id = meta.id.replaceAll(/-R1$/, '')
-    //                 [meta, file]
-    //             }
-    //             ch_sai_R2 = BWA_ALN_R2.out.sai.map { meta, file ->
-    //                 meta.id = meta.id.replaceAll(/-R2$/, '')
-    //                 [meta, file]
-    //             }
-    //             // Join the aligned unmerged reads with their respective SAI files
-    //             ch_bwa_sampe_unmerged = unmerged_reads.join(ch_sai_R1).join(ch_sai_R2)
-    //             // Run BWA SAMPE
-    //             BWA_SAMPE ( ch_bwa_sampe_unmerged, ch_reference_index )
-    //             ch_versions             = ch_versions.mix(BWA_SAMPE.out.versions)
-    //             ch_bam_unmerged         = BWA_SAMPE.out.bam
-    //         } else if (params.mapping_tool == 'bowtie2') {
-    //             // Align unmerged reads with Bowtie2
-    //             BOWTIE2 ( unmerged_reads, ch_reference_index )
-    //             ch_versions             = ch_versions.mix(BOWTIE2.out.versions)
-    //             ch_bam_unmerged         = BOWTIE2.out.bam
-    //         }
-
-    //         // merge merged and unmerged bam files
-    //         ch_bam_merged_unmerged = ch_bam.join(ch_bam_unmerged)
-    //                 .map { meta, file1, file2 -> [meta, [file1, file2]] }
-    //         SAMTOOLS_MERGE ( ch_bam_merged_unmerged, reference )
-    //         ch_versions             = ch_versions.mix(SAMTOOLS_MERGE.out.versions)
-
-    //         // Final BAM channel with both merged and unmerged reads
-    //         ch_bam = SAMTOOLS_MERGE.out.bam.mix(ch_single_end_reads)
-
-    //     }
-    // }
+        MERGED_UNMERGED_READS_BAM ( ch_raw_bam_grouped, reference )
+        ch_versions = ch_versions.mix(MERGED_UNMERGED_READS_BAM.out.versions)
+        ch_final_bam = MERGED_UNMERGED_READS_BAM.out.bam
+    }
 
     ////////////////////////////////////////////////////////////////////////////
+    // 4. Index the raw BAM files
+    ////////////////////////////////////////////////////////////////////////////
 
-    // Index the BAM file
-    RAW_BAM_INDEX ( ch_bam )
-    ch_versions             = ch_versions.mix(RAW_BAM_INDEX.out.versions)
+    ch_raw_bam_for_index = ch_final_bam ?: ch_raw_bam
+    RAW_BAM_INDEX ( ch_raw_bam_for_index )
+    ch_versions = ch_versions.mix(RAW_BAM_INDEX.out.versions)
+
+    ///////////////////////////////////////////////////////////////////////////
 
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
-    raw_bam                 = ch_bam                             // channel: [ val(meta), [ bam ] ]
+    raw_bam                 = ch_raw_bam_for_index               // channel: [ val(meta), [ bam ] ]
     raw_bai                 = RAW_BAM_INDEX.out.bai              // channel: [ val(meta), [ bai ] ]
     versions                = ch_versions                        // channel: [ versions.yml ]
 }
