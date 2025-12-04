@@ -50,22 +50,43 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-    // If species_identification is set to true, check if si_reference_database is provided
-    if (params.species_identification.toBoolean() && !params.si_reference_database) {
-        log.error """`species_identification` is set to true, but `si_reference_database` is not provided. Please provide the path to the species identification reference database.
+
+
+    ////////////////////////////////////////////////////////////////////////////
+    // TAXONOMIC CLASSIFICATION checks
+    ////////////////////////////////////////////////////////////////////////////
+
+    // If species_identification is set to true, check if tc_reference_database is provided
+    if (params.taxonomic_classification.toBoolean() && !params.tc_reference_database) {
+        log.error """`taxonomic_classification` is set to true, but `tc_reference_database` is not provided. Please provide the path to the taxonomic classification reference database.
         Exiting the pipeline......!
         """
         System.exit(1)
     }
 
-    // Dont allow readlength set to auto for species_identification analysis
-    if (params.species_identification.toBoolean() && params.readlength == 'auto') {
-        log.error """For species_identification analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
-        Please set `readlength` to a specific value.
+    // Dont allow readlength set to auto for taxonomic_classification analysis
+    if (params.taxonomic_classification.toBoolean() && params.readlength == 'auto') {
+        log.error """For taxonomic_classification analysis, `readlength` should not be set to 'auto' as the mapping is done against multiple reference genomes.
+        Please set `readlength` to a specific value. recommended value is 30.
         Exiting the pipeline......!
         """
         System.exit(1)
     }
+
+    if (params.tc_mapping_tool == 'bwa-aln-mem') {
+        log.error """`bwa-aln-mem` is not yet implemented for taxonomic classification module.
+        Please select either 'bwa-aln' or 'bwa-mem' or 'bowtie2' as mapping tool for taxonomic classification.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+
+
+
+
+
+
 
     // if iterative_assembly is set to true, check if mtDNA_reference is provided
     if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
