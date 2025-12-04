@@ -4,25 +4,15 @@
 include { SAMTOOLS_FAIDX                                } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { BWA_INDEX                                     } from '../../../modules/local/bwa/bwa_index.nf'
 include { BOWTIE2_BUILD                                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-// Mapping - BWA-ALN
 include { BWA_ALN                                       } from '../../../modules/local/bwa/bwa_aln.nf'
-// Mapping - BWA-MEM
 include { BWA_MEM                                       } from '../../../modules/local/bwa/bwa_mem.nf'
-// Mapping - BWA-ALN-MEM
 include { SPLIT_FASTQ                                   } from '../../../modules/local/awk/split_fastq.nf'
 include { BWA_ALN as BWA_ALN_SHORT                      } from '../../../modules/local/bwa/bwa_aln.nf'
 include { BWA_MEM as BWA_MEM_LONG                       } from '../../../modules/local/bwa/bwa_mem.nf'
 include { SAMTOOLS_MERGE as BWA_ALN_MEM_MERGE           } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_MERGE as MERGED_UNMERGED_READS_BAM   } from '../../../modules/local/samtools/samtools_merge.nf'
-
-
-// include { BWA_ALN as BWA_ALN_R1                 } from '../../../modules/local/bwa/bwa_aln.nf'
-// include { BWA_ALN as BWA_ALN_R2                 } from '../../../modules/local/bwa/bwa_aln.nf'
-
-// Mapping - Bowtie2
-include { BOWTIE2                               } from '../../../modules/local/bowtie2/bowtie2.nf'
-
-include { SAMTOOLS_INDEX as RAW_BAM_INDEX       } from '../../../modules/nf-core/samtools/index/main'
+include { BOWTIE2                                       } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { SAMTOOLS_INDEX as RAW_BAM_INDEX               } from '../../../modules/nf-core/samtools/index/main'
 
 
 workflow MAPPING {
@@ -77,16 +67,16 @@ workflow MAPPING {
     ch_reads_bowtie2        = Channel.empty()
 
     // Configure routing for ancient samples
-    if (params.mapping_tool_ancient == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.ancient)
-    if (params.mapping_tool_ancient == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.ancient)
-    if (params.mapping_tool_ancient == 'bwa-aln-mem') ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.ancient)
-    if (params.mapping_tool_ancient == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.ancient)
+    if (params.mapping_tool_ancient == 'bwa-aln')           { ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.ancient) }
+    else if (params.mapping_tool_ancient == 'bwa-mem')      { ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.ancient) }
+    else if (params.mapping_tool_ancient == 'bwa-aln-mem')  { ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.ancient) }
+    else if (params.mapping_tool_ancient == 'bowtie2')      { ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.ancient) }
 
     // Configure routing for modern samples
-    if (params.mapping_tool_modern == 'bwa-aln') ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.modern)
-    if (params.mapping_tool_modern == 'bwa-mem') ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.modern)
-    if (params.mapping_tool_modern == 'bwa-aln-mem') ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.modern)
-    if (params.mapping_tool_modern == 'bowtie2') ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.modern)
+    if (params.mapping_tool_modern == 'bwa-aln')            { ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.modern) }
+    else if (params.mapping_tool_modern == 'bwa-mem')       { ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.modern) }
+    else if (params.mapping_tool_modern == 'bwa-aln-mem')   { ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.modern) }
+    else if (params.mapping_tool_modern == 'bowtie2')       { ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.modern) }
 
 
     // Run Mapping Tools
@@ -132,7 +122,7 @@ workflow MAPPING {
     ////////////////////////////////////////////////////////////////////////////
 
     def ch_final_bam = null
-    if (params.merge_reads.toBoolean() && params.map_unmerged_reads.toBoolean()) {
+    if (params.merge_reads.toBoolean() && params.keep_unmerged_reads.toBoolean()) {
         // Group the unmerged reads BAMs by sample ID (removing the '-unmerged' suffix)
         ch_raw_bam_grouped = ch_raw_bam.map { meta, bam ->
                 def new_meta = meta.clone()
