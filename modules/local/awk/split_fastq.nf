@@ -1,10 +1,10 @@
 process SPLIT_FASTQ {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_split_fastq'
 
     conda "conda-forge::gawk=5.3.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyp`roject.org/singularity/gawk%3A5.3.1' :
+        'https://depot.galaxyproject.org/singularity/gawk%3A5.3.1' :
         'docker://stagex/gawk:5.3.0' }"
 
     input:
