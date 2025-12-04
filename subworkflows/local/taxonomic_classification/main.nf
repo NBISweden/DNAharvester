@@ -3,8 +3,6 @@
 // BWA mapping modules
 include { BWA_INDEX as TC_BWA_INDEX                         } from '../../../modules/local/bwa/bwa_index.nf'
 include { BWA_ALN as TC_BWA_ALN                             } from '../../../modules/local/bwa/bwa_aln.nf'
-include { BWA_SAMSE as TC_BWA_SAMSE                         } from '../../../modules/local/bwa/bwa_samse.nf'
-include { BWA_SAMPE as TC_BWA_SAMPE                         } from '../../../modules/local/bwa/bwa_sampe.nf'
 include { BWA_MEM as TC_BWA_MEM                             } from '../../../modules/local/bwa/bwa_mem.nf'
 
 // Bowtie2 mapping modules
@@ -69,10 +67,7 @@ workflow TAXONOMIC_CLASSIFICATION {
     if (params.tc_mapping_tool == 'bwa-aln' ) {
         TC_BWA_ALN ( reads, ch_bwa_index )
         ch_versions         = ch_versions.mix(TC_BWA_ALN.out.versions)
-        ch_bwa_samse        = reads.join(TC_BWA_ALN.out.sai)
-        TC_BWA_SAMSE ( ch_bwa_samse, ch_bwa_index )
-        ch_versions         = ch_versions.mix(TC_BWA_SAMSE.out.versions)
-        ch_bam              = TC_BWA_SAMSE.out.bam
+        ch_bam              = TC_BWA_ALN.out.bam
     }
     // BWA MEM
     if (params.tc_mapping_tool == 'bwa-mem') {
