@@ -55,7 +55,10 @@ workflow FASTQ_PROCESSING {
     ////////////////////////////////////////////////////////////////////////////
 
     // If unmerged reads are to be kept, merge them back to the main reads channel
-    ch_reads = ch_reads.mix(ch_unmerged_reads)
+    if (params.map_unmerged_reads.toBoolean()) {
+        ch_reads = ch_reads.mix(ch_unmerged_reads)
+    }
+
 
     ///////////////////////////////////////////////////////////////////////////
 
@@ -63,7 +66,6 @@ workflow FASTQ_PROCESSING {
     reads               = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : ch_reads               // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
     json                = FASTP.out.json                                                                        // channel: [ val(meta), [ reads ] ]
     fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ reads ] ]
-    unmerged_reads      = ch_unmerged_reads                                                                     // channel: [ val(meta), [ reads ] ]
     kraken2_output      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()             // channel: [ val(meta), [ reads ] ]
     kraken2_report      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()             // channel: [ val(meta), [ reads ] ]
     versions            = ch_versions                                                                           // channel: [ versions.yml ]
