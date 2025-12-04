@@ -21,7 +21,7 @@ include { SAMTOOLS_MERGE as BWA_ALN_MEM_MERGE   } from '../../../modules/local/s
 // Mapping - Bowtie2
 include { BOWTIE2                               } from '../../../modules/local/bowtie2/bowtie2.nf'
 
-include { SAMTOOLS_INDEX                        } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_INDEX as RAW_BAM_INDEX       } from '../../../modules/nf-core/samtools/index/main'
 
 
 workflow MAPPING {
@@ -193,13 +193,12 @@ workflow MAPPING {
     ////////////////////////////////////////////////////////////////////////////
 
     // Index the BAM file
-    SAMTOOLS_INDEX ( ch_bam )
-    ch_versions             = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
+    RAW_BAM_INDEX ( ch_bam )
+    ch_versions             = ch_versions.mix(RAW_BAM_INDEX.out.versions)
 
     emit:
     fai                     = SAMTOOLS_FAIDX.out.fai             // channel: path(index)
-    // index                   = ch_reference_index                 // channel: path(index)
-    bam                     = ch_bam                             // channel: [ val(meta), [ bam ] ]
-    bai                     = SAMTOOLS_INDEX.out.bai             // channel: [ val(meta), [ bai ] ]
+    raw_bam                 = ch_bam                             // channel: [ val(meta), [ bam ] ]
+    raw_bai                 = RAW_BAM_INDEX.out.bai              // channel: [ val(meta), [ bai ] ]
     versions                = ch_versions                        // channel: [ versions.yml ]
 }
