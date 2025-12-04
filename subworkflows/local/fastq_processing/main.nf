@@ -19,8 +19,15 @@ workflow FASTQ_PROCESSING {
 
     // Update meta.single_end to true for the merged reads output
     ch_reads = FASTP.out.reads.map { meta, reads ->
-        meta.single_end = true
-        [meta, reads]
+        def new_meta = meta.clone()
+        new_meta.single_end = true
+        [new_meta, reads]
+    }
+
+    // If unmerged reads are to be mapped, join them to the main reads channel
+    if (params.map_unmerged_reads.toBoolean()) {
+        ch_unmerged_reads = FASTP.out.reads_unmerged_R1.join(FASTP.out.reads_unmerged_R2)
+            .map { meta, R1, R2 -> [ meta, [R1, R2] ] }
     }
 
     // If Kraken2 classification is enabled, run Kraken2 and filter out classified reads
@@ -33,9 +40,6 @@ workflow FASTQ_PROCESSING {
         FILTER_FASTQ ( ch_kraken2_filtering )
         ch_versions = ch_versions.mix(FILTER_FASTQ.out.versions)
     }
-
-    // Join unmerged reads to a single channel for output
-    ch_unmerged_reads = FASTP.out.reads_unmerged_R1.join(FASTP.out.reads_unmerged_R2)
 
     emit:
     reads               = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : ch_reads               // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
