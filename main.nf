@@ -122,8 +122,7 @@ workflow {
         } else {
             MAPPING (
                 ch_reference,
-                FASTQ_PROCESSING.out.reads,
-                FASTQ_PROCESSING.out.unmerged_reads
+                FASTQ_PROCESSING.out.reads
             )
             ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
