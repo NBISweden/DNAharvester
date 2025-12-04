@@ -13,6 +13,25 @@ workflow INPUT_CHECK {
     main:
     ch_versions                              = Channel.empty()
 
+
+    if ( !params.merge_reads.toBoolean() && params.map_unmerged_reads.toBoolean() ) {
+        log.error """`map_unmerged_reads` is set to true, but `merge_reads` is set to false.
+        If `merge_reads` is set to false, all paired-end reads will be kept and will be mapped as paired-end reads.
+        No need to set `map_unmerged_reads` to true in this case.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    if ( (!params.merge_reads.toBoolean() || params.map_unmerged_reads.toBoolean()) && (params.mapping_tool_ancient == 'bwa-aln-mem' || params.mapping_tool_modern == 'bwa-aln-mem') ) {
+        log.warn """`bwa-aln-mem` module only implemented yet for single-end reads.
+        If you have pair-end reads and want to use `bwa-aln-mem`, please set `merge_reads` to true and `map_unmerged_reads` to false.
+        bwa-aln-mem for paired-end reads will be implemented in future releases.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
     // Check if `variant_calling` is set to true but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled
     if (params.variant_calling.toBoolean()) {
         if (!(params.variant_calling_bcftools.toBoolean() || params.variant_calling_angsd.toBoolean())) {
