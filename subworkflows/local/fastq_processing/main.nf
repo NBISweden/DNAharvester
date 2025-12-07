@@ -7,66 +7,65 @@ include { FILTER_FASTQ  }       from '../../../modules/local/kraken2/filter_fast
 
 workflow FASTQ_PROCESSING {
     take:
+    raw_reads
     kraken2_db
-    reads
 
     main:
     ch_versions = Channel.empty()
 
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
     // 1. FASTQ Processing: Adapter trimming and read merging.
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // Run FASTP for adapter trimming and read merging
-    FASTP ( reads )
+    FASTP ( raw_reads )
     ch_versions = ch_versions.mix(FASTP.out.versions)
 
-    // Update meta.single_end to true for the merged reads output
-    ch_reads = FASTP.out.reads.map { meta, reads ->
-        def new_meta = meta.clone()
-        new_meta.single_end = true
-        [new_meta, reads]
+    // If merge_reads set to 'true', update meta.single_end to true for the merged reads output
+    if (params.merge_reads.toBoolean()) {
+        ch_processed_reads = FASTP.out.processed_reads.map { meta, reads ->
+            def new_meta = meta.clone()
+            new_meta.single_end = true
+            [new_meta, reads]
+        }
+    } else {
+        ch_processed_reads = FASTP.out.processed_reads
     }
 
-    // If unmerged reads are to be mapped, join them to the main reads channel
-    if (params.map_unmerged_reads.toBoolean()) {
-        ch_unmerged_reads = FASTP.out.reads_unmerged_R1.join(FASTP.out.reads_unmerged_R2)
-            .map { meta, R1, R2 ->
-            new_meta = meta.clone()
+    // If keep_unmerged_reads is set to 'true', add "-unmerged" suffix to meta.id for unmerged reads
+    if (params.keep_unmerged_reads.toBoolean()) {
+        ch_unmerged_reads = FASTP.out.unmerged_reads.map { meta, reads ->
+            def new_meta = meta.clone()
             new_meta.id = meta.id + '-unmerged'
-            [ new_meta, [R1, R2] ] }
+            [ new_meta, reads ]
+        }
+        ch_processed_reads = ch_processed_reads.mix(ch_unmerged_reads)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
     // 2. Kraken2 Classification and Filtering
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // If Kraken2 classification is enabled, run Kraken2 and filter out classified reads
-    if ( params.kraken2.toBoolean() ) {
-        KRAKEN2 ( ch_reads, kraken2_db )
+    if ( params.kraken2_filtering.toBoolean() ) {
+        KRAKEN2 ( ch_processed_reads, kraken2_db )
         ch_versions = ch_versions.mix(KRAKEN2.out.versions)
 
-        ch_kraken2_filtering = ch_reads.join(KRAKEN2.out.kraken2_output)
+        ch_kraken2_filtering = ch_processed_reads.join(KRAKEN2.out.kraken2_output)
 
         FILTER_FASTQ ( ch_kraken2_filtering )
         ch_versions = ch_versions.mix(FILTER_FASTQ.out.versions)
     }
+    //////////////////////////////////////////////////////////////////////////////////////
 
-    ////////////////////////////////////////////////////////////////////////////
-
-    // If unmerged reads are to be kept, merge them back to the main reads channel
-    if (params.map_unmerged_reads.toBoolean()) {
-        ch_reads = ch_reads.mix(ch_unmerged_reads)
-    }
-
-
-    ///////////////////////////////////////////////////////////////////////////
+    // Determine final processed reads based on Kraken2 filtering set or not
+    def ch_processed_reads_final = params.kraken2_filtering.toBoolean() ? FILTER_FASTQ.out.filtered_reads : ch_processed_reads
 
     emit:
-    reads               = params.kraken2.toBoolean() ? FILTER_FASTQ.out.filtered_reads : ch_reads               // Output filtered reads if Kraken is enabled, otherwise pass FASTP reads.
-    json                = FASTP.out.json                                                                        // channel: [ val(meta), [ reads ] ]
-    fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ reads ] ]
-    kraken2_output      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()             // channel: [ val(meta), [ reads ] ]
-    kraken2_report      = params.kraken2.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()             // channel: [ val(meta), [ reads ] ]
+    processed_reads     = ch_processed_reads_final                                                              // channel: [ val(meta), [ reads ] ]
+    json                = FASTP.out.json                                                                        // channel: [ val(meta), [ json ] ]
+    fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ log ] ]
+    kraken2_output      = params.kraken2_filtering.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()   // channel: [ val(meta), [ kraken2_output ] ]
+    kraken2_report      = params.kraken2_filtering.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()   // channel: [ val(meta), [ kraken2_report ] ]
     versions            = ch_versions                                                                           // channel: [ versions.yml ]
 }
