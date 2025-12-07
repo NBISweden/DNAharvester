@@ -12,13 +12,17 @@ process FASTP {
     tuple val(meta), path(reads)
 
     output:
-    tuple val(meta), path('*.fastp.fastq.gz')       , emit: reads //output merged fastq in case of paired-end, output adapter trimmed fastq in case of single-end
-    tuple val(meta), path('*.json')                 , emit: json
-    tuple val(meta), path('*.html')                 , emit: html
-    tuple val(meta), path('*.log')                  , emit: log
-    path "versions.yml"                             , emit: versions
-    tuple val(meta), path('*.fastp_R1.fastq.gz')    , optional:true, emit: reads_unmerged_R1
-    tuple val(meta), path('*.fastp_R2.fastq.gz')    , optional:true, emit: reads_unmerged_R2
+    // This channel will emit:
+    // - [meta, [read.fastq.gz]] for single-end
+    // - [meta, [merged.fastq.gz]] for paired-end (merged)
+    // - [meta, [R1.fastq.gz, R2.fastq.gz]] for paired-end (unmerged)
+    tuple val(meta), path('*.fastp.fastq.gz')           , emit: processed_reads
+    tuple val(meta), path('*.json')                     , emit: json
+    tuple val(meta), path('*.html')                     , emit: html
+    tuple val(meta), path('*.log')                      , emit: log
+    // Optional outputs for unmerged reads when merging is performed
+    tuple val(meta), path('*.unmerged.R*.fastq.gz')     , optional:true, emit: unmerged_reads
+    path "versions.yml"                                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -45,20 +49,17 @@ process FASTP {
     END_VERSIONS
     """
     } else {
+        def merge_cmd = params.merge_reads.toBoolean() ?
+            "--merge --merged_out ${prefix}.merged.fastp.fastq.gz --correction --overlap_len_require 15 --overlap_diff_limit 1 --out1 ${prefix}.unmerged.R1.fastq.gz --out2 ${prefix}.unmerged.R2.fastq.gz" :
+            "--out1 ${prefix}_R1.fastp.fastq.gz --out2 ${prefix}_R2.fastp.fastq.gz"
     """
     [ ! -f  ${prefix}_1.fastq.gz ] && ln -sf ${reads[0]} ${prefix}_1.fastq.gz
     [ ! -f  ${prefix}_2.fastq.gz ] && ln -sf ${reads[1]} ${prefix}_2.fastq.gz
     fastp \\
         --in1 ${prefix}_1.fastq.gz \\
         --in2 ${prefix}_2.fastq.gz \\
-        --merge \\
-        --merged_out ${prefix}.merged.fastp.fastq.gz \\
-        --correction \\
-        --overlap_len_require 15 \\
-        --overlap_diff_limit 1 \\
+        $merge_cmd \\
         --detect_adapter_for_pe \\
-        --out1 ${prefix}.fastp_R1.fastq.gz \\
-        --out2 ${prefix}.fastp_R2.fastq.gz \\
         --json ${prefix}.fastp.json \\
         --html ${prefix}.fastp.html \\
         --thread $task.cpus \\
