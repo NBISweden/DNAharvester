@@ -14,10 +14,11 @@ workflow INPUT_CHECK {
     ch_versions                              = Channel.empty()
 
 
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
     // FASTQ PROCESSING checks
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
+    // Sanity check the keep_unmerged_reads is not set to true when merge_reads is false
     if ( !params.merge_reads.toBoolean() && params.keep_unmerged_reads.toBoolean() ) {
         log.error """`keep_unmerged_reads` is set to true, but `merge_reads` is set to false.
         If `merge_reads` is set to false, all paired-end reads will be kept and will be mapped as paired-end reads.
@@ -27,6 +28,7 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // bwa-aln-mem is not yet working for PE reads - will be implemented in future release
     if ( (!params.merge_reads.toBoolean() || params.keep_unmerged_reads.toBoolean()) && (params.mapping_tool_ancient == 'bwa-aln-mem' || params.mapping_tool_modern == 'bwa-aln-mem') ) {
         log.warn """`bwa-aln-mem` module only implemented yet for single-end reads.
         If you want to proceed with `bwa-aln-mem` for paired-end reads, please set `merge_reads` to true and `keep_unmerged_reads` to false.
@@ -37,10 +39,21 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // Kraken2 filtering is only work for SE reads - will be implemeted for PE reads in future release
+    if (params.kraken2_filtering.toBoolean() && (!params.merge_reads.toBoolean() || params.keep_unmerged_reads.toBoolean())) {
+        log.warn """`kraken2_filtering` module only implemented yet for single-end reads.
+        If you want to proceed with `kraken2_filtering` for paired-end reads, please set `merge_reads` to true and `keep_unmerged_reads` to false.
+        if you want to not merge reads or keep unmerged reads, please disable `kraken2_filtering`.
+        `kraken2_filtering` for paired-end reads will be implemented in future releases.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
 
-    ////////////////////////////////////////////////////////////////////////////
+
+    //////////////////////////////////////////////////////////////////////////////////////
     // VARIANT CALLING checks
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // Check if `variant_calling` is set to true but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled
     if (params.variant_calling.toBoolean()) {
@@ -62,9 +75,9 @@ workflow INPUT_CHECK {
 
 
 
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
     // TAXONOMIC CLASSIFICATION checks
-    ////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // If species_identification is set to true, check if tc_reference_database is provided
     if (params.taxonomic_classification.toBoolean() && !params.tc_reference_database) {
