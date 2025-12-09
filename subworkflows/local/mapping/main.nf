@@ -32,8 +32,7 @@ workflow MAPPING {
 
     // Build the BWA index - only if BWA is selected as mapping tool
     def bwa_tools = ['bwa-aln', 'bwa-mem', 'bwa-aln-mem']
-    if (bwa_tools.contains( params.mapping_tool_ancient ) ||
-        bwa_tools.contains( params.mapping_tool_modern )) {
+    if (bwa_tools.contains( params.mapping_tool_ancient ) || bwa_tools.contains( params.mapping_tool_modern )) {
         BWA_INDEX (reference, file(params.reference).getParent())
         ch_versions         = ch_versions.mix(BWA_INDEX.out.versions)
         ch_bwa_index        = BWA_INDEX.out.index_dir
@@ -41,8 +40,7 @@ workflow MAPPING {
 
     // Build the Bowtie2 index - only if Bowtie2 is selected as mapping tool
     def bowtie2_tools = ['bowtie2']
-    if (bowtie2_tools.contains( params.mapping_tool_ancient ) ||
-        bowtie2_tools.contains( params.mapping_tool_modern )) {
+    if (bowtie2_tools.contains( params.mapping_tool_ancient ) || bowtie2_tools.contains( params.mapping_tool_modern )) {
         BOWTIE2_BUILD (reference, file(params.reference).getParent())
         ch_versions         = ch_versions.mix(BOWTIE2_BUILD.out.versions)
         ch_bowtie2_index    = BOWTIE2_BUILD.out.index_dir
@@ -121,7 +119,7 @@ workflow MAPPING {
     // 3. Merge the mapped unmerged reads if provided
     ////////////////////////////////////////////////////////////////////////////
 
-    def ch_final_bam = null
+    def ch_merged_raw_bam = null
     if (params.merge_reads.toBoolean() && params.keep_unmerged_reads.toBoolean()) {
         // Group the unmerged reads BAMs by sample ID (removing the '-unmerged' suffix)
         ch_raw_bam_grouped = ch_raw_bam.map { meta, bam ->
@@ -139,14 +137,17 @@ workflow MAPPING {
 
         MERGED_UNMERGED_READS_BAM ( ch_raw_bam_grouped, reference )
         ch_versions = ch_versions.mix(MERGED_UNMERGED_READS_BAM.out.versions)
-        ch_final_bam = MERGED_UNMERGED_READS_BAM.out.bam
+        ch_merged_raw_bam = MERGED_UNMERGED_READS_BAM.out.bam
     }
+
+    // Use merged raw bam if created, else use original raw bam
+    ch_raw_bam_for_index = ch_merged_raw_bam ?: ch_raw_bam
 
     ////////////////////////////////////////////////////////////////////////////
     // 4. Index the raw BAM files
     ////////////////////////////////////////////////////////////////////////////
 
-    ch_raw_bam_for_index = ch_final_bam ?: ch_raw_bam
+
     RAW_BAM_INDEX ( ch_raw_bam_for_index )
     ch_versions = ch_versions.mix(RAW_BAM_INDEX.out.versions)
 
