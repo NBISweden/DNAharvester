@@ -21,26 +21,65 @@ process SPLIT_FASTQ {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def minlen = params.split_minlen ?: 35 // Default to 35 if not set in config
+    def split_readlen = params.split_readlen ?: 70
 
-    """
-    zcat ${reads} | awk -v minlen=${minlen} '
-    {
-        if(NR%4==1) header=\$0;
-        else if(NR%4==2) seq=\$0;
-        else if(NR%4==3) plus=\$0;
-        else if(NR%4==0) {
-            qual=\$0;
-            if(length(seq) < minlen)
-                print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_short.fastq.gz";
-            else
-                print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_long.fastq.gz";
-        }
-    }'
+    if (meta.single_end) {
+        """
+        zcat ${reads} | awk -v minlen=${split_readlen} '
+        {
+            if(NR%4==1) header=\$0;
+            else if(NR%4==2) seq=\$0;
+            else if(NR%4==3) plus=\$0;
+            else if(NR%4==0) {
+                qual=\$0;
+                if(length(seq) < minlen)
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_short.fastq.gz";
+                else
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_long.fastq.gz";
+            }
+        }'
 
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        awk: \$(awk --version 2>&1 | head -1 | awk '{print \$1, \$2}')
-    END_VERSIONS
-    """
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            awk: \$(awk --version 2>&1 | head -1 | awk '{print \$1, \$2}')
+        END_VERSIONS
+        """
+    } else {
+        """
+        ### Process Read 1
+        zcat ${reads[0]} | awk -v minlen=${split_readlen} '
+        {
+            if(NR%4==1) header=\$0;
+            else if(NR%4==2) seq=\$0;
+            else if(NR%4==3) plus=\$0;
+            else if(NR%4==0) {
+                qual=\$0;
+                if(length(seq) < minlen)
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_R1_short.fastq.gz";
+                else
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_R1_long.fastq.gz";
+            }
+        }'
+
+        ### Process Read 2
+        zcat ${reads[1]} | awk -v minlen=${split_readlen} '
+        {
+            if(NR%4==1) header=\$0;
+            else if(NR%4==2) seq=\$0;
+            else if(NR%4==3) plus=\$0;
+            else if(NR%4==0) {
+                qual=\$0;
+                if(length(seq) < minlen)
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_R2_short.fastq.gz";
+                else
+                    print header "\\n" seq "\\n" plus "\\n" qual | "gzip > ${prefix}_R2_long.fastq.gz";
+            }
+        }'
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            awk: \$(awk --version 2>&1 | head -1 | awk '{print \$1, \$2}')
+        END_VERSIONS
+        """
+    }
 }
