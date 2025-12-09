@@ -28,17 +28,6 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-    // bwa-aln-mem is not yet working for PE reads - will be implemented in future release
-    if ( (!params.merge_reads.toBoolean() || params.keep_unmerged_reads.toBoolean()) && (params.mapping_tool_ancient == 'bwa-aln-mem' || params.mapping_tool_modern == 'bwa-aln-mem') ) {
-        log.warn """`bwa-aln-mem` module only implemented yet for single-end reads.
-        If you want to proceed with `bwa-aln-mem` for paired-end reads, please set `merge_reads` to true and `keep_unmerged_reads` to false.
-        if you want to not merge reads or keep unmerged reads, please select either `bwa-aln` or `bwa-mem` or `bowtie2` as mapping tool.
-        `bwa-aln-mem` for paired-end reads will be implemented in future releases.
-        Exiting the pipeline......!
-        """
-        System.exit(1)
-    }
-
     // Kraken2 filtering is only work for SE reads - will be implemeted for PE reads in future release
     if (params.kraken2_filtering.toBoolean() && (!params.merge_reads.toBoolean() || params.keep_unmerged_reads.toBoolean())) {
         log.warn """`kraken2_filtering` module only implemented yet for single-end reads.
