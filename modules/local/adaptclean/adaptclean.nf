@@ -32,7 +32,7 @@ process ADAPTCLEAN {
         sequencing_cycle=\$(jq -r '.read1_before_filtering.total_cycles' ${json})
         AdaptClean \\
             ${processed_reads} \\
-            ${prefix}.adaptclean.fastq.gz \\
+            ${prefix}.se.adaptclean.fastq.gz \\
             \${sequencing_cycle} \\
             \${adapter_seq}
 
@@ -58,12 +58,12 @@ process ADAPTCLEAN {
 
         AdaptClean \\
             ${processed_reads[0]} \\
-            ${prefix}_R1.adaptclean.fastq.gz \\
+            ${prefix}.R1.adaptclean.fastq.gz \\
             \${sequencing_cycle_r1} \\
             \${adapter_seq_r1}
         AdaptClean \\
             ${processed_reads[1]} \\
-            ${prefix}_R2.adaptclean.fastq.gz \\
+            ${prefix}.R2.adaptclean.fastq.gz \\
             \${sequencing_cycle_r2} \\
             \${adapter_seq_r2} \\
 
