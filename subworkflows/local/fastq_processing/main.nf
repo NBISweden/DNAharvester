@@ -9,7 +9,7 @@ include { ADAPTCLEAN    }       from '../../../modules/local/adaptclean/adaptcle
 workflow FASTQ_PROCESSING {
     take:
     raw_reads
-    kraken2_db
+    kraken2_database
 
     main:
     ch_versions = Channel.empty()
@@ -90,7 +90,7 @@ workflow FASTQ_PROCESSING {
 
     // If Kraken2 classification is enabled, run Kraken2 and filter out classified reads
     if ( params.kraken2_filtering.toBoolean() ) {
-        KRAKEN2 ( ch_adapter_removed_reads, kraken2_db )
+        KRAKEN2 ( ch_adapter_removed_reads, kraken2_database )
         ch_versions = ch_versions.mix(KRAKEN2.out.versions)
 
         ch_kraken2_filtering = ch_adapter_removed_reads.join(KRAKEN2.out.kraken2_output)
