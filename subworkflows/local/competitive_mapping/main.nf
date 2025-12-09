@@ -9,19 +9,19 @@ include { BWA_ALN as BWA_ALN_SHORT_COMPETITIVE                      } from '../.
 include { BWA_MEM as BWA_MEM_LONG_COMPETITIVE                       } from '../../../modules/local/bwa/bwa_mem.nf'
 include { SAMTOOLS_MERGE as BWA_ALN_MEM_MERGE_COMPETITIVE           } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_MERGE as MERGED_UNMERGED_READS_BAM_COMPETITIVE   } from '../../../modules/local/samtools/samtools_merge.nf'
-include { BOWTIE2 as BOWTIE2_COMPETITIVE                 } from '../../../modules/local/bowtie2/bowtie2.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE   } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE   } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { FAI_TO_BED as FAI_TO_BED_COMPETITIVE           } from '../../../modules/local/fai2bed/main'
-include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET        } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { FAI_TO_BED as FAI_TO_BED_TARGET                } from '../../../modules/local/fai2bed/main'
-include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET  } from '../../../modules/local/bedtools/subtract/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/samtools_view_regions.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY         } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY            } from '../../../modules/local/samtools/samtools_flagstat.nf'
-include { MULTIQC as MULTIQC_DECOY                       } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/samtools_view_regions.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET        } from '../../../modules/nf-core/samtools/index/main'
+include { BOWTIE2 as BOWTIE2_COMPETITIVE                            } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_COMPETITIVE              } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_COMPETITIVE              } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { FAI_TO_BED as FAI_TO_BED_COMPETITIVE                      } from '../../../modules/local/fai2bed/main'
+include { SAMTOOLS_FAIDX as SAMTOOLS_FAIDX_TARGET                   } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { FAI_TO_BED as FAI_TO_BED_TARGET                           } from '../../../modules/local/fai2bed/main'
+include { BEDTOOLS_SUBTRACT as BEDTOOLS_SUBTRACT_TARGET             } from '../../../modules/local/bedtools/subtract/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_DECOY              } from '../../../modules/local/samtools/samtools_view_regions.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_DECOY                    } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT as FLAGSTAT_DECOY                       } from '../../../modules/local/samtools/samtools_flagstat.nf'
+include { MULTIQC as MULTIQC_DECOY                                  } from '../../../modules/nf-core/multiqc/main'
+include { SAMTOOLS_VIEW_REGIONS as SAMTOOLS_VIEW_TARGET             } from '../../../modules/local/samtools/samtools_view_regions.nf'
+include { SAMTOOLS_INDEX as SAMTOOLS_INDEX_TARGET                   } from '../../../modules/nf-core/samtools/index/main'
 
 workflow COMPETITIVE_MAPPING {
     take:
@@ -210,6 +210,8 @@ workflow COMPETITIVE_MAPPING {
     // Index the BAM file containing only the target genome
     SAMTOOLS_INDEX_TARGET ( SAMTOOLS_VIEW_TARGET.out.bam )
     ch_versions                      = ch_versions.mix(SAMTOOLS_INDEX_TARGET.out.versions)
+
+    ////////////////////////////////////////////////////////////////////////////
 
     emit:
     competitive_fai                  = SAMTOOLS_FAIDX_COMPETITIVE.out.fai       // channel: path(index)

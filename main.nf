@@ -87,8 +87,8 @@ workflow {
 
     if ( params.fastq_processing.toBoolean() ) {
         FASTQ_PROCESSING (
+            INPUT_CHECK.out.reads,
             params.kraken2_db ? file(params.kraken2_db, checkIfExists: true ) : [],
-            INPUT_CHECK.out.reads
         )
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
@@ -99,7 +99,7 @@ workflow {
 
     if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
-            FASTQ_PROCESSING.out.reads,
+            FASTQ_PROCESSING.out.processed_reads,
             FASTQ_PROCESSING.out.json
         )
         ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
@@ -115,14 +115,14 @@ workflow {
             COMPETITIVE_MAPPING (
                     ch_competitive_reference,
                     ch_reference,
-                    FASTQ_PROCESSING.out.reads
+                    FASTQ_PROCESSING.out.processed_reads
             )
             ch_all_versions = ch_all_versions.mix(COMPETITIVE_MAPPING.out.versions)
         // Map to the reference genome assembly
         } else {
             MAPPING (
                 ch_reference,
-                FASTQ_PROCESSING.out.reads
+                FASTQ_PROCESSING.out.processed_reads
             )
             ch_all_versions = ch_all_versions.mix(MAPPING.out.versions)
         }
@@ -137,7 +137,7 @@ workflow {
             .map { it -> [[id:it.Name], it] }.collect()
 
         MICROBIAL_SCREENING (
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
             ch_ms_reference
         )
         ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
@@ -151,7 +151,7 @@ workflow {
         ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
                 .map { it -> [[id:it.Name], it] }.collect()
 
-        ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.reads, ch_mt_reference)
+        ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.processed_reads, ch_mt_reference)
         ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
     }
 
@@ -163,7 +163,7 @@ workflow {
         ch_reference_database = Channel.fromPath( params.tc_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
-        TAXONOMIC_CLASSIFICATION (ch_reference_database, FASTQ_PROCESSING.out.reads, workflow_name)
+        TAXONOMIC_CLASSIFICATION (ch_reference_database, FASTQ_PROCESSING.out.processed_reads, workflow_name)
         ch_all_versions = ch_all_versions.mix(TAXONOMIC_CLASSIFICATION.out.versions)
     }
 
@@ -192,8 +192,8 @@ workflow {
     if ( params.raw_bam_qc.toBoolean() ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.bai,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.raw_bai
         )
         ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
@@ -205,7 +205,7 @@ workflow {
     if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
             RAW_BAM_QC.out.amber_txt,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )

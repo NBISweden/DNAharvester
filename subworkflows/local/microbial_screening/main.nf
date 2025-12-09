@@ -4,8 +4,6 @@ include { SAMTOOLS_UNMAPPED_READS                   } from '../../../modules/loc
 include { BWA_INDEX as MS_BWA_INDEX                 } from '../../../modules/local/bwa/bwa_index.nf'
 include { BOWTIE2_BUILD as MS_BOWTIE2_BUILD         } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BWA_ALN as MS_BWA_ALN                     } from '../../../modules/local/bwa/bwa_aln.nf'
-include { BWA_SAMSE as MS_BWA_SAMSE                 } from '../../../modules/local/bwa/bwa_samse.nf'
-include { BWA_ALN_MEM as MS_BWA_ALN_MEM             } from '../../../modules/local/bwa/bwa_aln_mem.nf'
 include { BOWTIE2 as MS_BOWTIE2                     } from '../../../modules/local/bowtie2/bowtie2.nf'
 include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ   } from '../../../modules/local/samtools/samtools_view_mq.nf'
 include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE       } from '../../../modules/local/samtools/samtools_merge.nf'
