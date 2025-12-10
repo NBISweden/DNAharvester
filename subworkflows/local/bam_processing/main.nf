@@ -49,13 +49,15 @@ workflow BAM_PROCESSING {
     main:
     ch_versions = Channel.empty()
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. MQ filtering and read length filtering
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Filter for mapping quality (provided in custom.config)
     SAMTOOLS_VIEW_MQ ( bam )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
     SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )
     ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ_INDEX.out.versions )
-
 
     // Filter for minimum read length estimated from AMBER output
     if (params.readlength == "auto") {
@@ -75,17 +77,20 @@ workflow BAM_PROCESSING {
         // Prepare BAM files for merging
         ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
+            [ meta + [id: meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
         }.groupTuple()
 
     } else {
         // Directly provide BAM channel for merging
         ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
+            [ meta + [id: meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
         }.groupTuple()
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Merging BAM files per library/PCR and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per library/PCR
     SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
@@ -101,6 +106,9 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
     ch_dedup_lib_bai = SAMREMOVEDUP_LIB.out.dedup.join(SAMREMOVEDUP_LIB_INDEX.out.bai)
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. MapDamage2 and removing transitions
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
     MAPDAMAGE2 ( ch_dedup_lib_bai , reference )
@@ -115,7 +123,7 @@ workflow BAM_PROCESSING {
         // Prepare BAM files for merging per sample
         ch_bam_sample_to_merge = MAPDAMAGE2.out.rescaled_bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
+            [ meta + [id: meta.id.split("_")[0]], bam ]
         }.groupTuple()
     } else if ( params.remove_transitions.toBoolean() ) { // remove transitions from BAM files if params.remove_transitions is set to true
         // Remove transitions from BAM files
@@ -127,15 +135,19 @@ workflow BAM_PROCESSING {
         // Prepare BAM files for merging per sample
         ch_bam_sample_to_merge = RM_TRANSITIONS.out.rm_trans_bam.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
+            [ meta + [id: meta.id.split("_")[0]], bam ]
         }.groupTuple()
     } else { // if params.mapdamage2_rescale is false and params.remove_transitions is false, use deduplicated BAM files merged per library/PCR
         // Merge BAM files per sample
         ch_bam_sample_to_merge = SAMREMOVEDUP_LIB.out.dedup.map { meta, bam ->
             // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
+            [ meta + [id: meta.id.split("_")[0]], bam ]
         }.groupTuple()
     }
+    ch_bam_sample_to_merge.view()
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. Merging BAM files per sample and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per sample
     SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
@@ -151,10 +163,9 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
     ch_bam_deup_sample_bai = SAMREMOVEDUP_SAMPLE.out.dedup.join(SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
-
-    ////////////////////////////////////////////////////////////////////////////
-    // GATK Indel Realignment
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. GATK Indel Realignment
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (params.indel_realignment.toBoolean()) {
         CREATE_SEQUENCE_DICTIONARY(reference)
@@ -170,6 +181,8 @@ workflow BAM_PROCESSING {
         GATK_INDEL_REALIGNER_INDEX ( GATK_INDEL_REALIGNER.out.realigned_bam )
         ch_versions = ch_versions.mix(GATK_INDEL_REALIGNER_INDEX.out.versions)
     }
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     mq_filtered_bam             = SAMTOOLS_VIEW_MQ.out.bam                                                                          // channel: [ val(meta), [ bam ] ]
