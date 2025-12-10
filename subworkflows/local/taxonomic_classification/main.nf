@@ -10,7 +10,7 @@ include { BWA_MEM as TC_BWA_MEM_LONG                        } from '../../../mod
 include { SAMTOOLS_MERGE as TC_BWA_ALN_MEM_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
 include { BOWTIE2_BUILD as TC_BOWTIE2_BUILD                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BOWTIE2 as TC_BOWTIE2                             } from '../../../modules/local/bowtie2/bowtie2.nf'
-include {SAMTOOLS_MERGE as TC_MERGED_UNMERGED_READS_BAM     } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_MERGE as TC_MERGED_UNMERGED_READS_BAM    } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_INDEX as TC_RAW_BAM_INDEX                } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_VIEW_MQ as TC_SAMTOOLS_VIEW_MQ           } from '../../../modules/local/samtools/samtools_view_mq.nf'
 include { SAMTOOLS_MERGE as TC_SAMTOOLS_MERGE_LIB           } from '../../../modules/local/samtools/samtools_merge.nf'

@@ -36,7 +36,7 @@ workflow {
     """)
 
     //////////////////////////////////////////////////////////////////////////////////////////
-    // Prepare input channels
+    // 1. Prepare input channels
     //////////////////////////////////////////////////////////////////////////////////////////
 
     // Channel to collect all software versions
@@ -74,7 +74,7 @@ workflow {
     ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
     ////////////////////////////////////////////////////////////////////////////
-    // Input check and Fastq processing
+    // 2. Input check, Fastq processing and QC
     ////////////////////////////////////////////////////////////////////////////
 
     INPUT_CHECK ( params.samplesheet )
@@ -93,10 +93,6 @@ workflow {
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
-    // Processed Fastq QC - Run FastQC, MultiQC and read statistics on processed reads
-    //////////////////////////////////////////////////////////////////////////////////////
-
     if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
             FASTQ_PROCESSING.out.processed_reads,
@@ -106,7 +102,7 @@ workflow {
     }
 
     ////////////////////////////////////////////////////////////////////////////
-    // Mapping/Competitive mapping
+    // 3. Mapping/Competitive mapping
     ////////////////////////////////////////////////////////////////////////////
 
     if ( params.mapping.toBoolean() ) {
@@ -133,7 +129,7 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////
 
     if ( params.microbial_screening.toBoolean() ) {
-        ch_ms_reference = Channel.fromPath ( params.ms_reference, checkIfExists: true )
+        ch_ms_reference = Channel.fromPath ( params.ms_reference_database, checkIfExists: true )
             .map { it -> [[id:it.Name], it] }.collect()
 
         MICROBIAL_SCREENING (
