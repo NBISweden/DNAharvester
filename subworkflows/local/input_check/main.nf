@@ -86,9 +86,9 @@ workflow INPUT_CHECK {
         }
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // TAXONOMIC CLASSIFICATION checks
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // If species_identification is set to true, check if tc_reference_database is provided
     if (params.taxonomic_classification.toBoolean() && !params.tc_reference_database) {
@@ -107,9 +107,9 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // ITERATIVE ASSEMBLY checks
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // if iterative_assembly is set to true, check if mtDNA_reference is provided
     if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
@@ -119,9 +119,9 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
     // MICROBIAL SCREENING checks
-    //////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Check if microbial_screening is set to true and reads are being filtered with kraken2 before mapping
     if (params.microbial_screening.toBoolean() && params.kraken2.toBoolean()) {
@@ -129,6 +129,23 @@ workflow INPUT_CHECK {
         Please note that if reads are filtered with kraken2 before mapping, the microbial screening step
         will includes unmapped reads and also reads filtered out by kraken2.
         """
+    }
+
+    // If microbial_screening is set to true, make sure ms_reference_database is provided
+    if (params.microbial_screening.toBoolean() && !params.ms_reference_database) {
+        log.error """`microbial_screening` is set to true, but `ms_reference_database` is not provided. Please provide the path to the microbial screening reference database.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    // Dont allow readlength set to auto for microbial_screening analysis
+    if (params.microbial_screening.toBoolean() && params.readlength == 'auto') {
+        log.error """For microbial_screening analysis, `readlength` should not be set to 'auto'.
+        Please set `readlength` to a specific value. recommended value is 30.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
