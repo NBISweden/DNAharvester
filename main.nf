@@ -281,6 +281,7 @@ workflow {
 
     if ( params.stats_output.toBoolean() ) {
         STATS_OUTPUT (
+            workflow_name,
             INPUT_CHECK.out.reads,
             FASTQ_PROCESSING.out.fastp_log,
             RAW_BAM_QC.out.flagstat,
