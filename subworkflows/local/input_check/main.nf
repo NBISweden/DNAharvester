@@ -119,6 +119,16 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // if iterative_assembly is set to true, check there are not PE reads
+    if (params.iterative_assembly.toBoolean() && (!params.merge_reads.toBoolean() || params.keep_unmerged_reads.toBoolean())) {
+        log.error """`iterative_assembly` is not currently implemented for paired-end reads.
+        Please set `merge_reads` to true and `keep_unmerged_reads` to false to proceed with paired-end reads.
+        This will be implemented for paired-end reads in future releases.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // MICROBIAL SCREENING checks
     ////////////////////////////////////////////////////////////////////////////////////////////////
