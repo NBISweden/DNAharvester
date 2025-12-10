@@ -4,34 +4,20 @@
 include { BWA_INDEX as TC_BWA_INDEX                         } from '../../../modules/local/bwa/bwa_index.nf'
 include { BWA_ALN as TC_BWA_ALN                             } from '../../../modules/local/bwa/bwa_aln.nf'
 include { BWA_MEM as TC_BWA_MEM                             } from '../../../modules/local/bwa/bwa_mem.nf'
-
-// Bowtie2 mapping modules
+include { SPLIT_FASTQ as TC_SPLIT_FASTQ                     } from '../../../modules/local/awk/split_fastq.nf'
+include { BWA_ALN as TC_BWA_ALN_SHORT                       } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_MEM as TC_BWA_MEM_LONG                        } from '../../../modules/local/bwa/bwa_mem.nf'
+include { SAMTOOLS_MERGE as TC_BWA_ALN_MEM_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
 include { BOWTIE2_BUILD as TC_BOWTIE2_BUILD                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BOWTIE2 as TC_BOWTIE2                             } from '../../../modules/local/bowtie2/bowtie2.nf'
-
-// Merge the mapped unmerged reads if provided
 include {SAMTOOLS_MERGE as TC_MERGED_UNMERGED_READS_BAM     } from '../../../modules/local/samtools/samtools_merge.nf'
-
-// SAMTOOLS indexing module for raw BAM files
 include { SAMTOOLS_INDEX as TC_RAW_BAM_INDEX                } from '../../../modules/nf-core/samtools/index/main'
-
-// Mapping quality filter
 include { SAMTOOLS_VIEW_MQ as TC_SAMTOOLS_VIEW_MQ           } from '../../../modules/local/samtools/samtools_view_mq.nf'
-
-// Merge BAM files per library/PCR
 include { SAMTOOLS_MERGE as TC_SAMTOOLS_MERGE_LIB           } from '../../../modules/local/samtools/samtools_merge.nf'
-
-// Remove duplicates from BAM files merged per library/PCR
 include { SAMREMOVEDUP as TC_SAMREMOVEDUP_LIB               } from '../../../modules/local/samremovedup/main'
-
-// Merge BAM files per sample
 include { SAMTOOLS_MERGE as TC_SAMTOOLS_MERGE_SAMPLE        } from '../../../modules/local/samtools/samtools_merge.nf'
-
-// Remove duplicates from BAM files merged per sample
 include { SAMREMOVEDUP as TC_SAMREMOVEDUP_SAMPLE            } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as TC_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../modules/nf-core/samtools/index/main'
-
-// SAMTOOLS_IDXSTATS
 include { SAMTOOLS_IDXSTATS as TC_SAMTOOLS_IDXSTATS         } from '../../../modules/local/samtools/samtools_idxstats.nf'
 include { MERGE_IDXSTATS as TC_MERGE_IDXSTATS               } from '../../../modules/local/merge_idxstats/merge_idxstats.nf'
 
@@ -44,12 +30,12 @@ workflow TAXONOMIC_CLASSIFICATION {
     main:
     ch_versions         = Channel.empty()
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Index the reference database if it is not already indexed
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Index the reference database if it is not already indexed
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Build the BWA index - only if BWA is selected as mapping tool
-    if (params.tc_mapping_tool == 'bwa-aln' || params.tc_mapping_tool == 'bwa-mem') {
+    if (params.tc_mapping_tool == 'bwa-aln' || params.tc_mapping_tool == 'bwa-mem' || params.tc_mapping_tool == 'bwa-aln-mem') {
         TC_BWA_INDEX (reference, file(params.tc_reference_database).getParent())
         ch_versions         = ch_versions.mix(TC_BWA_INDEX.out.versions)
         ch_bwa_index        = TC_BWA_INDEX.out.index_dir
@@ -61,13 +47,13 @@ workflow TAXONOMIC_CLASSIFICATION {
         ch_bowtie2_index    = TC_BOWTIE2_BUILD.out.index_dir
     }
     else {
-        error "Invalid mapping tool specified for Taxonomic Classification: ${params.tc_mapping_tool}. Use 'bwa-aln', 'bwa-mem', or 'bowtie2'."
+        error "Invalid mapping tool specified for Taxonomic Classification: ${params.tc_mapping_tool}. Use 'bwa-aln', 'bwa-mem', 'bwa-aln-mem', or 'bowtie2'."
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Mapping the reads to the reference database
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Mapping the reads to the reference database
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // BWA ALN
     if (params.tc_mapping_tool == 'bwa-aln' ) {
@@ -81,6 +67,23 @@ workflow TAXONOMIC_CLASSIFICATION {
         ch_versions         = ch_versions.mix(TC_BWA_MEM.out.versions)
         ch_raw_bam          = TC_BWA_MEM.out.bam
     }
+    else if (params.tc_mapping_tool == 'bwa-aln-mem') {
+        //split fastq
+        TC_SPLIT_FASTQ ( reads )
+        ch_versions         = ch_versions.mix(TC_SPLIT_FASTQ.out.versions)
+        //align short reads with BWA ALN
+        TC_BWA_ALN_SHORT ( TC_SPLIT_FASTQ.out.short_reads, ch_bwa_index )
+        ch_versions         = ch_versions.mix(TC_BWA_ALN_SHORT.out.versions)
+        //align long reads with BWA MEM
+        TC_BWA_MEM_LONG ( TC_SPLIT_FASTQ.out.long_reads,  ch_bwa_index )
+        ch_versions         = ch_versions.mix(TC_BWA_MEM_LONG.out.versions)
+        //merge BAMs from short and long reads
+        ch_raw_bam_aln_mem  = TC_BWA_ALN_SHORT.out.bam.join(TC_BWA_MEM_LONG.out.bam)
+            .map { meta, file1, file2 -> [meta, [file1, file2]] }
+        TC_BWA_ALN_MEM_MERGE ( ch_raw_bam_aln_mem, reference )
+        ch_versions         = ch_versions.mix(TC_BWA_ALN_MEM_MERGE.out.versions)
+        ch_raw_bam          = TC_BWA_ALN_MEM_MERGE.out.bam
+    }
     // BOWTIE2
     else if (params.tc_mapping_tool == 'bowtie2') {
         TC_BOWTIE2 ( reads, ch_bowtie2_index )
@@ -92,9 +95,9 @@ workflow TAXONOMIC_CLASSIFICATION {
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Merge the mapped unmerged reads if provided
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Merge the mapped unmerged reads if provided
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // if both merged reads and unmerged reads are mapped, merge the BAM files per sample
     def ch_merged_raw_bam = null
@@ -118,19 +121,18 @@ workflow TAXONOMIC_CLASSIFICATION {
         ch_merged_raw_bam = TC_MERGED_UNMERGED_READS_BAM.out.bam
     }
     // Use merged BAM if available, otherwise use raw BAM
-    ch_raw_bam_for_index = ch_merged_raw_bam ?: ch_raw_bam
+    ch_raw_bam_for_processing = ch_merged_raw_bam ?: ch_raw_bam
 
-    ////////////////////////////////////////////////////////////////////////////
-    // BAM processing
-    ////////////////////////////////////////////////////////////////////////////
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. BAM processing
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Index the BAM file
-    TC_RAW_BAM_INDEX ( ch_raw_bam_for_index )
+    TC_RAW_BAM_INDEX ( ch_raw_bam_for_processing )
     ch_versions             = ch_versions.mix ( TC_RAW_BAM_INDEX.out.versions )
 
     // Filter the BAM file by mapping quality
-    TC_SAMTOOLS_VIEW_MQ ( ch_raw_bam_for_index )
+    TC_SAMTOOLS_VIEW_MQ ( ch_raw_bam_for_processing )
     ch_versions         = ch_versions.mix(TC_SAMTOOLS_VIEW_MQ.out.versions)
 
     // Prepare the BAM files for merging by updating the metadata
@@ -158,7 +160,6 @@ workflow TAXONOMIC_CLASSIFICATION {
         [meta, bam]
     }.groupTuple()
 
-
     // Merge BAM files per sample
     TC_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
     ch_versions         = ch_versions.mix(TC_SAMTOOLS_MERGE_SAMPLE.out.versions)
@@ -170,9 +171,9 @@ workflow TAXONOMIC_CLASSIFICATION {
     TC_SAMREMOVEDUP_SAMPLE_INDEX ( TC_SAMREMOVEDUP_SAMPLE.out.dedup )
     ch_versions         = ch_versions.mix(TC_SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Generate idxstats
-    ////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. Generate idxstats
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Generate idxstats for the final BAM file
     TC_SAMTOOLS_IDXSTATS ( TC_SAMREMOVEDUP_SAMPLE.out.dedup )
@@ -187,10 +188,10 @@ workflow TAXONOMIC_CLASSIFICATION {
     TC_MERGE_IDXSTATS ( ch_merged_input )
     ch_versions         = ch_versions.mix(TC_MERGE_IDXSTATS.out.versions)
 
-    ///////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
-    raw_bam                 = ch_raw_bam_for_index                        // channel: [ val(meta), [ bam ] ]
+    raw_bam                 = ch_raw_bam_for_processing                   // channel: [ val(meta), [ bam ] ]
     raw_bam_bai             = TC_RAW_BAM_INDEX.out.bai                    // channel: [ val(meta), [ raw_bam_bai ] ]
     mq_filtered_bam         = TC_SAMTOOLS_VIEW_MQ.out.bam                 // channel: [ val(meta), [ mq_filtered_bam ] ]
     merged_bam_lib          = TC_SAMTOOLS_MERGE_LIB.out.bam               // channel: [ val(meta), [ merged_bam_lib ] ]
