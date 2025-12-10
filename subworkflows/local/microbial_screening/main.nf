@@ -39,12 +39,12 @@ workflow MICROBIAL_SCREENING {
 
     if (params.ms_mapping_tool == 'bwa-aln' || params.ms_mapping_tool == 'bwa-mem' || params.ms_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
-        MS_BWA_INDEX (ms_reference, file(params.ms_reference).getParent())
+        MS_BWA_INDEX (ms_reference, file(params.ms_reference_database).getParent())
         ch_versions             = ch_versions.mix(MS_BWA_INDEX.out.versions)
         ch_ms_reference_index   = MS_BWA_INDEX.out.index_dir
     } else if (params.ms_mapping_tool == 'bowtie2') {
         // Build the Bowtie2 index
-        MS_BOWTIE2_BUILD (ms_reference, file(params.ms_reference).getParent())
+        MS_BOWTIE2_BUILD (ms_reference, file(params.ms_reference_database).getParent())
         ch_versions             = ch_versions.mix(MS_BOWTIE2_BUILD.out.versions)
         ch_ms_reference_index   = MS_BOWTIE2_BUILD.out.index_dir
     } else {
