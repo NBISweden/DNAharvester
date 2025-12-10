@@ -106,14 +106,6 @@ workflow INPUT_CHECK {
         """
         System.exit(1)
     }
-    // Dont allow bwa-aln-mem for taxonomic_classification analysis
-    if (params.tc_mapping_tool == 'bwa-aln-mem') {
-        log.error """`bwa-aln-mem` is not yet implemented for taxonomic classification module.
-        Please select either 'bwa-aln' or 'bwa-mem' or 'bowtie2' as mapping tool for taxonomic classification.
-        Exiting the pipeline......!
-        """
-        System.exit(1)
-    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // ITERATIVE ASSEMBLY checks
