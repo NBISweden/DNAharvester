@@ -13,7 +13,6 @@ workflow INPUT_CHECK {
     main:
     ch_versions                              = Channel.empty()
 
-
     //////////////////////////////////////////////////////////////////////////////////////
     // FASTQ PROCESSING checks
     //////////////////////////////////////////////////////////////////////////////////////
@@ -39,6 +38,39 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
+    // if kraken2_filtering is set to true, make sure kraken2_database is provided
+    if (params.kraken2_filtering.toBoolean() && !params.kraken2_database) {
+        log.error """`kraken2_filtering` is set to true, but `kraken2_database` is not provided. Please provide the path to the Kraken2 database.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // BAM PROCESSING checks
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // Check if both `mapdamage2_rescale` and `remove_transitions` are set to true
+    if ( params.mapdamage2_rescale.toBoolean() && params.remove_transitions.toBoolean() ) {
+        log.error """Both `mapdamage2_rescale` and `remove_transitions` are set to true. Please select only one option.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // REPEAT AND CPG IDENTIFICATION checks
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // Make sure either repeat_cpg_identification is set to true or intervals (repeats_masked.bed) is provided. both cannot be true
+    if (params.repeat_cpg_identification.toBoolean() && params.intervals) {
+        log.error """Both `repeat_cpg_identification` is set to true and `intervals` (file: ${params.intervals}) is provided. Please select only one option.
+        Either provide path to BED file with reference genome positions to include in the downstream analysis OR
+        set `repeat_cpg_identification` to identify repeats and use the generated repeats_masked.bed file for downstream analysis.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // VARIANT CALLING checks
@@ -53,16 +85,6 @@ workflow INPUT_CHECK {
             System.exit(1)
         }
     }
-
-    // Check if both `mapdamage2_rescale` and `remove_transitions` are set to true
-    if ( params.mapdamage2_rescale.toBoolean() && params.remove_transitions.toBoolean() ) {
-        log.error """Both `mapdamage2_rescale` and `remove_transitions` are set to true. Please select only one option.
-        Exiting the pipeline......!
-        """
-        System.exit(1)
-    }
-
-
 
     //////////////////////////////////////////////////////////////////////////////////////
     // TAXONOMIC CLASSIFICATION checks
@@ -93,14 +115,9 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-
-
-
-
-
-
-
-
+    //////////////////////////////////////////////////////////////////////////////////////
+    // ITERATIVE ASSEMBLY checks
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // if iterative_assembly is set to true, check if mtDNA_reference is provided
     if (params.iterative_assembly.toBoolean() && !params.mtDNA_reference) {
@@ -110,15 +127,9 @@ workflow INPUT_CHECK {
         System.exit(1)
     }
 
-    // Make sure either repeat_cpg_identification is set to true or intervals (repeats_masked.bed) is provided. both cannot be true
-    if (params.repeat_cpg_identification.toBoolean() && params.intervals) {
-        log.error """Both `repeat_cpg_identification` is set to true and `intervals` (file: ${params.intervals}) is provided. Please select only one option.
-        Either provide path to BED file with reference genome positions to include in the downstream analysis OR
-        set `repeat_cpg_identification` to identify repeats and use the generated repeats_masked.bed file for downstream analysis.
-        Exiting the pipeline......!
-        """
-        System.exit(1)
-    }
+    //////////////////////////////////////////////////////////////////////////////////////
+    // MICROBIAL SCREENING checks
+    //////////////////////////////////////////////////////////////////////////////////////
 
     // Check if microbial_screening is set to true and reads are being filtered with kraken2 before mapping
     if (params.microbial_screening.toBoolean() && params.kraken2.toBoolean()) {
@@ -127,6 +138,8 @@ workflow INPUT_CHECK {
         will includes unmapped reads and also reads filtered out by kraken2.
         """
     }
+
+    //////////////////////////////////////////////////////////////////////////////////////
 
     SAMPLESHEET_CHECK ( samplesheet )
         .csv

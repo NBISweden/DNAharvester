@@ -137,7 +137,7 @@ workflow {
             .map { it -> [[id:it.Name], it] }.collect()
 
         MICROBIAL_SCREENING (
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
             ch_ms_reference
         )
         ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
@@ -192,8 +192,8 @@ workflow {
     if ( params.raw_bam_qc.toBoolean() ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bai : MAPPING.out.raw_bai
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bai : MAPPING.out.raw_bai
         )
         ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
@@ -205,7 +205,7 @@ workflow {
     if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.bam : MAPPING.out.raw_bam,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
             RAW_BAM_QC.out.amber_txt,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
