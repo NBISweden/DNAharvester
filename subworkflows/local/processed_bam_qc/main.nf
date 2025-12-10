@@ -36,6 +36,11 @@ workflow PROCESSED_BAM_QC {
     main:
     ch_versions                              = Channel.empty()
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Flagstat and MultiQC on processed BAM files
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     // mq_filtered_bam
     ch_flagstat_mq_filtered_bam              = mq_filtered_bam.join(mq_filtered_index)
 
@@ -99,6 +104,10 @@ workflow PROCESSED_BAM_QC {
         ch_multiqc_logo.toList()
     )
     ch_versions                              = ch_versions.mix(MULTIQC_MERGED_BAM_LIB.out.versions)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Preseq and Flagstat on deduplicated BAM files
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // PRESEQ
     if ( params.preseq.toBoolean() ) {
@@ -168,6 +177,8 @@ workflow PROCESSED_BAM_QC {
         ch_bed_file
     )
     ch_versions                              = ch_versions.mix(SAMTOOLS_DEPTH_MEAN.out.versions)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     multiqc_rm_short_reads_report            = params.readlength == "auto" ? MULTIQC_RM_SHORT_READS_BAM.out.report.toList() : Channel.empty()      // channel: [ val(meta), path(report) ]
