@@ -10,13 +10,16 @@ include { MULTIQC as MULTIQC_BAM     } from '../../../modules/nf-core/multiqc/ma
 workflow RAW_BAM_QC {
     take:
     reference
-    bam             // bam file from mapping subworkflow
-    bai             // bam index file
+    bam
+    bai
 
     main:
     ch_versions                              = Channel.empty()
-
     ch_bam_bai                               = bam.join(bai)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Run samtools flagstat and MultiQC
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     SAMTOOLS_FLAGSTAT ( ch_bam_bai )
     ch_versions                              = ch_versions.mix(SAMTOOLS_FLAGSTAT.out.versions)
@@ -35,16 +38,21 @@ workflow RAW_BAM_QC {
     )
     ch_versions                              = ch_versions.mix(MULTIQC_BAM.out.versions)
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Run AMBER
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Subsample BAM files for AMBER
     SAMTOOLS_VIEW_SUBSAMPLE ( bam, reference )
     ch_versions                              = ch_versions.mix(SAMTOOLS_VIEW_SUBSAMPLE.out.versions)
-
+    // Create AMBER samplesheet
     CREATE_AMBER_SAMPLESHEET ( SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam )
     ch_versions                              = ch_versions.mix(CREATE_AMBER_SAMPLESHEET.out.versions)
-
-    AMBER (
-        SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( CREATE_AMBER_SAMPLESHEET.out.tsv )
-    )
+    // Run AMBER
+    AMBER ( SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( CREATE_AMBER_SAMPLESHEET.out.tsv ))
     ch_versions                              = ch_versions.mix(AMBER.out.versions)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     flagstat                                 = SAMTOOLS_FLAGSTAT.out.flagstat               // channel: [ val(meta), path(flagstat) ]
