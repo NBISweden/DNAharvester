@@ -110,7 +110,8 @@ workflow BAM_PROCESSING {
     // 3. MapDamage2 and removing transitions
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
+    // Run MapDamage2 on deduplicated BAM files merged per library/PCR.
+    // If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
     MAPDAMAGE2 ( ch_dedup_lib_bai , reference )
     ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
 
@@ -144,7 +145,7 @@ workflow BAM_PROCESSING {
             [ meta + [id: meta.id.split("_")[0]], bam ]
         }.groupTuple()
     }
-    ch_bam_sample_to_merge.view()
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. Merging BAM files per sample and deduplication
     ////////////////////////////////////////////////////////////////////////////////////////////////
