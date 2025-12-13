@@ -33,6 +33,8 @@ process AMBER {
         $args \\
         --bamfiles $tsv \\
         --output ${prefix}.amber \\
+        --counts \\
+        --errorbars \\
         || echo "No AMBER output was generated, likely due to an insufficient number of mapped reads.\n \\
         Please check the sequencing statistics!." >> ${prefix}.amber_plot.txt
 
