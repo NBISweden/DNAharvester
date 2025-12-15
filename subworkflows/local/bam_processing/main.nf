@@ -110,41 +110,46 @@ workflow BAM_PROCESSING {
     // 3. MapDamage2 and removing transitions
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Run MapDamage2 on deduplicated BAM files merged per library/PCR.
+    // Branch reads into ancient and modern based on sample_type metadata
+    ch_dedup_lib_bai.branch {
+        ancient: it[0].sample_type == 'ancient'
+        modern : it[0].sample_type == 'modern'
+    }.set { ch_dedup_lib_bai_branched }
+
+    // Run MapDamage2 on deduplicated BAM files merged per library/PCR (ONLY ANCIENT).
     // If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
-    MAPDAMAGE2 ( ch_dedup_lib_bai , reference )
+    MAPDAMAGE2 ( ch_dedup_lib_bai_branched.ancient , reference )
     ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
 
+    ch_bam_processed_ancient = Channel.empty()
 
     // use rescaled BAM files if params.mapdamage2_rescale is set to true
     if ( params.mapdamage2_rescale.toBoolean() ) {
         MAPDAMAGE2_INDEX ( MAPDAMAGE2.out.rescaled_bam )
         ch_versions = ch_versions.mix(MAPDAMAGE2_INDEX.out.versions)
+        ch_bam_processed_ancient = MAPDAMAGE2.out.rescaled_bam
 
-        // Prepare BAM files for merging per sample
-        ch_bam_sample_to_merge = MAPDAMAGE2.out.rescaled_bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [ meta + [id: meta.id.split("_")[0]], bam ]
-        }.groupTuple()
     } else if ( params.remove_transitions.toBoolean() ) { // remove transitions from BAM files if params.remove_transitions is set to true
         // Remove transitions from BAM files
-        RM_TRANSITIONS ( ch_dedup_lib_bai )
+        RM_TRANSITIONS ( ch_dedup_lib_bai_branched.ancient )
         ch_versions = ch_versions.mix(RM_TRANSITIONS.out.versions)
-        RM_TRANSITIONS_INDEX ( RM_TRANSITIONS.out.rm_trans_bam,  )
+        RM_TRANSITIONS_INDEX ( RM_TRANSITIONS.out.rm_trans_bam )
         ch_versions = ch_versions.mix(RM_TRANSITIONS_INDEX.out.versions)
+        ch_bam_processed_ancient = RM_TRANSITIONS.out.rm_trans_bam
 
-        // Prepare BAM files for merging per sample
-        ch_bam_sample_to_merge = RM_TRANSITIONS.out.rm_trans_bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [ meta + [id: meta.id.split("_")[0]], bam ]
-        }.groupTuple()
     } else { // if params.mapdamage2_rescale is false and params.remove_transitions is false, use deduplicated BAM files merged per library/PCR
-        // Merge BAM files per sample
-        ch_bam_sample_to_merge = SAMREMOVEDUP_LIB.out.dedup.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [ meta + [id: meta.id.split("_")[0]], bam ]
-        }.groupTuple()
+        // Just pass through the ancient BAMs (remove bai from tuple)
+        ch_bam_processed_ancient = ch_dedup_lib_bai_branched.ancient.map { meta, bam, bai -> [meta, bam] }
     }
+
+    // Modern samples bypass MapDamage2 and RM_TRANSITIONS (remove bai from tuple)
+    ch_bam_processed_modern = ch_dedup_lib_bai_branched.modern.map { meta, bam, bai -> [meta, bam] }
+
+    // Combine processed ancient and modern BAMs and prepare for merging per sample
+    ch_bam_sample_to_merge = ch_bam_processed_ancient.mix(ch_bam_processed_modern).map { meta, bam ->
+        // update only the 'id' field in meta, keep all other fields
+        [ meta + [id: meta.id.split("_")[0]], bam ]
+    }.groupTuple()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. Merging BAM files per sample and deduplication
