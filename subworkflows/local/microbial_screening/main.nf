@@ -85,13 +85,13 @@ workflow MICROBIAL_SCREENING {
         ch_raw_bam          = MS_BWA_ALN_MEM_MERGE.out.bam
     }
     // BOWTIE2
-    else if (params.mc_mapping_tool == 'bowtie2') {
-        MC_BOWTIE2 ( ch_unmapped_reads, ch_mc_reference_index )
-        ch_versions         = ch_versions.mix(MC_BOWTIE2.out.versions)
-        ch_raw_bam          = MC_BOWTIE2.out.bam
+    else if (params.ms_mapping_tool == 'bowtie2') {
+        MS_BOWTIE2 ( ch_unmapped_reads, ch_ms_reference_index )
+        ch_versions         = ch_versions.mix(MS_BOWTIE2.out.versions)
+        ch_raw_bam          = MS_BOWTIE2.out.bam
     }
     else {
-        error "Invalid mapping tool specified for Taxonomic Classification: ${params.tc_mapping_tool}. Use 'bwa-aln', 'bwa-mem', or 'bowtie2'."
+        error "Invalid mapping tool specified for Taxonomic Classification: ${params.ms_mapping_tool}. Use 'bwa-aln', 'bwa-mem', 'bwa-aln-mem' or 'bowtie2'."
     }
 
 

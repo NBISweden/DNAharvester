@@ -53,7 +53,7 @@ process FASTQC {
     touch ${prefix}.zip
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":s
+    "${task.process}":
         fastqc: \$( fastqc --version | sed -e "s/FastQC v//g" )
     END_VERSIONS
     """
