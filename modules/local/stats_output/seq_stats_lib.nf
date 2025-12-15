@@ -29,7 +29,7 @@ process SEQ_STATS_LIB {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = task.ext.prefix ?: params.reference.split('/')[-1].replaceFirst(/\.fasta$|\.fa$/, '')
-    def mapping_tool = task.ext.mapping_tool ?: params.mapping_tool
+    def mapping_tool = task.ext.mapping_tool ?: (meta.sample_type == 'ancient' ? params.mapping_tool_ancient : params.mapping_tool_modern)
 
     """
 
