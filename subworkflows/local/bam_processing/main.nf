@@ -76,15 +76,21 @@ workflow BAM_PROCESSING {
 
         // Prepare BAM files for merging
         ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [ meta + [id: meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
+            def new_meta = meta.clone()
+            new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
+            new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
+            new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
+            [ new_meta, bam ]
         }.groupTuple()
 
     } else {
         // Directly provide BAM channel for merging
         ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [ meta + [id: meta.id.split("_")[0] + "_" + meta.id.split("_")[1]], bam ]
+            def new_meta = meta.clone()
+            new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
+            new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
+            new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
+            [ new_meta, bam ]
         }.groupTuple()
     }
 
@@ -147,10 +153,12 @@ workflow BAM_PROCESSING {
 
     // Combine processed ancient and modern BAMs and prepare for merging per sample
     ch_bam_sample_to_merge = ch_bam_processed_ancient.mix(ch_bam_processed_modern).map { meta, bam ->
-        // update only the 'id' field in meta, keep all other fields
-        [ meta + [id: meta.id.split("_")[0]], bam ]
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0] // remove library_id for merging all bams per sample_id
+        new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
+        [ new_meta, bam ]
     }.groupTuple()
-
+    ch_bam_sample_to_merge.view()
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. Merging BAM files per sample and deduplication
     ////////////////////////////////////////////////////////////////////////////////////////////////
