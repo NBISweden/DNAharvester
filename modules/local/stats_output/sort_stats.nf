@@ -6,7 +6,7 @@ process SORT_STATS {
     path(input_file)
 
     output:
-    path("*sorted.txt"), emit: sorted_file
+    path("*sorted.tsv"), emit: sorted_file
 
     when:
     task.ext.when == null || task.ext.when
@@ -15,8 +15,8 @@ process SORT_STATS {
     def prefix = task.ext.prefix ?: input_file.getBaseName()
 
     """
-    head -n 1 ${input_file} > ${prefix}.sorted.txt
-    tail -n +2 ${input_file} | sort -k1,1  >> ${prefix}.sorted.txt
+    head -n 1 ${input_file} > ${prefix}.sorted.tsv
+    tail -n +2 ${input_file} | sort -k1,1  >> ${prefix}.sorted.tsv
 
     """
 }
