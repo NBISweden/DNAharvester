@@ -134,7 +134,7 @@ workflow INPUT_CHECK {
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Check if microbial_screening is set to true and reads are being filtered with kraken2 before mapping
-    if (params.microbial_screening.toBoolean() && params.kraken2.toBoolean()) {
+    if (params.microbial_screening.toBoolean() && params.kraken2_filtering.toBoolean()) {
         log.warn """Both `microbial_screening` and `kraken2` are set to true.
         Please note that if reads are filtered with kraken2 before mapping, the microbial screening step
         will includes unmapped reads and also reads filtered out by kraken2.
