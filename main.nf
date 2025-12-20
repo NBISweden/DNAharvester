@@ -96,7 +96,7 @@ workflow {
     if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
             FASTQ_PROCESSING.out.processed_reads,
-            FASTQ_PROCESSING.out.json
+            FASTQ_PROCESSING.out.fastp_json
         )
         ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
@@ -282,16 +282,13 @@ workflow {
     if ( params.stats_output.toBoolean() ) {
         STATS_OUTPUT (
             workflow_name,
-            INPUT_CHECK.out.reads,
-            FASTQ_PROCESSING.out.fastp_log,
+            FASTQ_PROCESSING.out.fastp_json,
             RAW_BAM_QC.out.flagstat,
             PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib,
-            BAM_PROCESSING.out.dedup_lib_index,
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
             BAM_PROCESSING.out.dedup_sample,
-            BAM_PROCESSING.out.dedup_sample_index,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty(),
             PROCESSED_BAM_QC.out.dpstats
         )
