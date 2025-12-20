@@ -136,10 +136,14 @@ workflow MICROBIAL_SCREENING {
     ch_versions             = ch_versions.mix ( MS_SAMTOOLS_VIEW_MQ.out.versions )
 
     // Prepare channel to merge BAM files per sample
+    // Fix: Group by ID string and preserve metadata
     ch_ms_bams_per_sample  = MS_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-        // update only the 'id' field in meta, keep all other fields
-        [['id': meta.id.split("_")[0]], bam]
-        }.groupTuple()
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0]
+        tuple(new_meta.id, new_meta, bam)
+    }
+    .groupTuple()
+    .map { id, metas, bams -> tuple(metas[0], bams) }
 
     // Merge BAM files per sample
     MS_SAMTOOLS_MERGE_SAMPLE ( ch_ms_bams_per_sample, ms_reference )
@@ -161,7 +165,9 @@ workflow MICROBIAL_SCREENING {
     ch_versions             = ch_versions.mix ( MS_FILTERBAM.out.versions )
 
     // generate plot from filterBAM output
-    MS_FILTERBAM_PLOT ( ch_bam_bai_final, MS_FILTERBAM.out.filterBAM_stats )
+    // Fix: Join channels to ensure correct pairing of BAM/BAI and Stats
+    ch_filterbam_plot_input = ch_bam_bai_final.join(MS_FILTERBAM.out.filterBAM_stats)
+    MS_FILTERBAM_PLOT ( ch_filterbam_plot_input )
     ch_versions             = ch_versions.mix ( MS_FILTERBAM_PLOT.out.versions )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
