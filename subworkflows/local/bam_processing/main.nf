@@ -158,7 +158,7 @@ workflow BAM_PROCESSING {
         new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
         [ new_meta, bam ]
     }.groupTuple()
-    ch_bam_sample_to_merge.view()
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. Merging BAM files per sample and deduplication
     ////////////////////////////////////////////////////////////////////////////////////////////////

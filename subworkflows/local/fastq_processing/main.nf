@@ -105,7 +105,7 @@ workflow FASTQ_PROCESSING {
 
     emit:
     processed_reads     = ch_processed_reads                                                                    // channel: [ val(meta), [ reads ] ]
-    json                = FASTP.out.json                                                                        // channel: [ val(meta), [ json ] ]
+    fastp_json          = FASTP.out.json                                                                        // channel: [ val(meta), [ json ] ]
     fastp_log           = FASTP.out.log                                                                         // channel: [ val(meta), [ log ] ]
     kraken2_output      = params.kraken2_filtering.toBoolean() ? KRAKEN2.out.kraken2_output : Channel.empty()   // channel: [ val(meta), [ kraken2_output ] ]
     kraken2_report      = params.kraken2_filtering.toBoolean() ? KRAKEN2.out.kraken2_report : Channel.empty()   // channel: [ val(meta), [ kraken2_report ] ]
