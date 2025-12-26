@@ -3,23 +3,16 @@
 // Mapping quality filter
 include { SAMTOOLS_VIEW_MQ              as BP_SAMTOOLS_VIEW_MQ              } from '../../../modules/local/samtools/samtools_view_mq.nf'
 include { SAMTOOLS_INDEX                as BP_SAMTOOLS_VIEW_MQ_INDEX        } from '../../../modules/nf-core/samtools/index/main'
-
-
-include { ESTIMATE_READ_LEN_CUTOFF      as BP_ESTIMATE_READ_LEN_CUTOFF      } from '../../../modules/local/amber/estimate_read_len_cutoff'
-include { RM_SHORT_READS                as BP_RM_SHORT_READS                } from '../../../modules/local/samtools/samtools_rm_short_reads.nf'
-include { SAMTOOLS_INDEX                as BP_RM_SHORT_READS_INDEX          } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_MERGE                as BP_SAMTOOLS_MERGE_LIB            } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_INDEX                as BP_SAMTOOLS_MERGE_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 include { SAMREMOVEDUP                  as BP_SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX                as BP_SAMREMOVEDUP_LIB_INDEX        } from '../../../modules/nf-core/samtools/index/main'
-
-
-include { SAMTOOLS_VIEW_SUBSAMPLE       as BP_SAMTOOLS_VIEW_SUBSAMPLE     } from '../../../modules/local/samtools/samtools_view_subsample.nf'
-include { CREATE_AMBER_SAMPLESHEET      as BP_CREATE_AMBER_SAMPLESHEET    } from '../../../modules/local/amber/create_amber_samplesheet'
-include { AMBER                         as BP_AMBER                       } from '../../../modules/local/amber/amber'
-
-
-
+include { SAMTOOLS_VIEW_SUBSAMPLE       as BP_SAMTOOLS_VIEW_SUBSAMPLE       } from '../../../modules/local/samtools/samtools_view_subsample.nf'
+include { CREATE_AMBER_SAMPLESHEET      as BP_CREATE_AMBER_SAMPLESHEET      } from '../../../modules/local/amber/create_amber_samplesheet'
+include { AMBER                         as BP_AMBER                         } from '../../../modules/local/amber/amber'
+include { ESTIMATE_READ_LEN_CUTOFF      as BP_ESTIMATE_READ_LEN_CUTOFF      } from '../../../modules/local/amber/estimate_read_len_cutoff'
+include { RM_SHORT_READS                as BP_RM_SHORT_READS                } from '../../../modules/local/samtools/samtools_rm_short_reads.nf'
+include { SAMTOOLS_INDEX                as BP_RM_SHORT_READS_INDEX          } from '../../../modules/nf-core/samtools/index/main'
 include { MAPDAMAGE2                    as BP_MAPDAMAGE2                    } from '../../../modules/local/mapdamage2/main'
 include { SAMTOOLS_INDEX                as BP_MAPDAMAGE2_INDEX              } from '../../../modules/nf-core/samtools/index/main'
 include { RM_TRANSITIONS                as BP_RM_TRANSITIONS                } from '../../../modules/local/rm_transitions/rm_transitions.nf'
@@ -36,14 +29,13 @@ workflow BAM_PROCESSING {
     take:
     reference
     bam
-    amber_txt
     fai
 
     main:
     ch_versions = Channel.empty()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 1. MQ filtering and read length filtering
+    // 1. Mapping Quality Filtering, Merging BAM files per library/PCR and deduplication
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Filter for mapping quality (provided in custom.config)
@@ -52,44 +44,14 @@ workflow BAM_PROCESSING {
     BP_SAMTOOLS_VIEW_MQ_INDEX ( BP_SAMTOOLS_VIEW_MQ.out.bam )
     ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ_INDEX.out.versions )
 
-    // Filter for minimum read length estimated from AMBER output
-    if (params.readlength == "auto") {
-
-        // Estimate read length cutoff
-        BP_ESTIMATE_READ_LEN_CUTOFF ( amber_txt )
-        ch_versions = ch_versions.mix ( BP_ESTIMATE_READ_LEN_CUTOFF.out.versions )
-
-        // Remove short reads from BAM files
-        ch_bam_read_len_cutoff = BP_SAMTOOLS_VIEW_MQ.out.bam.join ( BP_ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
-        BP_RM_SHORT_READS ( ch_bam_read_len_cutoff )
-        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS.out.versions )
-
-        BP_RM_SHORT_READS_INDEX ( BP_RM_SHORT_READS.out.bam )
-        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS_INDEX.out.versions )
-
-        // Prepare BAM files for merging
-        ch_bam_lib_to_merge = BP_RM_SHORT_READS.out.bam.map { meta, bam ->
-            def new_meta = meta.clone()
-            new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
-            new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
-            new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
-            [ new_meta, bam ]
-        }.groupTuple()
-
-    } else {
-        // Directly provide BAM channel for merging
-        ch_bam_lib_to_merge = BP_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-            def new_meta = meta.clone()
-            new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
-            new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
-            new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
-            [ new_meta, bam ]
-        }.groupTuple()
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Merging BAM files per library/PCR and deduplication
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Prepare BAM files for merging per library/PCR
+    ch_bam_lib_to_merge = BP_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
+        new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
+        new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
+        [ new_meta, bam ]
+    }.groupTuple()
 
     // Merge BAM files per library/PCR
     BP_SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
@@ -97,17 +59,15 @@ workflow BAM_PROCESSING {
     BP_SAMTOOLS_MERGE_LIB_INDEX ( BP_SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_LIB_INDEX.out.versions)
 
-
     // Remove duplicates from BAM files merged per library/PCR
     BP_SAMREMOVEDUP_LIB ( BP_SAMTOOLS_MERGE_LIB.out.bam, reference )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB.out.versions)
     BP_SAMREMOVEDUP_LIB_INDEX ( BP_SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB_INDEX.out.versions)
-    ch_dedup_lib_bai = BP_SAMREMOVEDUP_LIB.out.dedup.join(BP_SAMREMOVEDUP_LIB_INDEX.out.bai)
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 3. Run AMBER on MQ filtered deduplicated BAM files merged per library/PCR
+    // 2. Run AMBER on MQ filtered deduplicated BAM files merged per library/PCR
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Subsample BAM files for AMBER
@@ -123,14 +83,31 @@ workflow BAM_PROCESSING {
     BP_AMBER ( ch_subsampled_bam_sheet )
     ch_versions = ch_versions.mix( BP_AMBER.out.versions )
 
+    // If readlength is set to "auto", estimate read length cutoff and remove short reads
+    if (params.readlength == "auto") {
+        // Estimate read length cutoff
+        BP_ESTIMATE_READ_LEN_CUTOFF ( BP_AMBER.out.txt )
+        ch_versions = ch_versions.mix ( BP_ESTIMATE_READ_LEN_CUTOFF.out.versions )
 
+        // Remove short reads from BAM files
+        ch_bam_read_len_cutoff = BP_SAMREMOVEDUP_LIB.out.dedup.join ( BP_ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
+        BP_RM_SHORT_READS ( ch_bam_read_len_cutoff )
+        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS.out.versions )
+        BP_RM_SHORT_READS_INDEX ( BP_RM_SHORT_READS.out.bam )
+        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS_INDEX.out.versions )
 
-
+        // prepare deduplicated BAM files merged per library/PCR after short read removal
+        ch_dedup_lib_bai = BP_RM_SHORT_READS.out.bam.join(BP_RM_SHORT_READS_INDEX.out.bai)
+    }
+    else {
+        // otherwise, just pass through the deduplicated BAM files merged per library/PCR
+        ch_dedup_lib_bai = BP_SAMREMOVEDUP_LIB.out.dedup.join(BP_SAMREMOVEDUP_LIB_INDEX.out.bai)
+    }
 
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 4. MapDamage2 and removing transitions on ancient samples
+    // 3. MapDamage2 and removing transitions on ancient samples
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Branch reads into ancient and modern based on sample_type metadata
@@ -177,7 +154,7 @@ workflow BAM_PROCESSING {
     }.groupTuple()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 5. Merging BAM files per sample and deduplication
+    // 4. Merging BAM files per sample and deduplication
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per sample
@@ -195,7 +172,7 @@ workflow BAM_PROCESSING {
     ch_bam_deup_sample_bai = BP_SAMREMOVEDUP_SAMPLE.out.dedup.join(BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 6. GATK Indel Realignment
+    // 5. GATK Indel Realignment
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (params.indel_realignment.toBoolean()) {
@@ -222,8 +199,8 @@ workflow BAM_PROCESSING {
     rm_short_reads_index        = params.readlength == "auto" ? BP_RM_SHORT_READS_INDEX.out.bai : Channel.empty()                      // channel: [ val(meta), [ bai ] ]
     merged_bam_lib              = BP_SAMTOOLS_MERGE_LIB.out.bam                                                                        // channel: [ val(meta), [ bam ] ]
     merged_bam_lib_index        = BP_SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                                  // channel: [ val(meta), [ bai ] ]
-    dedup_lib                   = BP_SAMREMOVEDUP_LIB.out.dedup                                                                        // channel: [ val(meta), [ bam ] ]
-    dedup_lib_index             = BP_SAMREMOVEDUP_LIB_INDEX.out.bai                                                                    // channel: [ val(meta), [ bai ] ]
+    dedup_lib                   = params.readlength == "auto" ? BP_RM_SHORT_READS.out.bam : BP_SAMREMOVEDUP_LIB.out.dedup              // channel: [ val(meta), [ bam ] ]
+    dedup_lib_index             = params.readlength == "auto" ? BP_RM_SHORT_READS_INDEX.out.bai : BP_SAMREMOVEDUP_LIB_INDEX.out.bai    // channel: [ val(meta), [ bai ] ]
     mapdamage2_rescaled_bam     = params.mapdamage2_rescale.toBoolean() ? BP_MAPDAMAGE2.out.rescaled_bam : Channel.empty()             // channel: [ val(meta), [ bam ] ]
     mapdamage2_rescaled_index   = params.mapdamage2_rescale.toBoolean() ? BP_MAPDAMAGE2_INDEX.out.bai : Channel.empty()                // channel: [ val(meta), [ bai ] ]
     rm_trans_bam                = params.remove_transitions.toBoolean() ? BP_RM_TRANSITIONS.out.rm_trans_bam : Channel.empty()         // channel: [ val(meta), [ bam ] ]

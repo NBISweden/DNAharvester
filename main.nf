@@ -124,6 +124,10 @@ workflow {
         }
     }
 
+
+
+
+
     ////////////////////////////////////////////////////////////////////////////
     // Microbial screening
     ////////////////////////////////////////////////////////////////////////////
@@ -202,7 +206,6 @@ workflow {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
-            RAW_BAM_QC.out.amber_txt,
             params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
         )
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
