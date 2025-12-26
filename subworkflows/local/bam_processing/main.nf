@@ -3,6 +3,8 @@
 // Mapping quality filter
 include { SAMTOOLS_VIEW_MQ              as BP_SAMTOOLS_VIEW_MQ              } from '../../../modules/local/samtools/samtools_view_mq.nf'
 include { SAMTOOLS_INDEX                as BP_SAMTOOLS_VIEW_MQ_INDEX        } from '../../../modules/nf-core/samtools/index/main'
+
+
 include { ESTIMATE_READ_LEN_CUTOFF      as BP_ESTIMATE_READ_LEN_CUTOFF      } from '../../../modules/local/amber/estimate_read_len_cutoff'
 include { RM_SHORT_READS                as BP_RM_SHORT_READS                } from '../../../modules/local/samtools/samtools_rm_short_reads.nf'
 include { SAMTOOLS_INDEX                as BP_RM_SHORT_READS_INDEX          } from '../../../modules/nf-core/samtools/index/main'
@@ -10,6 +12,14 @@ include { SAMTOOLS_MERGE                as BP_SAMTOOLS_MERGE_LIB            } fr
 include { SAMTOOLS_INDEX                as BP_SAMTOOLS_MERGE_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
 include { SAMREMOVEDUP                  as BP_SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX                as BP_SAMREMOVEDUP_LIB_INDEX        } from '../../../modules/nf-core/samtools/index/main'
+
+
+include { SAMTOOLS_VIEW_SUBSAMPLE       as BP_SAMTOOLS_VIEW_SUBSAMPLE     } from '../../../modules/local/samtools/samtools_view_subsample.nf'
+include { CREATE_AMBER_SAMPLESHEET      as BP_CREATE_AMBER_SAMPLESHEET    } from '../../../modules/local/amber/create_amber_samplesheet'
+include { AMBER                         as BP_AMBER                       } from '../../../modules/local/amber/amber'
+
+
+
 include { MAPDAMAGE2                    as BP_MAPDAMAGE2                    } from '../../../modules/local/mapdamage2/main'
 include { SAMTOOLS_INDEX                as BP_MAPDAMAGE2_INDEX              } from '../../../modules/nf-core/samtools/index/main'
 include { RM_TRANSITIONS                as BP_RM_TRANSITIONS                } from '../../../modules/local/rm_transitions/rm_transitions.nf'
@@ -32,9 +42,9 @@ workflow BAM_PROCESSING {
     main:
     ch_versions = Channel.empty()
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. MQ filtering and read length filtering
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Filter for mapping quality (provided in custom.config)
     BP_SAMTOOLS_VIEW_MQ ( bam )
@@ -77,9 +87,9 @@ workflow BAM_PROCESSING {
         }.groupTuple()
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 2. Merging BAM files per library/PCR and deduplication
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per library/PCR
     BP_SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
@@ -95,9 +105,33 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB_INDEX.out.versions)
     ch_dedup_lib_bai = BP_SAMREMOVEDUP_LIB.out.dedup.join(BP_SAMREMOVEDUP_LIB_INDEX.out.bai)
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // 3. MapDamage2 and removing transitions
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Run AMBER on MQ filtered deduplicated BAM files merged per library/PCR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Subsample BAM files for AMBER
+    BP_SAMTOOLS_VIEW_SUBSAMPLE ( BP_SAMREMOVEDUP_LIB.out.dedup, reference )
+    ch_versions = ch_versions.mix( BP_SAMTOOLS_VIEW_SUBSAMPLE.out.versions )
+
+    // Create AMBER samplesheet
+    BP_CREATE_AMBER_SAMPLESHEET ( BP_SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam )
+    ch_versions = ch_versions.mix( BP_CREATE_AMBER_SAMPLESHEET.out.versions )
+
+    // Run AMBER
+    ch_subsampled_bam_sheet = BP_SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( BP_CREATE_AMBER_SAMPLESHEET.out.tsv )
+    BP_AMBER ( ch_subsampled_bam_sheet )
+    ch_versions = ch_versions.mix( BP_AMBER.out.versions )
+
+
+
+
+
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. MapDamage2 and removing transitions on ancient samples
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Branch reads into ancient and modern based on sample_type metadata
     ch_dedup_lib_bai.branch {
@@ -142,9 +176,9 @@ workflow BAM_PROCESSING {
         [ new_meta, bam ]
     }.groupTuple()
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // 4. Merging BAM files per sample and deduplication
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. Merging BAM files per sample and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per sample
     BP_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
@@ -160,9 +194,9 @@ workflow BAM_PROCESSING {
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
     ch_bam_deup_sample_bai = BP_SAMREMOVEDUP_SAMPLE.out.dedup.join(BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
-    // 5. GATK Indel Realignment
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 6. GATK Indel Realignment
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (params.indel_realignment.toBoolean()) {
         BP_CREATE_SEQUENCE_DICTIONARY(reference)
@@ -179,7 +213,7 @@ workflow BAM_PROCESSING {
         ch_versions = ch_versions.mix(BP_GATK_INDEL_REALIGNER_INDEX.out.versions)
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     mq_filtered_bam             = BP_SAMTOOLS_VIEW_MQ.out.bam                                                                          // channel: [ val(meta), [ bam ] ]
