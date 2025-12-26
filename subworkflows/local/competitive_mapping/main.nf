@@ -1,27 +1,27 @@
 #! /usr/bin/env nextflow
 
-include { BWA_INDEX as CM_BWA_INDEX                         } from '../../../modules/local/bwa/bwa_index.nf'
-include { BOWTIE2_BUILD as CM_BOWTIE2_BUILD                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
-include { BWA_ALN as CM_BWA_ALN                             } from '../../../modules/local/bwa/bwa_aln.nf'
-include { BWA_MEM as CM_BWA_MEM                             } from '../../../modules/local/bwa/bwa_mem.nf'
-include { SPLIT_FASTQ as CM_SPLIT_FASTQ                     } from '../../../modules/local/awk/split_fastq.nf'
-include { BWA_ALN as CM_BWA_ALN_SHORT                       } from '../../../modules/local/bwa/bwa_aln.nf'
-include { BWA_MEM as CM_BWA_MEM_LONG                        } from '../../../modules/local/bwa/bwa_mem.nf'
-include { SAMTOOLS_MERGE as CM_BWA_ALN_MEM_MERGE            } from '../../../modules/local/samtools/samtools_merge.nf'
-include { SAMTOOLS_MERGE as CM_MERGED_UNMERGED_READS_BAM    } from '../../../modules/local/samtools/samtools_merge.nf'
-include { BOWTIE2 as CM_BOWTIE2                             } from '../../../modules/local/bowtie2/bowtie2.nf'
-include { SAMTOOLS_INDEX as CM_SAMTOOLS_INDEX_RAW           } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FAIDX as CM_SAMTOOLS_FAIDX               } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { FAI_TO_BED as CM_FAI_TO_BED                       } from '../../../modules/local/fai2bed/main'
-include { SAMTOOLS_FAIDX as CM_SAMTOOLS_FAIDX_TARGET        } from '../../../modules/local/samtools/samtools_faidx.nf'
-include { FAI_TO_BED as CM_FAI_TO_BED_TARGET                } from '../../../modules/local/fai2bed/main'
-include { BEDTOOLS_SUBTRACT as CM_BEDTOOLS_SUBTRACT_TARGET  } from '../../../modules/local/bedtools/subtract/main'
-include { SAMTOOLS_VIEW_REGIONS as CM_SAMTOOLS_VIEW_DECOY   } from '../../../modules/local/samtools/samtools_view_regions.nf'
-include { SAMTOOLS_INDEX as CM_SAMTOOLS_INDEX_DECOY         } from '../../../modules/nf-core/samtools/index/main'
-include { SAMTOOLS_FLAGSTAT as CM_FLAGSTAT_DECOY            } from '../../../modules/local/samtools/samtools_flagstat.nf'
-include { MULTIQC as CM_MULTIQC_DECOY                       } from '../../../modules/nf-core/multiqc/main'
-include { SAMTOOLS_VIEW_REGIONS as CM_SAMTOOLS_VIEW_TARGET  } from '../../../modules/local/samtools/samtools_view_regions.nf'
-include { SAMTOOLS_INDEX as CM_SAMTOOLS_INDEX_TARGET        } from '../../../modules/nf-core/samtools/index/main'
+include { BWA_INDEX                 as CM_BWA_INDEX                     } from '../../../modules/local/bwa/bwa_index.nf'
+include { BOWTIE2_BUILD             as CM_BOWTIE2_BUILD                 } from '../../../modules/local/bowtie2/bowtie2_build.nf'
+include { BWA_ALN                   as CM_BWA_ALN                       } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_MEM                   as CM_BWA_MEM                       } from '../../../modules/local/bwa/bwa_mem.nf'
+include { SPLIT_FASTQ               as CM_SPLIT_FASTQ                   } from '../../../modules/local/awk/split_fastq.nf'
+include { BWA_ALN                   as CM_BWA_ALN_SHORT                 } from '../../../modules/local/bwa/bwa_aln.nf'
+include { BWA_MEM                   as CM_BWA_MEM_LONG                  } from '../../../modules/local/bwa/bwa_mem.nf'
+include { SAMTOOLS_MERGE            as CM_BWA_ALN_MEM_MERGE             } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_MERGE            as CM_MERGED_UNMERGED_READS_BAM     } from '../../../modules/local/samtools/samtools_merge.nf'
+include { BOWTIE2                   as CM_BOWTIE2                       } from '../../../modules/local/bowtie2/bowtie2.nf'
+include { SAMTOOLS_INDEX            as CM_SAMTOOLS_INDEX_RAW            } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FAIDX            as CM_SAMTOOLS_FAIDX                } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { FAI_TO_BED                as CM_FAI_TO_BED                    } from '../../../modules/local/fai2bed/main'
+include { SAMTOOLS_FAIDX            as CM_SAMTOOLS_FAIDX_TARGET         } from '../../../modules/local/samtools/samtools_faidx.nf'
+include { FAI_TO_BED                as CM_FAI_TO_BED_TARGET             } from '../../../modules/local/fai2bed/main'
+include { BEDTOOLS_SUBTRACT         as CM_BEDTOOLS_SUBTRACT_TARGET      } from '../../../modules/local/bedtools/subtract/main'
+include { SAMTOOLS_VIEW_REGIONS     as CM_SAMTOOLS_VIEW_DECOY           } from '../../../modules/local/samtools/samtools_view_regions.nf'
+include { SAMTOOLS_INDEX            as CM_SAMTOOLS_INDEX_DECOY          } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_FLAGSTAT         as CM_FLAGSTAT_DECOY                } from '../../../modules/local/samtools/samtools_flagstat.nf'
+include { MULTIQC                   as CM_MULTIQC_DECOY                 } from '../../../modules/nf-core/multiqc/main'
+include { SAMTOOLS_VIEW_REGIONS     as CM_SAMTOOLS_VIEW_TARGET          } from '../../../modules/local/samtools/samtools_view_regions.nf'
+include { SAMTOOLS_INDEX            as CM_SAMTOOLS_INDEX_TARGET         } from '../../../modules/nf-core/samtools/index/main'
 
 workflow COMPETITIVE_MAPPING {
     take:
@@ -32,9 +32,9 @@ workflow COMPETITIVE_MAPPING {
     main:
     ch_versions = Channel.empty()
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Index the competitive reference genome if it is not already indexed
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Build the BWA index - only if BWA is selected as mapping tool
     def bwa_tools = ['bwa-aln', 'bwa-mem', 'bwa-aln-mem']
@@ -51,9 +51,9 @@ workflow COMPETITIVE_MAPPING {
         ch_competitive_bowtie2_index    = CM_BOWTIE2_BUILD.out.index_dir
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 2. Mapping merged reads or single-end reads
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ch_raw_bam = Channel.empty()
 
@@ -120,9 +120,9 @@ workflow COMPETITIVE_MAPPING {
         ch_raw_bam          = ch_raw_bam.mix(CM_BOWTIE2.out.bam)
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 3. Merge the mapped unmerged reads if provided
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     def ch_merged_raw_bam = null
     if (params.merge_reads.toBoolean() && params.keep_unmerged_reads.toBoolean()) {
@@ -148,9 +148,9 @@ workflow COMPETITIVE_MAPPING {
     // Use merged raw bam if created, else use original raw bam
     ch_raw_bam_for_processing = ch_merged_raw_bam ?: ch_raw_bam
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. Processing BAM files
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Index the BAM file
     CM_SAMTOOLS_INDEX_RAW ( ch_raw_bam_for_processing )
@@ -210,7 +210,7 @@ workflow COMPETITIVE_MAPPING {
     CM_SAMTOOLS_INDEX_TARGET ( CM_SAMTOOLS_VIEW_TARGET.out.bam )
     ch_versions                      = ch_versions.mix(CM_SAMTOOLS_INDEX_TARGET.out.versions)
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     competitive_fai                  = CM_SAMTOOLS_FAIDX.out.fai                   // channel: path(index)
