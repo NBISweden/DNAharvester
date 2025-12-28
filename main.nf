@@ -35,15 +35,16 @@ workflow {
     Running DNAharvester. Workflow run name: $workflow_name
     """)
 
-    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Prepare input channels
-    //////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Channel to collect all software versions
     ch_all_versions = Channel.empty()
 
     // Input channels for reference genome
-    ch_reference_raw = params.reference ? Channel.fromPath(params.reference, checkIfExists: true) : Channel.empty()
+    ch_reference_raw = params.reference ?
+        Channel.fromPath(params.reference, checkIfExists: true) : Channel.empty()
     // Unzip the gzipped reference genome if it is gzipped
     if (params.reference.endsWith('.gz')) {
         ch_reference = ch_reference_raw
@@ -58,7 +59,8 @@ workflow {
     }
 
     // Input channel for competitive reference genome
-    ch_competitive_reference = params.competitive_reference ? Channel.fromPath( params.competitive_reference, checkIfExists: true )
+    ch_competitive_reference = params.competitive_reference ?
+        Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
     // Warn if the reference genome or competitive reference genome is larger than 20GB
@@ -66,25 +68,30 @@ workflow {
         if (file.size() > 20L * 1024 * 1024 * 1024) {
             log.warn """
             ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
-            Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file. However, Pipeline will continue with the current settings.
+            Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file.
+            However, Pipeline will continue with the current settings.
             """
         }
     }
     ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
     ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
-    ////////////////////////////////////////////////////////////////////////////
-    // 2. Input check, Fastq processing and QC
-    ////////////////////////////////////////////////////////////////////////////
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. INPUT_CHECK, RAW_FASTQ_QC, FASTQ_PROCESSING and PROCESSED_FASTQ_QC
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // INPUT_CHECK
     INPUT_CHECK ( params.samplesheet )
     ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
 
+    // RAW_FASTQ_QC
     if ( params.raw_fastq_qc.toBoolean() ) {
         RAW_FASTQ_QC ( INPUT_CHECK.out.reads )
         ch_all_versions = ch_all_versions.mix(RAW_FASTQ_QC.out.versions)
     }
 
+    // FASTQ_PROCESSING
     if ( params.fastq_processing.toBoolean() ) {
         FASTQ_PROCESSING (
             INPUT_CHECK.out.reads,
@@ -93,6 +100,7 @@ workflow {
         ch_all_versions = ch_all_versions.mix(FASTQ_PROCESSING.out.versions)
     }
 
+    // PROCESSED_FASTQ_QC
     if ( params.processed_fastq_qc.toBoolean() ) {
         PROCESSED_FASTQ_QC (
             FASTQ_PROCESSING.out.processed_reads,
@@ -101,12 +109,13 @@ workflow {
         ch_all_versions = ch_all_versions.mix(PROCESSED_FASTQ_QC.out.versions)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // 3. Mapping/Competitive mapping
-    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. Mapping/Competitive_Mapping
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.mapping.toBoolean() ) {
-        // Competitive mapping to a concatenated reference (target plus decoy)
+        // If competitive reference is provided, run competitive mapping. Else, run standard mapping.
         if (params.competitive_reference && file( params.competitive_reference ).exists()) {
             COMPETITIVE_MAPPING (
                     ch_competitive_reference,
@@ -114,7 +123,6 @@ workflow {
                     FASTQ_PROCESSING.out.processed_reads
             )
             ch_all_versions = ch_all_versions.mix(COMPETITIVE_MAPPING.out.versions)
-        // Map to the reference genome assembly
         } else {
             MAPPING (
                 ch_reference,
@@ -125,70 +133,11 @@ workflow {
     }
 
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. RAW_BAM_QC, BAM_PROCESSING, PROCESSED_BAM_QC
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Microbial screening
-    ////////////////////////////////////////////////////////////////////////////
-
-    if ( params.microbial_screening.toBoolean() ) {
-        ch_ms_reference = Channel.fromPath ( params.ms_reference_database, checkIfExists: true )
-            .map { it -> [[id:it.Name], it] }.collect()
-
-        MICROBIAL_SCREENING (
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
-            ch_ms_reference
-        )
-        ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // MIA - Mapping Iterative Assembler
-    ////////////////////////////////////////////////////////////////////////////
-
-    if ( params.iterative_assembly.toBoolean() ) {
-        ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
-                .map { it -> [[id:it.Name], it] }.collect()
-
-        ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.processed_reads, ch_mt_reference)
-        ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Taxonomic Classification
-    ////////////////////////////////////////////////////////////////////////////
-
-    if ( params.taxonomic_classification.toBoolean() ) {
-        ch_reference_database = Channel.fromPath( params.tc_reference_database, checkIfExists: true )
-            .map { it -> [[id:it.Name], it] }.collect()
-
-        TAXONOMIC_CLASSIFICATION (ch_reference_database, FASTQ_PROCESSING.out.processed_reads, workflow_name)
-        ch_all_versions = ch_all_versions.mix(TAXONOMIC_CLASSIFICATION.out.versions)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Repeat and CpG site identification
-    ////////////////////////////////////////////////////////////////////////////
-
-    if ( params.repeat_cpg_identification.toBoolean() ) {
-        REPEAT_CPG_IDENTIFICATION ( ch_reference )
-        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
-    }
-
-    // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ?
-        Channel.fromPath(params.intervals, checkIfExists: true)
-            .map { it -> [[id: it.name], it] }.collect() :
-        (params.repeat_cpg_identification.toBoolean() ?
-            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
-            Channel.value([[id: 'null'], file('null')]) // Provide null file
-        )
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Raw BAM QC - Run samtools flagstat, MapDamage2, AMBER and MultiQC on raw bam files
-    ////////////////////////////////////////////////////////////////////////////
-
+    // RAW_BAM_QC
     if ( params.raw_bam_qc.toBoolean() ) {
         RAW_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -198,10 +147,7 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RAW_BAM_QC.out.versions)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // BAM processing - Merge bam files and remove duplicates
-    ////////////////////////////////////////////////////////////////////////////
-
+    // BAM_PROCESSING
     if ( params.bam_processing.toBoolean() ) {
         BAM_PROCESSING (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -211,10 +157,7 @@ workflow {
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Processed BAM QC - Run flagstat and MultiQC on processed bam files
-    ////////////////////////////////////////////////////////////////////////////
-
+    // PROCESSED_BAM_QC
     if ( params.processed_bam_qc.toBoolean() ) {
         PROCESSED_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -235,9 +178,50 @@ workflow {
         ch_all_versions = ch_all_versions.mix(PROCESSED_BAM_QC.out.versions)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Random sampling of BAM files with ANGSD -doHaploCall 1
-    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. MAPPING_METRICS
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.mapping_metrics.toBoolean() ) {
+        MAPPING_METRICS (
+            workflow_name,
+            FASTQ_PROCESSING.out.fastp_json,
+            RAW_BAM_QC.out.flagstat,
+            PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
+            PROCESSED_BAM_QC.out.dedup_lib_flagstat,
+            BAM_PROCESSING.out.dedup_lib,
+            PROCESSED_BAM_QC.out.dedup_sample_flagstat,
+            BAM_PROCESSING.out.dedup_sample,
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty(),
+            PROCESSED_BAM_QC.out.dpstats
+        )
+        ch_all_versions = ch_all_versions.mix(MAPPING_METRICS.out.versions)
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 6. REPEAT_CPG_IDENTIFICATION
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.repeat_cpg_identification.toBoolean() ) {
+        REPEAT_CPG_IDENTIFICATION ( ch_reference )
+        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
+    }
+
+    // Create a channel from repeat masked bed file
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 7. RANDOM_SAMPLING_BAM
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.random_sampling_bam.toBoolean() ) {
         RANDOM_SAMPLING_BAM (
@@ -248,9 +232,10 @@ workflow {
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Variant calling with ANGSD and bcftools
-    ////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 8. VARIANT_CALLING - BCFTOOLS and ANGSD
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.variant_calling.toBoolean() ) {
         // Collecting processed BAM files for all samples
@@ -278,27 +263,50 @@ workflow {
         }
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Output stats
-    ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.mapping_metrics.toBoolean() ) {
-        MAPPING_METRICS (
-            workflow_name,
-            FASTQ_PROCESSING.out.fastp_json,
-            RAW_BAM_QC.out.flagstat,
-            PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
-            PROCESSED_BAM_QC.out.dedup_lib_flagstat,
-            BAM_PROCESSING.out.dedup_lib,
-            PROCESSED_BAM_QC.out.dedup_sample_flagstat,
-            BAM_PROCESSING.out.dedup_sample,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty(),
-            PROCESSED_BAM_QC.out.dpstats
-        )
-        ch_all_versions = ch_all_versions.mix(MAPPING_METRICS.out.versions)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 9. ITERATIVE_ASSEMBLY
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.iterative_assembly.toBoolean() ) {
+        ch_mt_reference = Channel.fromPath( params.mtDNA_reference, checkIfExists: true )
+                .map { it -> [[id:it.Name], it] }.collect()
+
+        ITERATIVE_ASSEMBLY (FASTQ_PROCESSING.out.processed_reads, ch_mt_reference)
+        ch_all_versions = ch_all_versions.mix(ITERATIVE_ASSEMBLY.out.versions)
     }
 
-    //////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 10. TAXONOMIC_CLASSIFICATION
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.taxonomic_classification.toBoolean() ) {
+        ch_reference_database = Channel.fromPath( params.tc_reference_database, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+
+        TAXONOMIC_CLASSIFICATION (ch_reference_database, FASTQ_PROCESSING.out.processed_reads, workflow_name)
+        ch_all_versions = ch_all_versions.mix(TAXONOMIC_CLASSIFICATION.out.versions)
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 11. MICROBIAL_SCREENING
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.microbial_screening.toBoolean() ) {
+        ch_ms_reference = Channel.fromPath ( params.ms_reference_database, checkIfExists: true )
+            .map { it -> [[id:it.Name], it] }.collect()
+
+        MICROBIAL_SCREENING (
+            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_bam : MAPPING.out.raw_bam,
+            ch_ms_reference
+        )
+        ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // output software versions
     ch_all_versions.collectFile(name: "versions.yml", storeDir: "${params.outdir}")
