@@ -1,11 +1,11 @@
 #! /usr/bin/env nextflow
 
-include { SEQ_STATS_LIB                     } from '../../../modules/local/stats_output/seq_stats_lib.nf'
-include { SORT_STATS as SORT_STATS_LIB      } from '../../../modules/local/stats_output/sort_stats.nf'
-include { SEQ_STATS_SAMPLE                  } from '../../../modules/local/stats_output/seq_stats_sample.nf'
-include { SORT_STATS as SORT_STATS_SAMPLE   } from '../../../modules/local/stats_output/sort_stats.nf'
+include { SEQ_STATS_LIB         as MM_SEQ_STATS_LIB       } from '../../../modules/local/mapping_metrics/seq_stats_lib.nf'
+include { SORT_STATS            as MM_SORT_STATS_LIB      } from '../../../modules/local/mapping_metrics/sort_stats.nf'
+include { SEQ_STATS_SAMPLE      as MM_SEQ_STATS_SAMPLE    } from '../../../modules/local/mapping_metrics/seq_stats_sample.nf'
+include { SORT_STATS            as MM_SORT_STATS_SAMPLE   } from '../../../modules/local/mapping_metrics/sort_stats.nf'
 
-workflow STATS_OUTPUT {
+workflow MAPPING_METRICS {
     take:
     workflow_name
     fastp_json
@@ -21,9 +21,9 @@ workflow STATS_OUTPUT {
     main:
     ch_versions = Channel.empty()
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Generating seq stats per library
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Prepare channels for library statistics
     ch_fastp_json_lib = fastp_json.map { meta, data ->
@@ -76,19 +76,19 @@ workflow STATS_OUTPUT {
     }
 
     // run the SEQ_STATS process
-    SEQ_STATS_LIB ( ch_seq_stats_lib )
-    ch_versions = ch_versions.mix(SEQ_STATS_LIB.out.versions)
+    MM_SEQ_STATS_LIB ( ch_seq_stats_lib )
+    ch_versions = ch_versions.mix(MM_SEQ_STATS_LIB.out.versions)
     // Concatenate all output files
-    def ch_seq_stats_lib_all = SEQ_STATS_LIB.out.stats_tsv
+    def ch_seq_stats_lib_all = MM_SEQ_STATS_LIB.out.stats_tsv
         .map { it[1] }
         .collectFile(name: "${workflow_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    SORT_STATS_LIB ( ch_seq_stats_lib_all )
+    MM_SORT_STATS_LIB ( ch_seq_stats_lib_all )
 
-    // ////////////////////////////////////////////////////////////////////////////////////////////////
-    // // 1. Generating seq stats per sample
-    // ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Generating seq stats per sample
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Prepare channels for sample statistics
     ch_fastp_json_sample = ch_fastp_json_lib.map { meta, data ->
@@ -137,17 +137,18 @@ workflow STATS_OUTPUT {
     }
 
     // run the SEQ_STATS process
-    SEQ_STATS_SAMPLE ( ch_seq_stats_sample )
-    ch_versions = ch_versions.mix(SEQ_STATS_SAMPLE.out.versions)
+    MM_SEQ_STATS_SAMPLE ( ch_seq_stats_sample )
+    ch_versions = ch_versions.mix(MM_SEQ_STATS_SAMPLE.out.versions)
     // Concatenate all output files
-    def ch_seq_stats_sample_all = SEQ_STATS_SAMPLE.out.stats_tsv
+    def ch_seq_stats_sample_all = MM_SEQ_STATS_SAMPLE.out.stats_tsv
         .map { it[1] }
         .collectFile(name: "${workflow_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    SORT_STATS_SAMPLE ( ch_seq_stats_sample_all )
+    MM_SORT_STATS_SAMPLE ( ch_seq_stats_sample_all )
 
-    // Emit channels
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     emit:
     versions            = ch_versions                           // channel: [ versions.yml ]
 }

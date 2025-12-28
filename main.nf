@@ -22,7 +22,7 @@ include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/proc
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
 include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
 include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
-include { STATS_OUTPUT               } from "$projectDir/subworkflows/local/stats_output/main"
+include { MAPPING_METRICS            } from "$projectDir/subworkflows/local/mapping_metrics/main"
 
 
 workflow {
@@ -282,8 +282,8 @@ workflow {
     // Output stats
     ////////////////////////////////////////////////////////////////////////////
 
-    if ( params.stats_output.toBoolean() ) {
-        STATS_OUTPUT (
+    if ( params.mapping_metrics.toBoolean() ) {
+        MAPPING_METRICS (
             workflow_name,
             FASTQ_PROCESSING.out.fastp_json,
             RAW_BAM_QC.out.flagstat,
@@ -295,7 +295,7 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.decoy_flagstat : Channel.empty(),
             PROCESSED_BAM_QC.out.dpstats
         )
-        ch_all_versions = ch_all_versions.mix(STATS_OUTPUT.out.versions)
+        ch_all_versions = ch_all_versions.mix(MAPPING_METRICS.out.versions)
     }
 
     //////////////////////////////////////////////////////////////////////////////

@@ -16,7 +16,7 @@ include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ           } from '../../../mod
 include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE_SAMPLE        } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMREMOVEDUP as MS_SAMREMOVEDUP_SAMPLE            } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as MS_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../modules/nf-core/samtools/index/main'
-include { FILTERBAM as MS_FILTERBAM                         } from '../../../modules/local/stats_output/filterbam.nf'
+include { FILTERBAM as MS_FILTERBAM                         } from '../../../modules/local/mapping_metrics/filterbam.nf'
 include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT               } from '../../../modules/local/microbial_screening/filterbam_plot.nf'
 
 
