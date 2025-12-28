@@ -17,9 +17,7 @@ workflow VARIANT_CALLING_BCFTOOLS {
     fai
 
     main:
-    ch_bcf                          = Channel.empty()
     ch_versions                     = Channel.empty()
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Variant calling with BCFtools and generating raw BCF statistics
