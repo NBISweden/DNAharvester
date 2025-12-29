@@ -22,7 +22,7 @@ workflow MAPPING_METRICS {
     ch_versions = Channel.empty()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 1. Generating seq stats per library
+    // 1. Generating mapping metrics per library
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Prepare channels for library statistics
@@ -66,7 +66,7 @@ workflow MAPPING_METRICS {
             new_meta.remove('read_group')
             [ new_meta, data ]
         }.groupTuple()
-        // join decoy flagstat channel to seq stats lib channel
+        // join decoy flagstat channel to mapping metrics lib channel
         ch_mapping_metrics_lib = ch_mapping_metrics_lib.join(ch_decoy_flagstat_lib)
     } else {
         // If no decoy flagstat is provided, append a dummy path until nextflow supports optional inputs :(
@@ -81,13 +81,13 @@ workflow MAPPING_METRICS {
     // Concatenate all output files
     def ch_mapping_metrics_lib_all = MM_MAPPING_METRICS_LIB.out.stats_tsv
         .map { it[1] }
-        .collectFile(name: "${workflow_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
+        .collectFile(name: "${workflow_name}_library_metrics", keepHeader: true, skip: 1, sort: true)
 
-    // sort the stats output file
+    // sort the library metrics output file
     MM_SORT_METRICS_LIB ( ch_mapping_metrics_lib_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Generating seq stats per sample
+    // 2. Generating mapping metrics per sample
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Prepare channels for sample statistics
@@ -142,9 +142,9 @@ workflow MAPPING_METRICS {
     // Concatenate all output files
     def ch_mapping_metrics_sample_all = MM_MAPPING_METRICS_SAMPLE.out.stats_tsv
         .map { it[1] }
-        .collectFile(name: "${workflow_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
+        .collectFile(name: "${workflow_name}_sample_metrics", keepHeader: true, skip: 1, sort: true)
 
-    // sort the stats output file
+    // sort the sample metrics output file
     MM_SORT_METRICS_SAMPLE ( ch_mapping_metrics_sample_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
