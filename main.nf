@@ -134,7 +134,26 @@ workflow {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 4. RAW_BAM_QC, BAM_PROCESSING, PROCESSED_BAM_QC
+    // 4. REPEAT_CPG_IDENTIFICATION
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.repeat_cpg_identification.toBoolean() ) {
+        REPEAT_CPG_IDENTIFICATION ( ch_reference )
+        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
+    }
+
+    // Create a channel from repeat masked bed file
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
+
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. RAW_BAM_QC, BAM_PROCESSING, PROCESSED_BAM_QC
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // RAW_BAM_QC
@@ -180,7 +199,7 @@ workflow {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 5. MAPPING_METRICS
+    // 6. MAPPING_METRICS
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.mapping_metrics.toBoolean() ) {
@@ -198,25 +217,6 @@ workflow {
         )
         ch_all_versions = ch_all_versions.mix(MAPPING_METRICS.out.versions)
     }
-
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 6. REPEAT_CPG_IDENTIFICATION
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    if ( params.repeat_cpg_identification.toBoolean() ) {
-        REPEAT_CPG_IDENTIFICATION ( ch_reference )
-        ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
-    }
-
-    // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ?
-        Channel.fromPath(params.intervals, checkIfExists: true)
-            .map { it -> [[id: it.name], it] }.collect() :
-        (params.repeat_cpg_identification.toBoolean() ?
-            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
-            Channel.value([[id: 'null'], file('null')]) // Provide null file
-        )
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
