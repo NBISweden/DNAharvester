@@ -31,7 +31,7 @@ process SAMTOOLS_FLAGSTAT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(samtools --version 2>&1 | awk 'NR==1 {print \$2}')
     END_VERSIONS
     """
 }

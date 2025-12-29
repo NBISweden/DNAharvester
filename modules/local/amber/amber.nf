@@ -36,11 +36,12 @@ process AMBER {
         --counts \\
         --errorbars \\
         || echo "No AMBER output was generated, likely due to an insufficient number of mapped reads.\n \\
-        Please check the sequencing statistics!." >> ${prefix}.amber_plot.txt
+        Please check the mapping metrics report!.\n" >> ${prefix}.amber_plot.txt
+
 
     cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        python: \$(python --version | sed 's/Python //g')
-    END_VERSIONS
+	"${task.process}":
+	    python: \$(python --version | awk '{print \$2}')
+	END_VERSIONS
     """
 }
