@@ -126,7 +126,7 @@ workflow MAPPING_METRICS {
             def new_meta = meta + [id: meta.id.split("_")[0]]
             new_meta.remove('library_type')
             [ new_meta, data ]
-        }.groupTuple()
+        }.groupTuple().map { meta, data -> [ meta, data.flatten() ] }
 
         ch_seq_stats_sample = ch_seq_stats_sample.join(ch_decoy_flagstat_sample)
     } else {
