@@ -1,6 +1,6 @@
-process SORT_STATS {
+process SORT_METRICS {
     tag "${input_file.getBaseName()}"
-    label 'process_sort_stats'
+    label 'process_sort_metrics'
 
     input:
     path(input_file)

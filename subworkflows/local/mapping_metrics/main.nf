@@ -1,9 +1,9 @@
 #! /usr/bin/env nextflow
 
 include { MAPPING_METRICS_LIB       as MM_MAPPING_METRICS_LIB       } from '../../../modules/local/mapping_metrics/mapping_metrics_lib.nf'
-include { SORT_STATS                as MM_SORT_STATS_LIB            } from '../../../modules/local/mapping_metrics/sort_stats.nf'
+include { SORT_METRICS              as MM_SORT_METRICS_LIB          } from '../../../modules/local/mapping_metrics/sort_metrics.nf'
 include { MAPPING_METRICS_SAMPLE    as MM_MAPPING_METRICS_SAMPLE    } from '../../../modules/local/mapping_metrics/mapping_metrics_sample.nf'
-include { SORT_STATS                as MM_SORT_STATS_SAMPLE         } from '../../../modules/local/mapping_metrics/sort_stats.nf'
+include { SORT_METRICS              as MM_SORT_METRICS_SAMPLE       } from '../../../modules/local/mapping_metrics/sort_metrics.nf'
 
 workflow MAPPING_METRICS {
     take:
@@ -84,7 +84,7 @@ workflow MAPPING_METRICS {
         .collectFile(name: "${workflow_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    MM_SORT_STATS_LIB ( ch_mapping_metrics_lib_all )
+    MM_SORT_METRICS_LIB ( ch_mapping_metrics_lib_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 2. Generating seq stats per sample
@@ -145,7 +145,7 @@ workflow MAPPING_METRICS {
         .collectFile(name: "${workflow_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    MM_SORT_STATS_SAMPLE ( ch_mapping_metrics_sample_all )
+    MM_SORT_METRICS_SAMPLE ( ch_mapping_metrics_sample_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
