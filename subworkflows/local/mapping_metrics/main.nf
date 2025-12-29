@@ -1,9 +1,9 @@
 #! /usr/bin/env nextflow
 
-include { SEQ_STATS_LIB         as MM_SEQ_STATS_LIB       } from '../../../modules/local/mapping_metrics/seq_stats_lib.nf'
-include { SORT_STATS            as MM_SORT_STATS_LIB      } from '../../../modules/local/mapping_metrics/sort_stats.nf'
-include { SEQ_STATS_SAMPLE      as MM_SEQ_STATS_SAMPLE    } from '../../../modules/local/mapping_metrics/seq_stats_sample.nf'
-include { SORT_STATS            as MM_SORT_STATS_SAMPLE   } from '../../../modules/local/mapping_metrics/sort_stats.nf'
+include { MAPPING_METRICS_LIB       as MM_MAPPING_METRICS_LIB       } from '../../../modules/local/mapping_metrics/mapping_metrics_lib.nf'
+include { SORT_STATS                as MM_SORT_STATS_LIB            } from '../../../modules/local/mapping_metrics/sort_stats.nf'
+include { MAPPING_METRICS_SAMPLE    as MM_MAPPING_METRICS_SAMPLE    } from '../../../modules/local/mapping_metrics/mapping_metrics_sample.nf'
+include { SORT_STATS                as MM_SORT_STATS_SAMPLE         } from '../../../modules/local/mapping_metrics/sort_stats.nf'
 
 workflow MAPPING_METRICS {
     take:
@@ -51,7 +51,7 @@ workflow MAPPING_METRICS {
     }.groupTuple()
 
     // merging channels for library statistics
-    ch_seq_stats_lib = ch_fastp_json_lib
+    ch_mapping_metrics_lib = ch_fastp_json_lib
         .join(ch_raw_bam_flagstat_lib)
         .join(ch_mq_filtered_bam_flagstat_lib)
         .join(dedup_lib_flagstat) // dedup_lib_flagstat is already in the corect format
@@ -67,24 +67,24 @@ workflow MAPPING_METRICS {
             [ new_meta, data ]
         }.groupTuple()
         // join decoy flagstat channel to seq stats lib channel
-        ch_seq_stats_lib = ch_seq_stats_lib.join(ch_decoy_flagstat_lib)
+        ch_mapping_metrics_lib = ch_mapping_metrics_lib.join(ch_decoy_flagstat_lib)
     } else {
         // If no decoy flagstat is provided, append a dummy path until nextflow supports optional inputs :(
-        ch_seq_stats_lib = ch_seq_stats_lib.map {
+        ch_mapping_metrics_lib = ch_mapping_metrics_lib.map {
             it + [ [file('/dev/null')] ]
         }
     }
 
-    // run the SEQ_STATS process
-    MM_SEQ_STATS_LIB ( ch_seq_stats_lib )
-    ch_versions = ch_versions.mix(MM_SEQ_STATS_LIB.out.versions)
+    // run the MAPPING_METRICS process
+    MM_MAPPING_METRICS_LIB ( ch_mapping_metrics_lib )
+    ch_versions = ch_versions.mix(MM_MAPPING_METRICS_LIB.out.versions)
     // Concatenate all output files
-    def ch_seq_stats_lib_all = MM_SEQ_STATS_LIB.out.stats_tsv
+    def ch_mapping_metrics_lib_all = MM_MAPPING_METRICS_LIB.out.stats_tsv
         .map { it[1] }
         .collectFile(name: "${workflow_name}_lib_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    MM_SORT_STATS_LIB ( ch_seq_stats_lib_all )
+    MM_SORT_STATS_LIB ( ch_mapping_metrics_lib_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 2. Generating seq stats per sample
@@ -113,7 +113,7 @@ workflow MAPPING_METRICS {
     }.groupTuple().map { meta, data -> [ meta, data.flatten() ] }
 
     // merging§ channels for sample statistics
-    ch_seq_stats_sample = ch_fastp_json_sample
+    ch_mapping_metrics_sample = ch_fastp_json_sample
         .join(ch_raw_bam_flagstat_sample)
         .join(ch_mq_filtered_bam_flagstat_sample)
         .join(dedup_sample_flagstat) // dedup_sample_flagstat is already in the corect format
@@ -128,24 +128,24 @@ workflow MAPPING_METRICS {
             [ new_meta, data ]
         }.groupTuple().map { meta, data -> [ meta, data.flatten() ] }
 
-        ch_seq_stats_sample = ch_seq_stats_sample.join(ch_decoy_flagstat_sample)
+        ch_mapping_metrics_sample = ch_mapping_metrics_sample.join(ch_decoy_flagstat_sample)
     } else {
         // If no decoy flagstat is provided, append a dummy path directly
-        ch_seq_stats_sample = ch_seq_stats_sample.map {
+        ch_mapping_metrics_sample = ch_mapping_metrics_sample.map {
             it + [ [file('/dev/null')] ]
         }
     }
 
-    // run the SEQ_STATS process
-    MM_SEQ_STATS_SAMPLE ( ch_seq_stats_sample )
-    ch_versions = ch_versions.mix(MM_SEQ_STATS_SAMPLE.out.versions)
+    // run the MAPPING_METRICS process
+    MM_MAPPING_METRICS_SAMPLE ( ch_mapping_metrics_sample )
+    ch_versions = ch_versions.mix(MM_MAPPING_METRICS_SAMPLE.out.versions)
     // Concatenate all output files
-    def ch_seq_stats_sample_all = MM_SEQ_STATS_SAMPLE.out.stats_tsv
+    def ch_mapping_metrics_sample_all = MM_MAPPING_METRICS_SAMPLE.out.stats_tsv
         .map { it[1] }
         .collectFile(name: "${workflow_name}_sample_stats", keepHeader: true, skip: 1, sort: true)
 
     // sort the stats output file
-    MM_SORT_STATS_SAMPLE ( ch_seq_stats_sample_all )
+    MM_SORT_STATS_SAMPLE ( ch_mapping_metrics_sample_all )
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
