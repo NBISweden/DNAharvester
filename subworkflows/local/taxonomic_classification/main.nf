@@ -13,8 +13,6 @@ include { BOWTIE2 as TC_BOWTIE2                             } from '../../../mod
 include { SAMTOOLS_MERGE as TC_MERGED_UNMERGED_READS_BAM    } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMTOOLS_INDEX as TC_RAW_BAM_INDEX                } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_VIEW_MQ as TC_SAMTOOLS_VIEW_MQ           } from '../../../modules/local/samtools/samtools_view_mq.nf'
-include { SAMTOOLS_MERGE as TC_SAMTOOLS_MERGE_LIB           } from '../../../modules/local/samtools/samtools_merge.nf'
-include { SAMREMOVEDUP as TC_SAMREMOVEDUP_LIB               } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_MERGE as TC_SAMTOOLS_MERGE_SAMPLE        } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMREMOVEDUP as TC_SAMREMOVEDUP_SAMPLE            } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as TC_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../modules/nf-core/samtools/index/main'
@@ -135,30 +133,18 @@ workflow TAXONOMIC_CLASSIFICATION {
     TC_SAMTOOLS_VIEW_MQ ( ch_raw_bam_for_processing )
     ch_versions         = ch_versions.mix(TC_SAMTOOLS_VIEW_MQ.out.versions)
 
-    // Prepare the BAM files for merging by updating the metadata
-    ch_bam_lib_to_merge = TC_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-        // Update ID to "<sample>_<library>"
-        def new_id = meta.id.split('_')
-        meta.id = "${new_id[0]}_${new_id[1]}"
-        [meta, bam]
-    }
-    .groupTuple()
 
-    // Merge BAM files per library/PCR
-    TC_SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
-    ch_versions         = ch_versions.mix(TC_SAMTOOLS_MERGE_LIB.out.versions)
-
-    // Remove duplicates from the merged BAM files per library/PCR
-    TC_SAMREMOVEDUP_LIB ( TC_SAMTOOLS_MERGE_LIB.out.bam, reference )
-    ch_versions         = ch_versions.mix(TC_SAMREMOVEDUP_LIB.out.versions)
-
-    // Prepare the BAM files for merging by updating the metadata
-    ch_bam_sample_to_merge = TC_SAMREMOVEDUP_LIB.out.dedup.map { meta, bam ->
-        def new_id = meta.id.split('_')
-        // Update ID to "<sample>"
-        meta.id = "${new_id[0]}"
-        [meta, bam]
+    // Prepare BAM files for merging per sample
+    ch_bam_sample_to_merge = TC_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0] // remove library_id and lane for merging all bams per sample_id
+        new_meta.remove('single_end') // remove single_end info from meta as the same sample can have both single-end and paired-end data
+        new_meta.remove('read_group') // remove read_group info from meta as the same sample can have multiple read groups
+        new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
+        [ new_meta, bam ]
     }.groupTuple()
+
+    ch_bam_sample_to_merge.view()
 
     // Merge BAM files per sample
     TC_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
@@ -194,8 +180,6 @@ workflow TAXONOMIC_CLASSIFICATION {
     raw_bam                 = ch_raw_bam_for_processing                   // channel: [ val(meta), [ bam ] ]
     raw_bam_bai             = TC_RAW_BAM_INDEX.out.bai                    // channel: [ val(meta), [ raw_bam_bai ] ]
     mq_filtered_bam         = TC_SAMTOOLS_VIEW_MQ.out.bam                 // channel: [ val(meta), [ mq_filtered_bam ] ]
-    merged_bam_lib          = TC_SAMTOOLS_MERGE_LIB.out.bam               // channel: [ val(meta), [ merged_bam_lib ] ]
-    dedup_bam_lib           = TC_SAMREMOVEDUP_LIB.out.dedup               // channel: [ val(meta), [ dedup_bam_lib ] ]
     merged_bam_sample       = TC_SAMTOOLS_MERGE_SAMPLE.out.bam            // channel: [ val(meta), [ merged_bam_sample ] ]
     dedup_bam_sample        = TC_SAMREMOVEDUP_SAMPLE.out.dedup            // channel: [ val(meta), [ dedup_bam_sample ] ]
     dedup_bam_sample_bai    = TC_SAMREMOVEDUP_SAMPLE_INDEX.out.bai        // channel: [ val(meta), [ dedup_bam_sample_bai ] ]
