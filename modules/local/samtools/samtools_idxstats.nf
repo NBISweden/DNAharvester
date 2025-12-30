@@ -11,8 +11,8 @@ process SAMTOOLS_IDXSTATS {
     tuple val(meta), path(bam)
 
     output:
-    tuple val(meta), path ("${meta.id}.idxstats"), emit: idxstats
-    path "versions.yml"                 , emit: versions
+    tuple val(meta), path ("${meta.id}.idxstats.tsv")   , emit: idxstats
+    path "versions.yml"                                 , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -23,7 +23,7 @@ process SAMTOOLS_IDXSTATS {
     """
     samtools idxstats \\
         ${args} \\
-        ${bam} > ${meta.id}.idxstats
+        ${bam} > ${meta.id}.idxstats.tsv
 
 
     cat <<-END_VERSIONS > versions.yml
