@@ -144,8 +144,6 @@ workflow TAXONOMIC_CLASSIFICATION {
         [ new_meta, bam ]
     }.groupTuple()
 
-    ch_bam_sample_to_merge.view()
-
     // Merge BAM files per sample
     TC_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
     ch_versions         = ch_versions.mix(TC_SAMTOOLS_MERGE_SAMPLE.out.versions)
