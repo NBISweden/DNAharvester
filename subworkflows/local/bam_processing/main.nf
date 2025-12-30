@@ -105,7 +105,6 @@ workflow BAM_PROCESSING {
     }
 
 
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 3. MapDamage2 and removing transitions on ancient samples
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,17 +144,20 @@ workflow BAM_PROCESSING {
     // Modern samples bypass MapDamage2 and RM_TRANSITIONS (remove bai from tuple)
     ch_bam_processed_modern = ch_dedup_lib_bai_branched.modern.map { meta, bam, bai -> [meta, bam] }
 
+    // Combine processed ancient and modern BAMs
+    ch_bam_processed_lib = ch_bam_processed_ancient.mix(ch_bam_processed_modern)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. Merging BAM files per sample and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     // Combine processed ancient and modern BAMs and prepare for merging per sample
-    ch_bam_sample_to_merge = ch_bam_processed_ancient.mix(ch_bam_processed_modern).map { meta, bam ->
+    ch_bam_sample_to_merge = ch_bam_processed_lib.map { meta, bam ->
         def new_meta = meta.clone()
         new_meta.id = meta.id.split("_")[0] // remove library_id for merging all bams per sample_id
         new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
         [ new_meta, bam ]
     }.groupTuple()
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 4. Merging BAM files per sample and deduplication
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Merge BAM files per sample
     BP_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
