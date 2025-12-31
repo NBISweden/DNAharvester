@@ -16,8 +16,8 @@ include { SAMTOOLS_VIEW_MQ as MS_SAMTOOLS_VIEW_MQ           } from '../../../mod
 include { SAMTOOLS_MERGE as MS_SAMTOOLS_MERGE_SAMPLE        } from '../../../modules/local/samtools/samtools_merge.nf'
 include { SAMREMOVEDUP as MS_SAMREMOVEDUP_SAMPLE            } from '../../../modules/local/samremovedup/main'
 include { SAMTOOLS_INDEX as MS_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../modules/nf-core/samtools/index/main'
-include { FILTERBAM as MS_FILTERBAM                         } from '../../../modules/local/mapping_metrics/filterbam.nf'
-include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT               } from '../../../modules/local/microbial_screening/filterbam_plot.nf'
+include { FILTERBAM as MS_FILTERBAM                         } from '../../../modules/local/filterbam/filterbam.nf'
+include { FILTERBAM_PLOT as MS_FILTERBAM_PLOT               } from '../../../modules/local/filterbam/filterbam_plot.nf'
 
 
 workflow MICROBIAL_SCREENING {
@@ -33,9 +33,9 @@ workflow MICROBIAL_SCREENING {
     ch_versions             = ch_versions.mix(SAMTOOLS_UNMAPPED_READS.out.versions)
     ch_unmapped_reads       = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Index the reference database if it is not already indexed
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if (params.ms_mapping_tool == 'bwa-aln' || params.ms_mapping_tool == 'bwa-mem' || params.ms_mapping_tool == 'bwa-aln-mem') {
         // Build the BWA index
@@ -51,9 +51,9 @@ workflow MICROBIAL_SCREENING {
         error "Invalid mapping tool specified for Microbial Screening: ${params.ms_mapping_tool}. Use 'bwa-aln', 'bwa-mem', 'bwa-aln-mem', or 'bowtie2'."
     }
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 2. Map the unmapped reads to the microbial reference database
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // BWA ALN
     if (params.ms_mapping_tool == 'bwa-aln' ) {
@@ -95,9 +95,9 @@ workflow MICROBIAL_SCREENING {
     }
 
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 3. Merge the mapped unmerged reads if provided
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // if both merged reads and unmerged reads are mapped, merge the BAM files per sample
     def ch_merged_raw_bam = null
@@ -123,9 +123,9 @@ workflow MICROBIAL_SCREENING {
     // Use merged BAM if available, otherwise use raw BAM
     ch_raw_bam_for_processing = ch_merged_raw_bam ?: ch_raw_bam
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. BAM processing: index, filter, merge per sample, remove duplicates
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Index the BAM file
     MS_RAW_BAM_INDEX ( ch_raw_bam_for_processing )
@@ -135,18 +135,18 @@ workflow MICROBIAL_SCREENING {
     MS_SAMTOOLS_VIEW_MQ ( ch_raw_bam_for_processing )
     ch_versions             = ch_versions.mix ( MS_SAMTOOLS_VIEW_MQ.out.versions )
 
-    // Prepare channel to merge BAM files per sample
-    // Fix: Group by ID string and preserve metadata
-    ch_ms_bams_per_sample  = MS_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
+    // Prepare BAM files for merging per sample
+    ch_bam_sample_to_merge = MS_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
         def new_meta = meta.clone()
-        new_meta.id = meta.id.split("_")[0]
-        tuple(new_meta.id, new_meta, bam)
-    }
-    .groupTuple()
-    .map { id, metas, bams -> tuple(metas[0], bams) }
+        new_meta.id = meta.id.split("_")[0] // remove library_id and lane for merging all bams per sample_id
+        new_meta.remove('single_end') // remove single_end info from meta as the same sample can have both single-end and paired-end data
+        new_meta.remove('read_group') // remove read_group info from meta as the same sample can have multiple read groups
+        new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
+        [ new_meta, bam ]
+    }.groupTuple()
 
     // Merge BAM files per sample
-    MS_SAMTOOLS_MERGE_SAMPLE ( ch_ms_bams_per_sample, ms_reference )
+    MS_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, ms_reference )
     ch_versions             = ch_versions.mix(MS_SAMTOOLS_MERGE_SAMPLE.out.versions)
 
     // Remove PCR duplicates
@@ -156,21 +156,20 @@ workflow MICROBIAL_SCREENING {
     ch_versions             = ch_versions.mix(MS_SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
     ch_bam_bai_final        = MS_SAMREMOVEDUP_SAMPLE.out.dedup.join(MS_SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 5. Generate stats and plots
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // run filterBAM to generate stats
     MS_FILTERBAM ( ch_bam_bai_final )
     ch_versions             = ch_versions.mix ( MS_FILTERBAM.out.versions )
 
     // generate plot from filterBAM output
-    // Fix: Join channels to ensure correct pairing of BAM/BAI and Stats
     ch_filterbam_plot_input = ch_bam_bai_final.join(MS_FILTERBAM.out.filterBAM_stats)
     MS_FILTERBAM_PLOT ( ch_filterbam_plot_input )
     ch_versions             = ch_versions.mix ( MS_FILTERBAM_PLOT.out.versions )
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
     unmapped_fastq             = SAMTOOLS_UNMAPPED_READS.out.unmapped_fastq  // channel: [ val(meta), [ fastq ] ]
