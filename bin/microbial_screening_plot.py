@@ -163,19 +163,19 @@ def calculate_dna_damage(bam_file, max_pos=31):
 def process_bam_file(bam_file, pdf_pages, stats_row=None):
     # --- Compute read metrics ---
     identity_values, edit_distances, read_lengths, total_nb_reads, avg_mapq, avg_identity = get_identity_distribution_and_avg_mapq(bam_file)
-    
+
     # --- Compute evenness metrics ---
     df_even, boc, mean_coverage, percent_bases_covered, percent_tiles_covered = evenness_data(bam_file)
-    
+
     # --- Compute DNA damage ---
     CT, CpG, other = calculate_dna_damage(bam_file)
-    
+
     fig = plt.figure(figsize=(22,20))
     gs = gridspec.GridSpec(3,2, height_ratios=[1,1,1.5])
-    
+
     if stats_row is not None:
         plt.suptitle(f"{stats_row['reference']}", fontsize=22, weight='bold')
-    
+
     # --- Edit Distance Histogram ---
     ax0 = plt.subplot(gs[0,0])
     ax0.hist(edit_distances, bins=50, color='#1f77b4', alpha=0.7, edgecolor='black')
@@ -183,7 +183,7 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax0.set_xlabel("Edit Distance (NM)", fontsize=12)
     ax0.set_ylabel("Count", fontsize=12)
     ax0.grid(True, linestyle='--', alpha=0.5)
-    
+
     # --- Identity Histogram ---
     ax1 = plt.subplot(gs[0,1])
     ax1.hist(identity_values, bins=50, color='#2ca02c', alpha=0.7, edgecolor='black')
@@ -192,7 +192,7 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax1.set_ylabel("Count", fontsize=12)
     ax1.set_xlim(85, 100)
     ax1.grid(True, linestyle='--', alpha=0.5)
-    
+
     # --- Read Length Distribution (number of reads) ---
     ax2 = plt.subplot(gs[1,0])
     readlen_dict = [0]*301
@@ -209,7 +209,7 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     xmax = max(100, max(read_lengths))
     ax2.set_xlim(0, xmax)
     ax2.grid(True, linestyle='--', alpha=0.5)
-    
+
     # --- Evenness plot ---
     ax3 = plt.subplot(gs[1,1])
     ax3.plot(df_even['Position'], boc, color='black', linewidth=1)
@@ -218,7 +218,7 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax3.set_title(f"Evenness\nMean cov: {mean_coverage}, {percent_bases_covered}% genome, {percent_tiles_covered}% tiles", fontsize=14, weight='bold')
     ax3.xaxis.set_major_formatter(ticker.FuncFormatter(lambda x,_:'{:0.0e}'.format(x)))
     ax3.grid(True, linestyle='--', alpha=0.5)
-    
+
     # --- DNA damage plot ---
     ax_damage = plt.subplot(gs[2,0])
     x = list(range(31))
@@ -232,7 +232,7 @@ def process_bam_file(bam_file, pdf_pages, stats_row=None):
     ax_damage.set_title("DNA damage by read position", fontsize=14, weight='bold')
     ax_damage.grid(True, linestyle='--', alpha=0.5)
     ax_damage.legend(loc="upper right", fontsize=12)
-    
+
     # --- Metrics Table ---
     ax_table = plt.subplot(gs[2,1])
     ax_table.axis('off')
@@ -267,6 +267,18 @@ def main():
     args = parser.parse_args()
 
     tab = pd.read_csv(args.filterBAM_table, sep="\t")
+
+    # Check if required columns exist (e.g. if no reads mapped, only ID might be present)
+    required_columns = ['n_reads', 'breadth_exp_ratio', 'norm_entropy', 'norm_gini']
+    if not all(col in tab.columns for col in required_columns):
+        with PdfPages(args.out) as pdf_pages:
+            fig = plt.figure(figsize=(8.5, 11))
+            plt.axis("off")
+            plt.text(0.5, 0.5, "No candidate microbial references found\nCheck your filterBAM report", ha="center", va="center", fontsize=14, weight="bold")
+            pdf_pages.savefig(fig)
+            plt.close()
+        return
+
     tab = tab[(tab['n_reads'] >= args.min_reads) &
               (tab['breadth_exp_ratio'] >= args.min_breadth) &
               (tab['norm_entropy'] >= args.min_norm_entropy) &
@@ -276,7 +288,7 @@ def main():
         if tab.empty:
             fig = plt.figure(figsize=(8.5, 11))
             plt.axis("off")
-            plt.text(0.5, 0.7, "No candidate bacteria", ha="center", va="center", fontsize=24, weight="bold")
+            plt.text(0.5, 0.7, "No candidate microbial references found\nCheck your filterBAM report", ha="center", va="center", fontsize=24, weight="bold")
 
             settings_text = (
                 f"Current filtering settings:\n\n"
