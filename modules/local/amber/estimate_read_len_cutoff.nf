@@ -1,6 +1,6 @@
 process ESTIMATE_READ_LEN_CUTOFF {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_estimate_read_len_cutoff'
 
     conda "conda-forge::kneed=0.8.5"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -20,10 +20,12 @@ process ESTIMATE_READ_LEN_CUTOFF {
     script: // This script is bundled with the pipeline, in {{ name }}/bin/
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def curve = task.ext.curve ?: ((params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') ? 'convex' :
-                (params.mapping_tool == 'bowtie2' ? 'concave' : null))
-    def direction = task.ext.direction ?: ((params.mapping_tool == 'bwa-aln' || params.mapping_tool == 'bwa-aln-mem') ? 'decreasing' :
-                    (params.mapping_tool == 'bowtie2' ? 'increasing' : null))
+    def mapping_tool = meta.sample_type == 'ancient' ? params.mapping_tool_ancient : params.mapping_tool_modern
+
+    def curve = (mapping_tool == 'bwa-aln' || mapping_tool == 'bwa-aln-mem') ? 'convex' :
+                (mapping_tool == 'bwa-mem' || mapping_tool == 'bowtie2') ? 'concave' : null
+    def direction = (mapping_tool == 'bwa-aln' || mapping_tool == 'bwa-aln-mem') ? 'decreasing' :
+                    (mapping_tool == 'bowtie2' || mapping_tool == 'bwa-mem') ? 'increasing' : null
 
     """
     ## get the number of reads from filename

@@ -1,6 +1,6 @@
 process BWA_INDEX {
     tag "$fasta"
-    label 'process_medium'
+    label 'process_bwa_index'
 
     conda "bioconda::bwa=0.7.18 bioconda::samtools=1.20"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

@@ -1,6 +1,6 @@
 process SAMTOOLS_VIEW_MQ {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_samtools_view_mq'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

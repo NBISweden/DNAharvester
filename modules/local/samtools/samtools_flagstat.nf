@@ -1,6 +1,6 @@
 process SAMTOOLS_FLAGSTAT {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_samtools_flagstat'
 
     conda "bioconda::samtools=1.20 bioconda::htslib=1.20"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -31,7 +31,7 @@ process SAMTOOLS_FLAGSTAT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+        samtools: \$(samtools --version 2>&1 | awk 'NR==1 {print \$2}')
     END_VERSIONS
     """
 }

@@ -1,6 +1,6 @@
 process HAPLOTOFASTA {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_haplotofasta'
 
     conda "conda-forge::python=3.13.0 conda-forge::pandas=2.2.3"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

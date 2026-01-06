@@ -8,3 +8,4 @@ assets/samplesheet-*.csv
 assets/samplesheet_*.csv
 !assets/samplesheet-example.csv
 bin/deamstrip.py
+bin/AdaptClean

@@ -1,6 +1,6 @@
 process SAMTOOLS_VIEW_SUBSAMPLE {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_samtools_view_subsample'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -23,13 +23,13 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    total=\$(samtools view -F 4 -q 1 -c $bam) # total number of reads, not pairs (excluding unmapped and duplicated multi-aligned reads)
+    total=\$(samtools view -F 4 -q 1 -c $bam) # total number of reads (excluding unmapped and duplicated multi-aligned reads)
     frac=\$(awk -v s=$subsample -v t=\$total "BEGIN {print s/t}") # fraction of reads to keep
 
     ## skip subsampling if the total number of reads is less or equal to subsample number
     if (( \$total <= $subsample )); then
         samtools view \\
-        --threads \\${task.cpus-1} \\
+        --threads \\${task.cpus} \\
         -bh $args -F 4 -q 1 \\
         -o ${prefix}.approx_\${total}_reads.bam \\
         $bam
@@ -37,7 +37,7 @@ process SAMTOOLS_VIEW_SUBSAMPLE {
         ## subsample the bam file
         frac=\$(awk -v s=$subsample -v t=\$total "BEGIN {print s/t}") # fraction of reads to keep
         samtools view \\
-            --threads ${task.cpus-1} \\
+            --threads ${task.cpus} \\
             -s \$frac \\
             -bh $args -F 4 -q 1 \\
             -o ${prefix}.approx_${subsample}_reads.bam \\

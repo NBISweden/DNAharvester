@@ -1,6 +1,6 @@
 process BCFTOOLS_FILTER {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_bcftools_filter'
 
     conda "bioconda::bcftools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

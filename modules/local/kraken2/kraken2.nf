@@ -9,7 +9,7 @@ process KRAKEN2 {
 
     input:
     tuple val(meta) , path(reads)
-    path(kraken2_db)
+    path(kraken2_database)
 
     output:
     tuple val(meta), path("*.kraken2")     , emit: kraken2_output
@@ -26,7 +26,7 @@ process KRAKEN2 {
     """
     kraken2 \\
         $reads $args \\
-        --db ${kraken2_db} \\
+        --db ${kraken2_database} \\
         --threads ${task.cpus} \\
         --report-minimizer-data \\
         --use-names \\

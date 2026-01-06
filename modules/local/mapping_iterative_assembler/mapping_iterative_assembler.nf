@@ -1,6 +1,6 @@
 process MAPPING_ITERATIVE_ASSEMBLER {
     tag "$meta.id"
-    label 'process_mia'
+    label 'process_mapping_iterative_assembler'
 
     conda "bioconda::mapping-iterative-assembler=1.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

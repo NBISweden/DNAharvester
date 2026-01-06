@@ -1,6 +1,6 @@
 process FASTQC {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_fastqc'
 
     conda "bioconda::fastqc=0.11.9"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -21,11 +21,14 @@ process FASTQC {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def jvm_mem_mb = task.memory ? (task.memory.toMega().toInteger() * 9 / 10).toInteger() : 4096
     // Make list of old name and new name pairs to use for renaming in the bash while loop
     def old_new_pairs = reads instanceof Path || reads.size() == 1 ? [[ reads, "${prefix}.${reads.extension}" ]] : reads.withIndex().collect { entry, index -> [ entry, "${prefix}_${index + 1}.${entry.extension}" ] }
     def rename_to = old_new_pairs*.join(' ').join(' ')
     def renamed_files = old_new_pairs.collect{ old_name, new_name -> new_name }.join(' ')
     """
+    export _JAVA_OPTIONS="-Xmx${jvm_mem_mb}m"
+
     printf "%s %s\\n" $rename_to | while read old_name new_name; do
         [ -f "\${new_name}" ] || ln -s \$old_name \$new_name
     done
@@ -43,7 +46,9 @@ process FASTQC {
 
     stub:
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def jvm_mem_mb = task.memory ? (task.memory.toMega().toInteger() * 9 / 10).toInteger() : 4096
     """
+    export _JAVA_OPTIONS="-Xmx${jvm_mem_mb}m"
     touch ${prefix}.html
     touch ${prefix}.zip
 

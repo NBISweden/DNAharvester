@@ -1,6 +1,6 @@
 process PLINK_RECODE {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_plink_recode'
 
     conda "bioconda::plink2=2.00a5.10"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

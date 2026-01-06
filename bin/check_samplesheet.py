@@ -3,7 +3,7 @@
 
 """Provide a command line tool to validate and transform tabular samplesheets."""
 """From https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/bin/check_samplesheet.py"""
-"""Modified by Verena Kutschera, Muhammad Bilal Sharif"""
+"""Modified by Bilal Sharif <bilal.bioinfo@gmail.com> and Verena Kutschera <verena.kutschera@scilifelab.se>"""
 
 import argparse
 import csv
@@ -28,13 +28,16 @@ class RowChecker:
     VALID_FORMATS = (
         ".fq.gz",
         ".fastq.gz",
+        ".fq",
+        ".fastq",
     )
 
     def __init__(
         self,
-        sample_col="sample",
+        sample_id_col="sample_id",
         library_id_col="library_id",
         lane_col="lane",
+        sample_type_col="sample_type",
         library_type_col="library_type",
         first_col="fastq_1",
         second_col="fastq_2",
@@ -45,27 +48,20 @@ class RowChecker:
         Initialize the row checker with the expected column names.
 
         Args:
-            sample_col (str): The name of the column that contains the sample name
-                (default "sample").
-            library_id_col (str): The name of the column that contains the ID of
-                the sequencing library_id (default "library_id").
-            lane_col (str): The name of the column that contains the lane number
-                on which the sample was sequenced (default "lane").
-            library_type_col (str): The name of the column that contains the type of
-                the library, whether it is single-stranded or double-stranded (default "library_type").
-            first_col (str): The name of the column that contains the first (or only)
-                FASTQ file path (default "fastq_1").
-            second_col (str): The name of the column that contains the second (if any)
-                FASTQ file path (default "fastq_2").
-            single_col (str): The name of the new column that will be inserted and
-                records whether the sample contains single- or paired-end sequencing
-                reads (default "single_end").
-
+            sample_id_col (str): sample name (default "sample_id").
+            library_id_col (str): library_id (default "library_id").
+            lane_col (str): lane number (default "lane").
+            sample_type_col (str): type of the sample - ancient or modern (default "sample_type").
+            library_type_col (str): type of the library - single-stranded or double-stranded (default "library_type").
+            first_col (str): first (or only) FASTQ file path (default "fastq_1").
+            second_col (str): second (if any) FASTQ file path (default "fastq_2").
+            single_col (str): new column that will be inserted and records whether the sample contains single- or paired-end sequencing reads (default "single_end").
         """
         super().__init__(**kwargs)
-        self._sample_col = sample_col
+        self._sample_id_col = sample_id_col
         self._library_id_col = library_id_col
         self._lane_col = lane_col
+        self._sample_type_col = sample_type_col
         self._library_type_col = library_type_col
         self._first_col = first_col
         self._second_col = second_col
@@ -83,33 +79,34 @@ class RowChecker:
                 (values).
 
         """
-        multiple_fastq = (row[self._sample_col], row[self._library_id_col], row[self._lane_col])
+        multiple_fastq = (row[self._sample_id_col], row[self._library_id_col], row[self._lane_col])
         if multiple_fastq in self._multiple_fastq:
             raise AssertionError(f"Duplicate FASTQ entries for the same sample/library_id/lane combination: {multiple_fastq}. it is recommended to add a unique identifier to the lane column in such scenarios.")
         self._multiple_fastq.add(multiple_fastq)
 
-        self._validate_sample(row)
+        self._validate_sample_id(row)
         self._validate_library_id(row)
         self._validate_lane(row)
+        self._validate_sample_type(row)
         self._validate_library_type(row)
         self._validate_first(row)
         self._validate_second(row)
         self._validate_pair(row)
-        self._seen.add((row[self._sample_col], row[self._first_col]))
+        self._seen.add((row[self._sample_id_col], row[self._first_col]))
         self.modified.append(row)
 
-    def _validate_sample(self, row):
-        """Assert that the sample name exists and convert spaces and underscores to dashes."""
-        if len(row[self._sample_col]) <= 0:
-            raise AssertionError("A sample ID is required.")
+    def _validate_sample_id(self, row):
+        """Assert that the sample_id exists and convert spaces and underscores to dashes."""
+        if len(row[self._sample_id_col]) <= 0:
+            raise AssertionError("A sample_id is required.")
         # Sanitize samples slightly.
-        row[self._sample_col] = row[self._sample_col].replace(" ", "-")
-        row[self._sample_col] = row[self._sample_col].replace("_", "-")
+        row[self._sample_id_col] = row[self._sample_id_col].replace(" ", "-")
+        row[self._sample_id_col] = row[self._sample_id_col].replace("_", "-")
 
     def _validate_library_id(self, row):
         """Assert that the library_id ID exists."""
         if len(row[self._library_id_col]) <= 0:
-            raise AssertionError("An ID that is unique for each sequencing library_id is required.")
+            raise AssertionError("A library_id is required.")
         # Sanitize library_id IDs slightly.
         row[self._library_id_col] = row[self._library_id_col].replace(" ", "-")
         row[self._library_id_col] = row[self._library_id_col].replace("_", "-")
@@ -122,12 +119,19 @@ class RowChecker:
         row[self._lane_col] = row[self._lane_col].replace(" ", "-")
         row[self._lane_col] = row[self._lane_col].replace("_", "-")
 
+    def _validate_sample_type(self, row):
+        """Assert that the sample type exists and it only contains one of the following values: 'ancient', 'modern'."""
+        if len(row[self._sample_type_col]) <= 0:
+            raise AssertionError("A sample_type is required.")
+        if row[self._sample_type_col] not in ["ancient", "modern"]:
+            raise AssertionError("sample_type must be either 'ancient' or 'modern'.")
+
     def _validate_library_type(self, row):
-        """Assert that the library type exists and it only contains one of the following values: 'single', 'double'."""
+        """Assert that the library type exists and it only contains one of the following values: 'single-stranded', 'double-stranded'."""
         if len(row[self._library_type_col]) <= 0:
-            raise AssertionError("A library type is required.")
+            raise AssertionError("A library_type is required.")
         if row[self._library_type_col] not in ["single-stranded", "double-stranded"]:
-            raise AssertionError("Library type must be either 'single-stranded' or 'double-stranded'.")
+            raise AssertionError("library_type must be either 'single-stranded' or 'double-stranded'.")
 
     def _validate_first(self, row):
         """Assert that the first FASTQ entry is non-empty and has the right format."""
@@ -137,8 +141,9 @@ class RowChecker:
 
     def _validate_second(self, row):
         """Assert that the second FASTQ entry has the right format if it exists."""
-        if len(row[self._second_col]) > 0:
-            self._validate_fastq_format(row[self._second_col])
+        second = (row.get(self._second_col) or "").strip()
+        if len(second) > 0:
+            self._validate_fastq_format(second)
 
     def _validate_pair(self, row):
         """Assert that read pairs have the same file extension. Report pair status."""
@@ -167,7 +172,7 @@ class RowChecker:
             raise AssertionError("The pair of sample name and FASTQ filename must be unique.")
 
 
-def read_head(handle, num_lines=10):
+def read_head(handle, num_lines=1):
     """Read the specified number of lines from the current position in the file."""
     lines = []
     for idx, line in enumerate(handle):
@@ -201,7 +206,7 @@ def sniff_format(handle):
 
 def check_samplesheet(file_in, file_out):
     """
-    Check that the tabular samplesheet has the structure expected by nf-core pipelines.
+    Check that the tabular samplesheet has the structure expected by DNAharvester.
 
     Validate the general shape of the table, expected columns, and each row. Also add
     an additional column which records whether one or two FASTQ reads were found.
@@ -213,22 +218,18 @@ def check_samplesheet(file_in, file_out):
             be created; always in CSV format.
 
     Example:
-        This function checks that the samplesheet follows the following structure,
-        see also the `viral recon samplesheet`_::
-
-            sample,fastq_1,fastq_2
-            SAMPLE_PE,SAMPLE_PE_RUN1_1.fastq.gz,SAMPLE_PE_RUN1_2.fastq.gz
-            SAMPLE_PE,SAMPLE_PE_RUN2_1.fastq.gz,SAMPLE_PE_RUN2_2.fastq.gz
-            SAMPLE_SE,SAMPLE_SE_RUN1_1.fastq.gz,
-
-    .. _viral recon samplesheet:
-        https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
+        Sample_1,library_1,L001,single-stranded,XYZ0123456,Illumina,/path/to/data/AB1_R1.fq.gz,/path/to/data/AB1_R2.fq.gz
+        Sample_1,library_2,L001,single-stranded,XYZ0123456,Illumina,/path/to/data/AB1_R1.fq.gz,/path/to/data/AB1_R2.fq.gz
+        Sample_2,library_1,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB2_R1.fq.gz,/path/to/data/AB2_R2.fq.gz
+        Sample_2,library_1,L002,double-stranded,XYZ0123456,Illumina,/path/to/data/AB2_R1.fq.gz,/path/to/data/AB2_R2.fq.gz
+        Sample_3,library_1,L001,double-stranded,XYZ0123456,Illumina,/path/to/data/AB3.fq.gz,
 
     """
-    required_columns = {"sample", "library_id", "lane", "library_type", "fastq_1", "fastq_2"}
+    required_columns = {"sample_id", "library_id", "lane", "sample_type", "library_type", "fastq_1", "fastq_2"}
     # See https://docs.python.org/3.9/library_id/csv.html#id3 to read up on `newline=""`.
     with file_in.open(newline="") as in_handle:
-        reader = csv.DictReader(in_handle, dialect=sniff_format(in_handle))
+        diallect = sniff_format(in_handle)
+        reader = csv.DictReader(in_handle, dialect=diallect)
         # Validate the existence of the expected header columns.
         if not required_columns.issubset(reader.fieldnames):
             req_cols = ", ".join(required_columns)

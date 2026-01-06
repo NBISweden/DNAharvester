@@ -1,6 +1,6 @@
 process RM_TRANSITIONS {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_rm_transitions'
 
     conda "bioconda::pysam=0.23.3 conda-forge::tqdm=4.67.1 wget=1.21.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

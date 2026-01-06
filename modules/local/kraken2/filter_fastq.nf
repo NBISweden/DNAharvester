@@ -1,6 +1,6 @@
 process FILTER_FASTQ {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_filter_fastq'
 
     conda "bioconda::seqtk=1.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?

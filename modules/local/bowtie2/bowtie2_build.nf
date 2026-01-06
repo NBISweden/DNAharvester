@@ -1,6 +1,6 @@
 process BOWTIE2_BUILD {
     tag "$fasta"
-    label 'process_medium'
+    label 'process_bowtie2_build'
 
     conda "bioconda::bowtie2=2.5.4"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -16,7 +16,7 @@ process BOWTIE2_BUILD {
     output:
     tuple val(meta2), path("${meta2.id}*bt2", arity: '6')       , emit: index
     tuple val(meta2), val(output_dir)                           , emit: index_dir
-    path "versions.yml"                                         , emit: versions
+    path "versions.yml"                                         , emit: versions, optional: true
     when:
     task.ext.when == null || task.ext.when
 

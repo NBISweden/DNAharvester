@@ -1,6 +1,6 @@
 process MAPDAMAGE2 {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_mapdamage2'
 
     conda "bioconda::mapdamage2=2.2.2"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -39,6 +39,7 @@ process MAPDAMAGE2 {
     def args = task.ext.args ?: ''
     prefix = task.ext.prefix ?: "${meta.id}"
     def library_type = meta.library_type
+    def readlength = params.readlength == 'auto' ? 25 : params.readlength
     def rescale = params.mapdamage2_rescale.toBoolean() ? '--rescale' : '--no-stats'
 
 
@@ -48,6 +49,7 @@ process MAPDAMAGE2 {
         mapDamage \\
             $args \\
             $rescale \\
+            -l $readlength \\
             -d $prefix \\
             -i $bam \\
             -r $fasta
@@ -56,6 +58,7 @@ process MAPDAMAGE2 {
         mapDamage \\
             $args \\
             $rescale \\
+            -l $readlength \\
             -d $prefix \\
             -i $bam \\
             -r $fasta \\

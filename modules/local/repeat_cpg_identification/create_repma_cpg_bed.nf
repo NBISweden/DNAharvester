@@ -1,6 +1,6 @@
 process CREATE_REPMA_CPG_BED {
     tag "$fasta"
-    label 'process_medium'
+    label 'process_create_repma_cpg_bed'
 
     conda "bioconda::bedtools=2.31.1"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
