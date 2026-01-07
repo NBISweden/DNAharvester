@@ -46,7 +46,7 @@ jobs:
          nextflow run ${GITHUB_WORKSPACE} -c .github/test-eager_github.config -profile test,docker --outdir ./eager-results
 
       - name: Upload logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: nextflow-logs
           retention-days: 1
