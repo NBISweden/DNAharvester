@@ -5,7 +5,7 @@ process CREATE_SEQUENCE_DICTIONARY {
     conda "bioconda::picard"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'docker://broadinstitute/picard:3.4.0' :
-        'docker://broadinstitute/picard:3.4.0' }" // same containers for both all Engines since jar is located at difference places
+        'broadinstitute/picard:3.4.0' }" // same containers for both all Engines since jar is located at difference places
 
     input:
     tuple val(meta2), path(reference)
