@@ -5,7 +5,7 @@ process GATK_INDEL_REALIGNER {
     conda "bioconda::gatk=3.8"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'docker://broadinstitute/gatk3:3.8-1' :
-        'docker://broadinstitute/gatk3:3.8-1' }" // same containers for both all Engines since jar is located at difference places
+        'broadinstitute/gatk3:3.8-1' }" // same containers for both all Engines since jar is located at difference places
 
     input:
     tuple val(meta), path(bam), path(bai)
