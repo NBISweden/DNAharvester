@@ -102,7 +102,12 @@ workflow FASTQ_PROCESSING {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Determine final processed reads based on Kraken2 filtering set or not
-    def ch_processed_reads = params.kraken2_filtering.toBoolean() ? FP_FILTER_FASTQ.out.filtered_reads : ch_adapter_removed_reads
+    def ch_processed_reads
+    if ( params.kraken2_filtering.toBoolean() ) {
+        ch_processed_reads = FP_FILTER_FASTQ.out.filtered_reads
+    } else {
+        ch_processed_reads = ch_adapter_removed_reads
+    }
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
