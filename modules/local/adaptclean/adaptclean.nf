@@ -5,7 +5,7 @@ process ADAPTCLEAN {
     conda "bioconda::gcc"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/gcc_gxx_jq_wget:549b249d6ae2ebd5' :
-        'http://community.wave.seqera.io/library/gcc_gxx_jq_wget:2458d207f4475602' }"
+        'community.wave.seqera.io/library/gcc_gxx_jq_wget:2458d207f4475602' }"
 
     input:
     tuple val(meta), path(processed_reads), path(json)
