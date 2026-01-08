@@ -7,7 +7,6 @@ on:
       - 'LICENSE.md'
     branches:
       - main
-      - dev
   release:
     types: [published]
 
