@@ -4,8 +4,8 @@ process SPLIT_FASTQ {
 
     conda "conda-forge::gawk=5.3.0"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/gawk%3A5.3.1' :
-        'docker://stagex/gawk:5.3.0' }"
+        'oras://community.wave.seqera.io/library/gawk:5.3.0--18a2e1510199122d' :
+        'community.wave.seqera.io/library/gawk:5.3.0--180f75ae8b0ce739' }"
 
     input:
     tuple val(meta), path(reads)
