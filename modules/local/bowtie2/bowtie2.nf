@@ -26,6 +26,16 @@ process BOWTIE2 {
     def bowtie2_params =
         meta.sample_type == 'ancient' ? (params.bowtie2_ancient_params ?: '') :
         meta.sample_type == 'modern' ? (params.bowtie2_modern_params ?: '') : ''
+    // Parse read group: @RG\tID:xxx\tSM:xxx\tPL:xxx\tLB:xxx -> --rg-id 'xxx' --rg 'SM:xxx' --rg 'PL:xxx' --rg 'LB:xxx'
+    def rg_args = ''
+    def parts = meta.read_group.toString().replaceAll('@RG\\\\t', '').tokenize('\\t')
+    parts.each { part ->
+        if (part.startsWith('ID:')) {
+            rg_args = "--rg-id '${part.minus('ID:')}'"
+        } else {
+            rg_args = "${rg_args} --rg '${part}'"
+        }
+    }
 
     if (meta.single_end) {
         // Single-end mapping
@@ -34,6 +44,7 @@ process BOWTIE2 {
 
         bowtie2 \\
             ${args} \\
+            ${rg_args} \\
             -p ${task.cpus} \\
             -x \${INDEX} \\
             -U ${reads} | \\
@@ -52,6 +63,7 @@ process BOWTIE2 {
 
         bowtie2 \\
             ${args} \\
+            ${rg_args} \\
             -p ${task.cpus} \\
             -x \${INDEX} \\
             -1 ${reads[0]} \\
