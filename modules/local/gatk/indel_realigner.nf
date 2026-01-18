@@ -15,7 +15,6 @@ process GATK_INDEL_REALIGNER {
 
     output:
     tuple val(meta), path("*.realigned.bam")        , emit: realigned_bam
-    tuple val(meta), path("*.intervals")            , emit: intervals
     path "versions.yml"                             , emit: versions
 
     when:
@@ -25,6 +24,7 @@ process GATK_INDEL_REALIGNER {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def avail_mem = task.memory ? (task.memory.toGiga()).toInteger() : 4
+    def ref_prefix = task.ext.ref_prefix ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
     ### Step 1: RealignerTargetCreator - identify regions for realignment
@@ -41,7 +41,7 @@ process GATK_INDEL_REALIGNER {
         -R ${reference} \\
         -I ${bam} \\
         -targetIntervals ${prefix}.intervals \\
-        -o ${prefix}.realigned.bam
+        -o ${prefix}.${ref_prefix}.realigned.bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
