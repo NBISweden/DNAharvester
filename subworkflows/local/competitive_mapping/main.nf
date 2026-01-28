@@ -47,8 +47,8 @@ workflow COMPETITIVE_MAPPING {
     def bowtie2_tools = ['bowtie2']
     if (bowtie2_tools.contains( params.mapping_tool_ancient ) || bowtie2_tools.contains( params.mapping_tool_modern )) {
         CM_BOWTIE2_BUILD (competitive_reference, file(params.reference).getParent())
-        ch_versions         = ch_versions.mix(CM_BOWTIE2_BUILD.out.versions)
-        ch_competitive_bowtie2_index    = CM_BOWTIE2_BUILD.out.index_dir
+        ch_versions                  = ch_versions.mix(CM_BOWTIE2_BUILD.out.versions)
+        ch_competitive_bowtie2_index = CM_BOWTIE2_BUILD.out.index_dir
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -115,7 +115,7 @@ workflow COMPETITIVE_MAPPING {
     }
     // BOWTIE2
     if (params.mapping_tool_ancient == 'bowtie2' || params.mapping_tool_modern == 'bowtie2') {
-        CM_BOWTIE2 ( ch_reads_bowtie2, ch_bowtie2_index )
+        CM_BOWTIE2 ( ch_reads_bowtie2, ch_competitive_bowtie2_index )
         ch_versions         = ch_versions.mix(CM_BOWTIE2.out.versions)
         ch_raw_bam          = ch_raw_bam.mix(CM_BOWTIE2.out.bam)
     }

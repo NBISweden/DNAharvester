@@ -3,7 +3,10 @@ process MAPPING_METRICS_SAMPLE {
     label 'process_mapping_metrics_sample'
 
     conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1 conda-forge::jq=1.8.1"
-    container 'community.wave.seqera.io/library/samtools_gawk_jq:d2a006aa774b3346'
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
+        'oras://community.wave.seqera.io/library/samtools_gawk_jq:0c240a96dd50ca44' :
+        'community.wave.seqera.io/library/samtools_gawk_jq:d2a006aa774b3346' }"
+
 
 
     input:
