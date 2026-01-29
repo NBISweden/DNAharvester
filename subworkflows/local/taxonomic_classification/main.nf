@@ -10,7 +10,6 @@ include { SAMREMOVEDUP as TC_SAMREMOVEDUP_SAMPLE            } from '../../../mod
 include { SAMTOOLS_INDEX as TC_SAMREMOVEDUP_SAMPLE_INDEX    } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_IDXSTATS as TC_SAMTOOLS_IDXSTATS         } from '../../../modules/local/samtools/samtools_idxstats.nf'
 include { SORT_IDXSTATS as TC_SORT_IDXSTATS                 } from '../../../modules/local/samtools/sort_idxstats.nf'
-include { MERGE_IDXSTATS as TC_MERGE_IDXSTATS               } from '../../../modules/local/samtools/merge_idxstats.nf'
 
 workflow TAXONOMIC_CLASSIFICATION {
     take:
@@ -110,6 +109,7 @@ workflow TAXONOMIC_CLASSIFICATION {
 
     // Sort idxstats files
     TC_SORT_IDXSTATS ( TC_SAMTOOLS_IDXSTATS.out.idxstats )
+    ch_versions         = ch_versions.mix(TC_SORT_IDXSTATS.out.versions)
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
