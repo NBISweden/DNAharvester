@@ -52,8 +52,8 @@ process BOWTIE2 {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            bowtie2: \$(echo \$(bowtie2 --version 2>&1) | grep -i version | head -n 1 | sed 's/.*version //')
-            samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
+            bowtie2: \$(bowtie2 --version 2>&1 | grep -i version | head -n 1 | sed 's/.*version //')
+            samtools: \$(samtools --version 2>&1 | sed 's/^.*samtools //; s/Using.*\$//')
         END_VERSIONS
         """
     } else {
@@ -72,8 +72,8 @@ process BOWTIE2 {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            bowtie2: \$(echo \$(bowtie2 --version 2>&1) | grep -i version | head -n 1 | sed 's/.*version //')
-            samtools: \$(echo \$(samtools --version 2>&1) | head -n 1 | sed 's/samtools //')
+            bowtie2: \$(bowtie2 --version 2>&1 | grep -i version | head -n 1 | sed 's/.*version //')
+            samtools: \$(samtools --version 2>&1 | head -n 1 | sed 's/samtools //')
         END_VERSIONS
         """
     }
