@@ -1,9 +1,9 @@
 process SAMTOOLS_INDEX {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_samtools_index'
 
     conda "bioconda::samtools=1.20"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/samtools:1.20--ad906e74fde1812b' :
         'community.wave.seqera.io/library/samtools:1.20--b5dfbd93de237464' }"
 

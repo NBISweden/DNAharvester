@@ -1,183 +1,217 @@
 #! /usr/bin/env nextflow
 
 // Mapping quality filter
-include { SAMTOOLS_VIEW_MQ                              } from '../../../modules/local/samtools/samtools_view_mq.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_VIEW_MQ_INDEX      } from '../../../modules/nf-core/samtools/index/main'
-
-// Read Length threshold
-include { ESTIMATE_READ_LEN_CUTOFF                      } from '../../../modules/local/amber/estimate_read_len_cutoff'
-include { RM_SHORT_READS                                } from '../../../modules/local/samtools/samtools_rm_short_reads.nf'
-include { SAMTOOLS_INDEX as RM_SHORT_READS_INDEX        } from '../../../modules/nf-core/samtools/index/main'
-
-// Merge BAM files per library/PCR
-include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_LIB          } from '../../../modules/local/samtools/samtools_merge.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_LIB_INDEX    } from '../../../modules/nf-core/samtools/index/main'
-
-// Remove duplicates from BAM files merged per library/PCR
-include { SAMREMOVEDUP as SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
-include { SAMTOOLS_INDEX as SAMREMOVEDUP_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
-
-// Running MapDamage2 (rescalling BAM if params.mapdamage2_rescale is set to true)
-include { MAPDAMAGE2                                    } from '../../../modules/local/mapdamage2/main'
-include { SAMTOOLS_INDEX as MAPDAMAGE2_INDEX            } from '../../../modules/nf-core/samtools/index/main'
-
-// Removing transitions or only C to T substitutions (if params.remove_transitions and params.remove_c_to_t are set to true, respectively)
-include { RM_TRANSITIONS                                } from '../../../modules/local/rm_transitions/rm_transitions.nf'
-include { SAMTOOLS_INDEX as RM_TRANSITIONS_INDEX  } from '../../../modules/nf-core/samtools/index/main'
-
-// Merge BAM files per sample
-include { SAMTOOLS_MERGE as SAMTOOLS_MERGE_SAMPLE       } from '../../../modules/local/samtools/samtools_merge.nf'
-include { SAMTOOLS_INDEX as SAMTOOLS_MERGE_SAMPLE_INDEX } from '../../../modules/nf-core/samtools/index/main'
-
-// Remove duplicates from BAM files merged per sample
-include { SAMREMOVEDUP as SAMREMOVEDUP_SAMPLE           } from '../../../modules/local/samremovedup/main'
-include { SAMTOOLS_INDEX as SAMREMOVEDUP_SAMPLE_INDEX   } from '../../../modules/nf-core/samtools/index/main'
-
+include { SAMTOOLS_VIEW_MQ              as BP_SAMTOOLS_VIEW_MQ              } from '../../../modules/local/samtools/samtools_view_mq.nf'
+include { SAMTOOLS_INDEX                as BP_SAMTOOLS_VIEW_MQ_INDEX        } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_MERGE                as BP_SAMTOOLS_MERGE_LIB            } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_INDEX                as BP_SAMTOOLS_MERGE_LIB_INDEX      } from '../../../modules/nf-core/samtools/index/main'
+include { SAMREMOVEDUP                  as BP_SAMREMOVEDUP_LIB              } from '../../../modules/local/samremovedup/main'
+include { SAMTOOLS_INDEX                as BP_SAMREMOVEDUP_LIB_INDEX        } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_VIEW_SUBSAMPLE       as BP_SAMTOOLS_VIEW_SUBSAMPLE       } from '../../../modules/local/samtools/samtools_view_subsample.nf'
+include { CREATE_AMBER_SAMPLESHEET      as BP_CREATE_AMBER_SAMPLESHEET      } from '../../../modules/local/amber/create_amber_samplesheet'
+include { AMBER                         as BP_AMBER                         } from '../../../modules/local/amber/amber'
+include { ESTIMATE_READ_LEN_CUTOFF      as BP_ESTIMATE_READ_LEN_CUTOFF      } from '../../../modules/local/amber/estimate_read_len_cutoff'
+include { RM_SHORT_READS                as BP_RM_SHORT_READS                } from '../../../modules/local/samtools/samtools_rm_short_reads.nf'
+include { SAMTOOLS_INDEX                as BP_RM_SHORT_READS_INDEX          } from '../../../modules/nf-core/samtools/index/main'
+include { MAPDAMAGE2                    as BP_MAPDAMAGE2                    } from '../../../modules/local/mapdamage2/main'
+include { SAMTOOLS_INDEX                as BP_MAPDAMAGE2_INDEX              } from '../../../modules/nf-core/samtools/index/main'
+include { RM_TRANSITIONS                as BP_RM_TRANSITIONS                } from '../../../modules/local/rm_transitions/rm_transitions.nf'
+include { SAMTOOLS_INDEX                as BP_RM_TRANSITIONS_INDEX          } from '../../../modules/nf-core/samtools/index/main'
+include { SAMTOOLS_MERGE                as BP_SAMTOOLS_MERGE_SAMPLE         } from '../../../modules/local/samtools/samtools_merge.nf'
+include { SAMTOOLS_INDEX                as BP_SAMTOOLS_MERGE_SAMPLE_INDEX   } from '../../../modules/nf-core/samtools/index/main'
+include { SAMREMOVEDUP                  as BP_SAMREMOVEDUP_SAMPLE           } from '../../../modules/local/samremovedup/main'
+include { SAMTOOLS_INDEX                as BP_SAMREMOVEDUP_SAMPLE_INDEX     } from '../../../modules/nf-core/samtools/index/main'
+include { CREATE_SEQUENCE_DICTIONARY    as BP_CREATE_SEQUENCE_DICTIONARY    } from '../../../modules/local/picard/create_sequence_dictionary.nf'
+include { GATK_INDEL_REALIGNER          as BP_GATK_INDEL_REALIGNER          } from '../../../modules/local/gatk/indel_realigner.nf'
+include { SAMTOOLS_INDEX                as BP_GATK_INDEL_REALIGNER_INDEX    } from '../../../modules/nf-core/samtools/index/main'
 
 workflow BAM_PROCESSING {
     take:
     reference
     bam
-    amber_txt
+    fai
 
     main:
     ch_versions = Channel.empty()
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 1. Mapping Quality Filtering, Merging BAM files per library/PCR and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Filter for mapping quality (provided in custom.config)
-    SAMTOOLS_VIEW_MQ ( bam )
-    ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ.out.versions )
-    SAMTOOLS_VIEW_MQ_INDEX ( SAMTOOLS_VIEW_MQ.out.bam )
-    ch_versions = ch_versions.mix ( SAMTOOLS_VIEW_MQ_INDEX.out.versions )
+    BP_SAMTOOLS_VIEW_MQ ( bam )
+    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ.out.versions )
+    BP_SAMTOOLS_VIEW_MQ_INDEX ( BP_SAMTOOLS_VIEW_MQ.out.bam )
+    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ_INDEX.out.versions )
+
+    // Prepare BAM files for merging per library/PCR
+    ch_bam_lib_to_merge = BP_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
+        new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
+        new_meta.remove('read_group') // remove read_group info from meta as the same library can have multiple read groups
+        [ new_meta, bam ]
+    }.groupTuple()
+
+    // Merge BAM files per library/PCR
+    BP_SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
+    ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_LIB.out.versions)
+    BP_SAMTOOLS_MERGE_LIB_INDEX ( BP_SAMTOOLS_MERGE_LIB.out.bam )
+    ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_LIB_INDEX.out.versions)
+
+    // Remove duplicates from BAM files merged per library/PCR
+    BP_SAMREMOVEDUP_LIB ( BP_SAMTOOLS_MERGE_LIB.out.bam, reference )
+    ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB.out.versions)
+    BP_SAMREMOVEDUP_LIB_INDEX ( BP_SAMREMOVEDUP_LIB.out.dedup )
+    ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB_INDEX.out.versions)
 
 
-    // Filter for minimum read length estimated from AMBER output
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 2. Run AMBER on MQ filtered deduplicated BAM files merged per library/PCR
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Subsample BAM files for AMBER
+    BP_SAMTOOLS_VIEW_SUBSAMPLE ( BP_SAMREMOVEDUP_LIB.out.dedup, reference )
+    ch_versions = ch_versions.mix( BP_SAMTOOLS_VIEW_SUBSAMPLE.out.versions )
+
+    // Create AMBER samplesheet
+    BP_CREATE_AMBER_SAMPLESHEET ( BP_SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam )
+    ch_versions = ch_versions.mix( BP_CREATE_AMBER_SAMPLESHEET.out.versions )
+
+    // Run AMBER
+    ch_subsampled_bam_sheet = BP_SAMTOOLS_VIEW_SUBSAMPLE.out.subsampled_bam.join( BP_CREATE_AMBER_SAMPLESHEET.out.tsv )
+    BP_AMBER ( ch_subsampled_bam_sheet )
+    ch_versions = ch_versions.mix( BP_AMBER.out.versions )
+
+    // If readlength is set to "auto", estimate read length cutoff and remove short reads
     if (params.readlength == "auto") {
-
         // Estimate read length cutoff
-        ESTIMATE_READ_LEN_CUTOFF ( amber_txt )
-        ch_versions = ch_versions.mix ( ESTIMATE_READ_LEN_CUTOFF.out.versions )
+        BP_ESTIMATE_READ_LEN_CUTOFF ( BP_AMBER.out.txt )
+        ch_versions = ch_versions.mix ( BP_ESTIMATE_READ_LEN_CUTOFF.out.versions )
 
         // Remove short reads from BAM files
-        ch_bam_read_len_cutoff = SAMTOOLS_VIEW_MQ.out.bam.join ( ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
-        RM_SHORT_READS ( ch_bam_read_len_cutoff )
-        ch_versions = ch_versions.mix ( RM_SHORT_READS.out.versions )
+        ch_bam_read_len_cutoff = BP_SAMREMOVEDUP_LIB.out.dedup.join ( BP_ESTIMATE_READ_LEN_CUTOFF.out.read_len_cutoff )
+        BP_RM_SHORT_READS ( ch_bam_read_len_cutoff )
+        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS.out.versions )
+        BP_RM_SHORT_READS_INDEX ( BP_RM_SHORT_READS.out.bam )
+        ch_versions = ch_versions.mix ( BP_RM_SHORT_READS_INDEX.out.versions )
 
-        RM_SHORT_READS_INDEX ( RM_SHORT_READS.out.bam )
-        ch_versions = ch_versions.mix ( RM_SHORT_READS_INDEX.out.versions )
-
-        // Prepare BAM files for merging
-        ch_bam_lib_to_merge = RM_SHORT_READS.out.bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
-        }.groupTuple()
-
-    } else {
-        // Directly provide BAM channel for merging
-        ch_bam_lib_to_merge = SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0] + "_" + meta.id.split("_")[1], 'library_type': meta.library_type, 'single_end': meta.single_end], bam]
-        }.groupTuple()
+        // prepare deduplicated BAM files merged per library/PCR after short read removal
+        ch_dedup_lib_bai = BP_RM_SHORT_READS.out.bam.join(BP_RM_SHORT_READS_INDEX.out.bai)
+    }
+    else {
+        // otherwise, just pass through the deduplicated BAM files merged per library/PCR
+        ch_dedup_lib_bai = BP_SAMREMOVEDUP_LIB.out.dedup.join(BP_SAMREMOVEDUP_LIB_INDEX.out.bai)
     }
 
 
-    // Merge BAM files per library/PCR
-    SAMTOOLS_MERGE_LIB ( ch_bam_lib_to_merge, reference )
-    ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB.out.versions)
-    SAMTOOLS_MERGE_LIB_INDEX ( SAMTOOLS_MERGE_LIB.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_MERGE_LIB_INDEX.out.versions)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 3. MapDamage2 and removing transitions on ancient samples
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // Branch reads into ancient and modern based on sample_type metadata
+    ch_dedup_lib_bai.branch {
+        ancient: it[0].sample_type == 'ancient'
+        modern : it[0].sample_type == 'modern'
+    }.set { ch_dedup_lib_bai_branched }
 
-    // Remove duplicates from BAM files merged per library/PCR
-    SAMREMOVEDUP_LIB ( SAMTOOLS_MERGE_LIB.out.bam, reference )
-    ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB.out.versions)
-    SAMREMOVEDUP_LIB_INDEX ( SAMREMOVEDUP_LIB.out.dedup )
-    ch_versions = ch_versions.mix(SAMREMOVEDUP_LIB_INDEX.out.versions)
-    ch_dedup_lib_bai = SAMREMOVEDUP_LIB.out.dedup.join(SAMREMOVEDUP_LIB_INDEX.out.bai)
+    // Run MapDamage2 on deduplicated BAM files merged per library/PCR (ONLY ANCIENT).
+    // If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
+    BP_MAPDAMAGE2 ( ch_dedup_lib_bai_branched.ancient , reference )
+    ch_versions = ch_versions.mix(BP_MAPDAMAGE2.out.versions)
 
-
-    // Run MapDamage2 on deduplicated BAM files merged per library/PCR. If params.mapdamage2_rescale is set to true, the BAM files will be rescaled.
-    MAPDAMAGE2 ( ch_dedup_lib_bai , reference )
-    ch_versions = ch_versions.mix(MAPDAMAGE2.out.versions)
-
+    ch_bam_processed_ancient = Channel.empty()
 
     // use rescaled BAM files if params.mapdamage2_rescale is set to true
     if ( params.mapdamage2_rescale.toBoolean() ) {
-        MAPDAMAGE2_INDEX ( MAPDAMAGE2.out.rescaled_bam )
-        ch_versions = ch_versions.mix(MAPDAMAGE2_INDEX.out.versions)
+        BP_MAPDAMAGE2_INDEX ( BP_MAPDAMAGE2.out.rescaled_bam )
+        ch_versions = ch_versions.mix(BP_MAPDAMAGE2_INDEX.out.versions)
+        ch_bam_processed_ancient = BP_MAPDAMAGE2.out.rescaled_bam
 
-        // Prepare BAM files for merging per sample
-        ch_bam_sample_to_merge = MAPDAMAGE2.out.rescaled_bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
-        }.groupTuple()
     } else if ( params.remove_transitions.toBoolean() ) { // remove transitions from BAM files if params.remove_transitions is set to true
         // Remove transitions from BAM files
-        RM_TRANSITIONS ( ch_dedup_lib_bai )
-        ch_versions = ch_versions.mix(RM_TRANSITIONS.out.versions)
-        RM_TRANSITIONS_INDEX ( RM_TRANSITIONS.out.rm_trans_bam,  )
-        ch_versions = ch_versions.mix(RM_TRANSITIONS_INDEX.out.versions)
+        BP_RM_TRANSITIONS ( ch_dedup_lib_bai_branched.ancient )
+        ch_versions = ch_versions.mix(BP_RM_TRANSITIONS.out.versions)
+        BP_RM_TRANSITIONS_INDEX ( BP_RM_TRANSITIONS.out.rm_trans_bam )
+        ch_versions = ch_versions.mix(BP_RM_TRANSITIONS_INDEX.out.versions)
+        ch_bam_processed_ancient = BP_RM_TRANSITIONS.out.rm_trans_bam
 
-        // Prepare BAM files for merging per sample
-        ch_bam_sample_to_merge = RM_TRANSITIONS.out.rm_trans_bam.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
-        }.groupTuple()
     } else { // if params.mapdamage2_rescale is false and params.remove_transitions is false, use deduplicated BAM files merged per library/PCR
-        // Merge BAM files per sample
-        ch_bam_sample_to_merge = SAMREMOVEDUP_LIB.out.dedup.map { meta, bam ->
-            // update only the 'id' field in meta, keep all other fields
-            [['id': meta.id.split("_")[0]], bam]
-        }.groupTuple()
+        // Just pass through the ancient BAMs (remove bai from tuple)
+        ch_bam_processed_ancient = ch_dedup_lib_bai_branched.ancient.map { meta, bam, bai -> [meta, bam] }
     }
 
+    // Modern samples bypass MapDamage2 and RM_TRANSITIONS (remove bai from tuple)
+    ch_bam_processed_modern = ch_dedup_lib_bai_branched.modern.map { meta, bam, bai -> [meta, bam] }
+
+    // Combine processed ancient and modern BAMs
+    ch_bam_processed_lib = ch_bam_processed_ancient.mix(ch_bam_processed_modern)
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 4. Merging BAM files per sample and deduplication
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // Combine processed ancient and modern BAMs and prepare for merging per sample
+    ch_bam_sample_to_merge = ch_bam_processed_lib.map { meta, bam ->
+        def new_meta = meta.clone()
+        new_meta.id = meta.id.split("_")[0] // remove library_id for merging all bams per sample_id
+        new_meta.remove('library_type') // remove library_type info from meta as the same sample can have both double-stranded and single-stranded libraries
+        [ new_meta, bam ]
+    }.groupTuple()
+
     // Merge BAM files per sample
-    SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
-    ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE.out.versions)
-    SAMTOOLS_MERGE_SAMPLE_INDEX ( SAMTOOLS_MERGE_SAMPLE.out.bam )
-    ch_versions = ch_versions.mix(SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
+    BP_SAMTOOLS_MERGE_SAMPLE ( ch_bam_sample_to_merge, reference )
+    ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_SAMPLE.out.versions)
+    BP_SAMTOOLS_MERGE_SAMPLE_INDEX ( BP_SAMTOOLS_MERGE_SAMPLE.out.bam )
+    ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_SAMPLE_INDEX.out.versions)
 
 
     // Remove duplicates from BAM files merged per sample
-    SAMREMOVEDUP_SAMPLE ( SAMTOOLS_MERGE_SAMPLE.out.bam, reference )
-    ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE.out.versions)
-    SAMREMOVEDUP_SAMPLE_INDEX ( SAMREMOVEDUP_SAMPLE.out.dedup )
-    ch_versions = ch_versions.mix(SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
+    BP_SAMREMOVEDUP_SAMPLE ( BP_SAMTOOLS_MERGE_SAMPLE.out.bam, reference )
+    ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_SAMPLE.out.versions)
+    BP_SAMREMOVEDUP_SAMPLE_INDEX ( BP_SAMREMOVEDUP_SAMPLE.out.dedup )
+    ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_SAMPLE_INDEX.out.versions)
+    ch_bam_deup_sample_bai = BP_SAMREMOVEDUP_SAMPLE.out.dedup.join(BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai)
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 5. GATK Indel Realignment
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    if (params.indel_realignment.toBoolean()) {
+        BP_CREATE_SEQUENCE_DICTIONARY(reference)
+        ch_versions = ch_versions.mix(BP_CREATE_SEQUENCE_DICTIONARY.out.versions)
+
+        BP_GATK_INDEL_REALIGNER(
+            ch_bam_deup_sample_bai,
+            reference,
+            fai,
+            BP_CREATE_SEQUENCE_DICTIONARY.out.dict.collect()
+        )
+        ch_versions = ch_versions.mix(BP_GATK_INDEL_REALIGNER.out.versions)
+        BP_GATK_INDEL_REALIGNER_INDEX ( BP_GATK_INDEL_REALIGNER.out.realigned_bam )
+        ch_versions = ch_versions.mix(BP_GATK_INDEL_REALIGNER_INDEX.out.versions)
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     emit:
-    mq_filtered_bam                             = SAMTOOLS_VIEW_MQ.out.bam                                                                  // channel: [ val(meta), [ bam ] ]
-    mq_filtered_index                           = SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                            // channel: [ val(meta), [ bai ] ]
-    rm_short_reads_bam                          = params.readlength == "auto" ? RM_SHORT_READS.out.bam : Channel.empty()                    // channel: [ val(meta), [ bam ] ]
-    rm_short_reads_index                        = params.readlength == "auto" ? RM_SHORT_READS_INDEX.out.bai : Channel.empty()              // channel: [ val(meta), [ bai ] ]
-    merged_bam_lib                              = SAMTOOLS_MERGE_LIB.out.bam                                                                // channel: [ val(meta), [ bam ] ]
-    merged_bam_lib_index                        = SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                          // channel: [ val(meta), [ bai ] ]
-    dedup_lib                                   = SAMREMOVEDUP_LIB.out.dedup                                                                // channel: [ val(meta), [ bam ] ]
-    dedup_lib_index                             = SAMREMOVEDUP_LIB_INDEX.out.bai                                                            // channel: [ val(meta), [ bai ] ]
-    mapdamage2_rescaled_bam                     = params.mapdamage2_rescale.toBoolean() ? MAPDAMAGE2.out.rescaled_bam : Channel.empty()     // channel: [ val(meta), [ bam ] ]
-    mapdamage2_rescaled_index                   = params.mapdamage2_rescale.toBoolean() ? MAPDAMAGE2_INDEX.out.bai : Channel.empty()        // channel: [ val(meta), [ bai ] ]
-    mapdamage2_fragmisincorporation_plot        = MAPDAMAGE2.out.fragmisincorporation_plot                                                  // channel: [ val(meta), path(fragmisincorporation_plot) ]
-    mapdamage2_length_plot                      = MAPDAMAGE2.out.length_plot                                                                // channel: [ val(meta), path(length_plot) ]
-    mapdamage2_misincorporation                 = MAPDAMAGE2.out.misincorporation                                                           // channel: [ val(meta), path(misincorporation) ]
-    mapdamage2_lgdistribution                   = MAPDAMAGE2.out.lgdistribution                                                             // channel: [ val(meta), path(lgdistribution) ]
-    mapdamage2_dnacomp                          = MAPDAMAGE2.out.dnacomp                                                                    // channel: [ val(meta), path(dnacomp) ]
-    mapdamage2_stats_out_mcmc_hist              = MAPDAMAGE2.out.stats_out_mcmc_hist                                                        // channel: [ val(meta), path(stats_out_mcmc_hist) ]
-    mapdamage2_stats_out_mcmc_iter              = MAPDAMAGE2.out.stats_out_mcmc_iter                                                        // channel: [ val(meta), path(stats_out_mcmc_iter) ]
-    mapdamage2_stats_out_mcmc_trace             = MAPDAMAGE2.out.stats_out_mcmc_trace                                                       // channel: [ val(meta), path(stats_out_mcmc_trace) ]
-    mapdamage2_stats_out_mcmc_iter_summ_stat    = MAPDAMAGE2.out.stats_out_mcmc_iter_summ_stat                                              // channel: [ val(meta), path(stats_out_mcmc_iter_summ_stat) ]
-    mapdamage2_stats_out_mcmc_post_pred         = MAPDAMAGE2.out.stats_out_mcmc_post_pred                                                   // channel: [ val(meta), path(stats_out_mcmc_post_pred) ]
-    mapdamage2_stats_out_mcmc_correct_prob      = MAPDAMAGE2.out.stats_out_mcmc_correct_prob                                                // channel: [ val(meta), path(stats_out_mcmc_correct_prob) ]
-    mapdamage2_dnacomp_genome                   = MAPDAMAGE2.out.dnacomp_genome                                                             // channel: [ val(meta), path(dnacomp_genome) ]
-    mapdamage2_pctot_freq                       = MAPDAMAGE2.out.pctot_freq                                                                 // channel: [ val(meta), path(pctot_freq) ]
-    mapdamage2_pgtoa_freq                       = MAPDAMAGE2.out.pgtoa_freq                                                                 // channel: [ val(meta), path(pgtoa_freq) ]
-    mapdamage2_fasta                            = MAPDAMAGE2.out.fasta                                                                      // channel: [ val(meta), path(fasta) ]
-    mapdamage2_folder                           = MAPDAMAGE2.out.folder                                                                     // channel: [ val(meta), path(folder) ]
-    rm_trans_bam                                = params.remove_transitions.toBoolean() ? RM_TRANSITIONS.out.rm_trans_bam : Channel.empty() // channel: [ val(meta), [ bam ] ]
-    rm_trans_index                              = params.remove_transitions.toBoolean() ? RM_TRANSITIONS_INDEX.out.bai : Channel.empty()    // channel: [ val(meta), [ bai ] ]
-    merged_bam_sample                           = SAMTOOLS_MERGE_SAMPLE.out.bam                                                             // channel: [ val(meta), [ bam ] ]
-    merged_bam_sample_index                     = SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                                       // channel: [ val(meta), [ bai ] ]
-    dedup_sample                                = SAMREMOVEDUP_SAMPLE.out.dedup                                                             // channel: [ val(meta), [ bam ] ]
-    dedup_sample_index                          = SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                         // channel: [ val(meta), [ bai ] ]
-    versions                                    = ch_versions                                                                               // channel: [ versions.yml ]
+    mq_filtered_bam             = BP_SAMTOOLS_VIEW_MQ.out.bam                                                                          // channel: [ val(meta), [ bam ] ]
+    mq_filtered_index           = BP_SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                                    // channel: [ val(meta), [ bai ] ]
+    rm_short_reads_bam          = params.readlength == "auto" ? BP_RM_SHORT_READS.out.bam : Channel.empty()                            // channel: [ val(meta), [ bam ] ]
+    rm_short_reads_index        = params.readlength == "auto" ? BP_RM_SHORT_READS_INDEX.out.bai : Channel.empty()                      // channel: [ val(meta), [ bai ] ]
+    merged_bam_lib              = BP_SAMTOOLS_MERGE_LIB.out.bam                                                                        // channel: [ val(meta), [ bam ] ]
+    merged_bam_lib_index        = BP_SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                                  // channel: [ val(meta), [ bai ] ]
+    dedup_lib                   = params.readlength == "auto" ? BP_RM_SHORT_READS.out.bam : BP_SAMREMOVEDUP_LIB.out.dedup              // channel: [ val(meta), [ bam ] ]
+    dedup_lib_index             = params.readlength == "auto" ? BP_RM_SHORT_READS_INDEX.out.bai : BP_SAMREMOVEDUP_LIB_INDEX.out.bai    // channel: [ val(meta), [ bai ] ]
+    mapdamage2_rescaled_bam     = params.mapdamage2_rescale.toBoolean() ? BP_MAPDAMAGE2.out.rescaled_bam : Channel.empty()             // channel: [ val(meta), [ bam ] ]
+    mapdamage2_rescaled_index   = params.mapdamage2_rescale.toBoolean() ? BP_MAPDAMAGE2_INDEX.out.bai : Channel.empty()                // channel: [ val(meta), [ bai ] ]
+    rm_trans_bam                = params.remove_transitions.toBoolean() ? BP_RM_TRANSITIONS.out.rm_trans_bam : Channel.empty()         // channel: [ val(meta), [ bam ] ]
+    rm_trans_index              = params.remove_transitions.toBoolean() ? BP_RM_TRANSITIONS_INDEX.out.bai : Channel.empty()            // channel: [ val(meta), [ bai ] ]
+    merged_bam_sample           = BP_SAMTOOLS_MERGE_SAMPLE.out.bam                                                                     // channel: [ val(meta), [ bam ] ]
+    merged_bam_sample_index     = BP_SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                                               // channel: [ val(meta), [ bai ] ]
+    dedup_sample                = BP_SAMREMOVEDUP_SAMPLE.out.dedup                                                                     // channel: [ val(meta), [ bam ] ]
+    dedup_sample_index          = BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                                 // channel: [ val(meta), [ bai ] ]
+    realigned_bam               = params.indel_realignment.toBoolean() ? BP_GATK_INDEL_REALIGNER.out.realigned_bam : Channel.empty()   // channel: [ val(meta), [ bam ] ]
+    realigned_bam_index         = params.indel_realignment.toBoolean() ? BP_GATK_INDEL_REALIGNER_INDEX.out.bai : Channel.empty()       // channel: [ val(meta), [ bai ] ]
+    versions                    = ch_versions                                                                                          // channel: [ versions.yml ]
 }

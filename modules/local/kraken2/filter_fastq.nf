@@ -1,9 +1,9 @@
 process FILTER_FASTQ {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_filter_fastq'
 
     conda "bioconda::seqtk=1.4"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.singularity_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/seqtk:b3f4cb75b2c12d62' :
         'community.wave.seqera.io/library/seqtk:1.4--f2bbc7882319500b' }"
 

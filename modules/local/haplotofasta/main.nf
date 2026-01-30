@@ -1,9 +1,9 @@
 process HAPLOTOFASTA {
     tag "$meta.id"
-    label 'process_medium'
+    label 'process_haplotofasta'
 
     conda "conda-forge::python=3.13.0 conda-forge::pandas=2.2.3"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/pandas_python:b56517cc205d1f0a' :
         'community.wave.seqera.io/library/pandas_python:fd8290c2da2fd6ae' }"
 

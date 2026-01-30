@@ -7,4 +7,7 @@ assets/test-*.config
 assets/samplesheet-*.csv
 assets/samplesheet_*.csv
 !assets/samplesheet-example.csv
+assets/*/*.csv
+assets/*/*.config
 bin/deamstrip.py
+bin/AdaptClean

@@ -3,7 +3,7 @@ process REPEATMASKER {
     label 'process_repeatmasker'
 
     conda "bioconda::repeatmasker=4.1.8"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/repeatmasker:4.1.8--pl5321hdfd78af_0' :
         'quay.io/biocontainers/repeatmasker:4.1.8--pl5321hdfd78af_0' }"
 

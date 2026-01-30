@@ -1,6 +1,6 @@
 process MERGE_IDXSTATS {
     tag "${meta.id}"
-    label 'process_medium'
+    label 'process_merge_idxstats'
 
     conda "conda-forge::gawk=5.3.1"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
@@ -12,7 +12,7 @@ process MERGE_IDXSTATS {
     tuple val(meta), path(input_files, stageAs: "?/*")
 
     output:
-    tuple val(meta), path("${meta.id}.idxstats.txt")    , emit: merged_idxstats
+    tuple val(meta), path("${meta.id}.idxstats.tsv")    , emit: merged_idxstats
     path "versions.yml"                                 , emit: versions
 
     script:
@@ -32,7 +32,7 @@ process MERGE_IDXSTATS {
             out = out OFS \$col
         }
         print out
-    }' > ${prefix}.idxstats.txt
+    }' > ${prefix}.idxstats.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

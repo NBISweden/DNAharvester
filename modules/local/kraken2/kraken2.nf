@@ -3,13 +3,13 @@ process KRAKEN2 {
     label 'process_kraken2'
 
     conda "bioconda::kraken2=2.1.3"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.singularity_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/kraken2:eed6d8ea184673ff' :
         'community.wave.seqera.io/library/kraken2:3773f4955380979e' }"
 
     input:
     tuple val(meta) , path(reads)
-    path(kraken2_db)
+    path(kraken2_database)
 
     output:
     tuple val(meta), path("*.kraken2")     , emit: kraken2_output
@@ -26,7 +26,7 @@ process KRAKEN2 {
     """
     kraken2 \\
         $reads $args \\
-        --db ${kraken2_db} \\
+        --db ${kraken2_database} \\
         --threads ${task.cpus} \\
         --report-minimizer-data \\
         --use-names \\

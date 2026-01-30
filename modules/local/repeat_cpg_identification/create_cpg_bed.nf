@@ -1,9 +1,9 @@
 process CREATE_CPG_BED {
     tag "$fasta"
-    label 'process_low'
+    label 'process_create_cpg_bed'
 
     conda "conda-forge::biopython=1.79"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/biopython:1.79' :
         'quay.io/biocontainers/biopython:1.79' }"
 

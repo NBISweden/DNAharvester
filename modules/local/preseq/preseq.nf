@@ -1,9 +1,9 @@
 process PRESEQ {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_preseq'
 
     conda "bioconda::preseq=3.2.0"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/preseq:79160ee386f5eed6' :
         'community.wave.seqera.io/library/preseq:3.2.0--2789d8b704b33613' }"
 

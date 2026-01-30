@@ -1,25 +1,27 @@
-process SEQ_STATS {
+process MAPPING_METRICS_SAMPLE {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_mapping_metrics_sample'
 
-    conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1"
-    container "${ workflow.containerEngine == 'apptainer' && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/samtools_gawk:47334f042a11e64b' :
-        'community.wave.seqera.io/library/samtools_gawk:2f6ad5ac0a3fef78' }"
+    conda "bioconda::samtools=1.21 conda-forge::gawk=5.3.1 conda-forge::jq=1.8.1"
+    container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
+        'oras://community.wave.seqera.io/library/samtools_gawk_jq:0c240a96dd50ca44' :
+        'community.wave.seqera.io/library/samtools_gawk_jq:d2a006aa774b3346' }"
+
 
 
     input:
     tuple val(meta),
-    path(reads),
-    path(fastp_log),
+    path(fastp_json),
     path(raw_bam_flagstat),
     path(mq_filtered_bam_flagstat),
     path(dedup_lib_flagstat),
     path(dedup_lib),
+    path(dpstats),
     path(decoy_flagstat)
 
+
     output:
-    tuple val(meta), path("*.stats.txt")    , emit: stats_txt
+    tuple val(meta), path("*.stats.tsv")    , emit: stats_tsv
     path "versions.yml"                     , emit: versions
 
 
@@ -29,14 +31,14 @@ process SEQ_STATS {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     def reference = task.ext.prefix ?: params.reference.split('/')[-1].replaceFirst(/\.fasta$|\.fa$/, '')
-    def mapping_tool = task.ext.mapping_tool ?: params.mapping_tool
+    def mapping_tool = task.ext.mapping_tool ?: (meta.sample_type == 'ancient' ? params.mapping_tool_ancient : params.mapping_tool_modern)
 
     """
 
     ## collect stats
     id="${prefix}"
-    raw_reads=\$(zcat ${reads} | wc -l | awk '{print \$1 / 4}')
-    merged_reads=\$(cat ${fastp_log} | grep "Read pairs merged" | awk -F ': ' '{sum += \$2} END {if (sum == "") print "NA"; else print sum}')
+    raw_reads=\$(cat ${fastp_json} | jq '.read1_before_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
+    fastp_filtered_reads=\$(cat ${fastp_json} | jq '.summary.after_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
     reference=\$(basename ${reference})
     mapping_tool="${mapping_tool}"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
@@ -45,14 +47,15 @@ process SEQ_STATS {
     filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
+    depth=\$(cat ${dpstats})
     min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
     max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' ${prefix}-samtools-stats)
     mean_reads_len=\$(awk '/^SN/ && /average length/ {print \$4}' ${prefix}-samtools-stats)
     median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=\$3} END {median=total/2; sum=0; for (len in lengths) {sum+=lengths[len]; if (sum>=median) {print len; break}}}' ${prefix}-samtools-stats)
 
     ## write header and row
-    HEADER="id\\traw_reads\\tmerged_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
-    ROW="\$id\\t\$raw_reads\\t\$merged_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
+    HEADER="id\\traw_reads\\tfastp_filtered_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
+    ROW="\$id\\t\$raw_reads\\t\$fastp_filtered_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
 
     ## add optional decoy
 
@@ -62,19 +65,18 @@ process SEQ_STATS {
         ROW+="\\t\$decoy_reads"
     fi
 
-    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
-    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
+    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tdepth\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
+    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$depth\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
 
     ## write output
-    printf "\$HEADER\\n" > ${prefix}.stats.txt
-    printf "\$ROW\\n" >> ${prefix}.stats.txt
-
+    printf "\$HEADER\\n" > ${prefix}.stats.tsv
+    printf "\$ROW\\n" >> ${prefix}.stats.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
         awk: \$(awk --version | head -n 1 | awk '{print \$1, \$2, \$3}')
+        jq: \$(jq --version)
     END_VERSIONS
     """
-
 }
