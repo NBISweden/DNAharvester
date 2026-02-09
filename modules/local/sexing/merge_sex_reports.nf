@@ -24,8 +24,11 @@ process MERGE_SEX_REPORTS {
     import glob
     import sys
 
-    # Read all individual reports
-    reports = glob.glob("*.sex_determination.tsv")
+    # Read all individual reports (handles both X-chr and Y-chr summary files)
+    reports = glob.glob("*_summary.tsv")
+    if not reports:
+        reports = glob.glob("*.tsv")
+
     dfs = [pd.read_csv(f, sep="\\t") for f in reports]
 
     # Merge all reports
