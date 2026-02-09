@@ -19,6 +19,7 @@ include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repe
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
+include { SEXING                     } from "$projectDir/subworkflows/local/sexing/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
 include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
 include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
@@ -305,6 +306,16 @@ workflow {
         ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 12. SEXING
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.sexing.toBoolean() ) {
+        SEXING (
+            BAM_PROCESSING.out.dedup_sample
+        )
+        ch_all_versions = ch_all_versions.mix(SEXING.out.versions)
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
