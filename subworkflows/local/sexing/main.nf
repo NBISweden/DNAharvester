@@ -24,16 +24,11 @@ include { MERGE_SEX_REPORTS as S_MERGE_Y_CHR_REPORTS  } from '../../../modules/l
 
 workflow SEXING {
     take:
+    workflow_name
     processed_bam
 
     main:
     ch_versions = Channel.empty()
-    ch_x_sex_reports = Channel.empty()
-    ch_x_sex_summary = Channel.empty()
-    ch_y_sex_reports = Channel.empty()
-    ch_y_sex_summary = Channel.empty()
-    ch_x_merged_summary = Channel.empty()
-    ch_y_merged_summary = Channel.empty()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 1. Run samtools idxstats to get the number of reads mapped to each reference sequence
@@ -54,16 +49,13 @@ workflow SEXING {
             params.sexing_autosomes
         )
         ch_versions = ch_versions.mix(S_X_CHR_SEXING.out.versions)
-        ch_x_sex_reports = S_X_CHR_SEXING.out.sex_report
-        ch_x_sex_summary = S_X_CHR_SEXING.out.sex_summary
-
-        // Merge X-chr sex reports
-        S_MERGE_X_CHR_REPORTS (
-            ch_x_sex_summary.map { meta, report -> report }.collect()
-        )
-        ch_versions = ch_versions.mix(MERGE_X_CHR_REPORTS.out.versions)
-        ch_x_merged_summary = MERGE_X_CHR_REPORTS.out.summary
     }
+
+     // Concatenate all output files
+    def ch_merged_x_chr_report = S_X_CHR_SEXING.out.sex_summary
+        .map { it[1] }
+        .collectFile(name: "${workflow_name}_x_chr_sexing_summary.tsv", keepHeader: true, skip: 1, sort: true)
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 3. Y-chromosome sex determination (if sexing_y_chr is provided)
@@ -89,12 +81,13 @@ workflow SEXING {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+
+
+
+
+
+
     emit:
-    x_sex_reports       = ch_x_sex_reports          // channel: [ meta, x_chr_sexing.tsv ]
-    x_sex_summary       = ch_x_sex_summary          // channel: [ meta, x_chr_sexing_summary.tsv ]
-    x_merged_summary    = ch_x_merged_summary       // channel: [ sex_determination_summary.tsv ]
-    y_sex_reports       = ch_y_sex_reports          // channel: [ meta, y_chr_sexing.tsv ]
-    y_sex_summary       = ch_y_sex_summary          // channel: [ meta, y_chr_sexing_summary.tsv ]
-    y_merged_summary    = ch_y_merged_summary       // channel: [ sex_determination_summary.tsv ]
     versions            = ch_versions               // channel: [ versions.yml ]
 }
