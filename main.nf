@@ -312,6 +312,7 @@ workflow {
 
     if ( params.sexing.toBoolean() ) {
         SEXING (
+            workflow_name,
             BAM_PROCESSING.out.dedup_sample
         )
         ch_all_versions = ch_all_versions.mix(SEXING.out.versions)
