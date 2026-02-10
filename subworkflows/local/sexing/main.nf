@@ -48,7 +48,7 @@ workflow SEXING {
         // Concatenate all output files
         ch_merged_x_chr_sexing = S_X_CHR_SEXING.out.sexing_summary
             .map { it[1] }
-            .collectFile(name: "${workflow_name}_x_chr_sexing_summary.tsv", keepHeader: true, skip: 1, sort: true)
+            .collectFile(name: "${workflow_name}_x_chr_sexing_summary.tsv", keepHeader: true, skip: 1, sort: true, storeDir: "${params.outdir}/10_sexing/")
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ workflow SEXING {
         // Concatenate all output files
         ch_merged_y_chr_sexing = S_Y_CHR_SEXING.out.sexing_report
             .map { it[1] }
-            .collectFile(name: "${workflow_name}_y_chr_sexing_summary.tsv", keepHeader: true, skip: 1, sort: true)
+            .collectFile(name: "${workflow_name}_y_chr_sexing_summary.tsv", keepHeader: true, skip: 1, sort: true, storeDir: "${params.outdir}/10_sexing/")
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
