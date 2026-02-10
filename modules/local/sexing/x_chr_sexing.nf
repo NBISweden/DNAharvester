@@ -13,10 +13,10 @@ process X_CHR_SEXING {
     val (autosomes)
 
     output:
-    tuple val(meta), path("${meta.id}.x_chr_sexing.tsv"), emit: sex_report
-    tuple val(meta), path("${meta.id}.x_chr_sexing_summary.tsv"), emit: sex_summary
-    tuple val(meta), path("${meta.id}.x_chr_ploidy.pdf"), emit: ploidy_plot
-    path "versions.yml"                                 , emit: versions
+    tuple val(meta), path("${meta.id}.x_chr_sexing.tsv")            , emit: sexing_report
+    tuple val(meta), path("${meta.id}.x_chr_sexing_summary.tsv")    , emit: sexing_summary
+    tuple val(meta), path("${meta.id}.x_chr_ploidy.pdf")            , emit: sexing_ploidy_plot
+    path "versions.yml"                                             , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -146,14 +146,14 @@ process X_CHR_SEXING {
     # Labels and title
     ax.set_xlabel("Chromosome", fontsize=10)
     ax.set_ylabel("Relative ploidy", fontsize=10)
-    ax.set_title(f"Chromosome ploidy - {sample_id} (Sex call: {sex_call})", fontsize=12, fontweight='bold')
+    ax.set_title(f"Chromosome ploidy - {sample_id}", fontsize=12, fontweight='bold')
 
     # Set y-axis limits and integer ticks only
     y_max = max(3, int(plot_df["ploidy"].max()) + 1)
     ax.set_ylim(0, y_max)
     ax.set_yticks(range(0, y_max + 1))
 
-    # Legend (only Autosome and X chromosome)
+    # Legend
     ax.legend(loc='upper right', fontsize=9)
 
     plt.tight_layout()
