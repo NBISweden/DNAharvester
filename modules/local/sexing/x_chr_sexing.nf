@@ -1,11 +1,11 @@
 process X_CHR_SEXING {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_x_chr_sexing'
 
-    conda "conda-forge::python=3.11 conda-forge::pandas=2.0"
+    conda "conda-forge::pandas=2.3.3 conda-forge::matplotlib=3.10.1"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/pandas:2.0.3' :
-        'quay.io/biocontainers/pandas:2.0.3' }"
+        'oras://community.wave.seqera.io/library/matplotlib_pandas:8965e9dfe0245807' :
+        'community.wave.seqera.io/library/matplotlib_pandas:76f3c63ec67531f0' }"
 
     input:
     tuple val(meta), path(idxstats)
@@ -15,6 +15,7 @@ process X_CHR_SEXING {
     output:
     tuple val(meta), path("${meta.id}.x_chr_sexing.tsv"), emit: sex_report
     tuple val(meta), path("${meta.id}.x_chr_sexing_summary.tsv"), emit: sex_summary
+    tuple val(meta), path("${meta.id}.x_chr_ploidy.pdf"), emit: ploidy_plot
     path "versions.yml"                                 , emit: versions
 
     when:
@@ -28,6 +29,7 @@ process X_CHR_SEXING {
     #!/usr/bin/env python3
 
     import pandas as pd
+    import matplotlib.pyplot as plt
     import sys
 
     # Parameters
@@ -104,10 +106,65 @@ process X_CHR_SEXING {
     summary_df = pd.DataFrame([summary])
     summary_df.to_csv("${meta.id}.x_chr_sexing_summary.tsv", sep="\\t", index=False)
 
+    # Create ploidy plot
+    # Calculate expected ploidy: normalize each chr to autosomal average (diploid = 2x)
+    auto_mean_normalized = auto_normalized
+
+    # Add ploidy column to output_df
+    plot_df = output_df.copy()
+    plot_df["ploidy"] = (plot_df["normalized_mapped_reads"] / auto_mean_normalized) * 2 if auto_mean_normalized > 0 else 0
+
+    # Separate autosomes and X chromosome
+    auto_plot = plot_df[plot_df["chr_type"] == "autosome"]
+    x_plot = plot_df[plot_df["chr_type"] == "X"]
+
+    # Create the plot
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    # Plot autosomes as black dots
+    ax.scatter(range(len(auto_plot)), auto_plot["ploidy"],
+               c='black', s=80, marker='o', label='Autosome', zorder=3)
+
+    # Plot X chromosome as red X marker
+    x_position = len(auto_plot)
+    if len(x_plot) > 0:
+        ax.scatter([x_position], x_plot["ploidy"],
+                   c='red', s=150, marker='x', linewidths=3, label='X chromosome', zorder=3)
+
+    # Add horizontal lines at highest and lowest autosome ploidy values
+    if len(auto_plot) > 0:
+        auto_max = auto_plot["ploidy"].max()
+        auto_min = auto_plot["ploidy"].min()
+        ax.axhline(y=auto_max, color='gray', linestyle='--', alpha=0.5)
+        ax.axhline(y=auto_min, color='gray', linestyle='--', alpha=0.5)
+
+    # X-axis labels
+    all_chrs = list(auto_plot["chr"]) + list(x_plot["chr"])
+    ax.set_xticks(range(len(all_chrs)))
+    ax.set_xticklabels(all_chrs, rotation=45, ha='right', fontsize=8)
+
+    # Labels and title
+    ax.set_xlabel("Chromosome", fontsize=10)
+    ax.set_ylabel("Relative ploidy", fontsize=10)
+    ax.set_title(f"Chromosome ploidy - {sample_id} (Sex call: {sex_call})", fontsize=12, fontweight='bold')
+
+    # Set y-axis limits and integer ticks only
+    y_max = max(3, int(plot_df["ploidy"].max()) + 1)
+    ax.set_ylim(0, y_max)
+    ax.set_yticks(range(0, y_max + 1))
+
+    # Legend (only Autosome and X chromosome)
+    ax.legend(loc='upper right', fontsize=9)
+
+    plt.tight_layout()
+    plt.savefig("${meta.id}.x_chr_ploidy.pdf", dpi=300, bbox_inches='tight')
+    plt.close()
+
     # Versions
     with open("versions.yml", "w") as f:
         f.write('"${task.process}":\\n')
         f.write(f"    python: {sys.version.split()[0]}\\n")
         f.write(f"    pandas: {pd.__version__}\\n")
+        f.write(f"    matplotlib: {plt.matplotlib.__version__}\\n")
     """
 }
