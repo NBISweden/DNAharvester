@@ -32,7 +32,6 @@ process BCFTOOLS_CALL {
     bcftools mpileup \\
         -q ${mapQ} \\
         -Q ${baseQ} \\
-        -B \\
         -Ou \\
         -f ${fasta} \\
         -a FORMAT/DP \\
