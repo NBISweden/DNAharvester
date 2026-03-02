@@ -35,17 +35,11 @@ workflow BAM_PROCESSING {
     ch_versions = Channel.empty()
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 1. Mapping Quality Filtering, Merging BAM files per library/PCR and deduplication
+    // 1. Merging BAM files per library/PCR; Mapping Quality Filtering; Removing duplicates
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Filter for mapping quality (provided in custom.config)
-    BP_SAMTOOLS_VIEW_MQ ( bam )
-    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ.out.versions )
-    BP_SAMTOOLS_VIEW_MQ_INDEX ( BP_SAMTOOLS_VIEW_MQ.out.bam )
-    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ_INDEX.out.versions )
-
     // Prepare BAM files for merging per library/PCR
-    ch_bam_lib_to_merge = BP_SAMTOOLS_VIEW_MQ.out.bam.map { meta, bam ->
+    ch_bam_lib_to_merge = bam.map { meta, bam ->
         def new_meta = meta.clone()
         new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1] // remove lane info from id for merging all bams per library_id
         new_meta.remove('single_end') // remove single_end info from meta as the same library can have both single-end and paired-end data
@@ -59,8 +53,14 @@ workflow BAM_PROCESSING {
     BP_SAMTOOLS_MERGE_LIB_INDEX ( BP_SAMTOOLS_MERGE_LIB.out.bam )
     ch_versions = ch_versions.mix(BP_SAMTOOLS_MERGE_LIB_INDEX.out.versions)
 
+    // Filter for mapping quality (provided in custom.config)
+    BP_SAMTOOLS_VIEW_MQ ( BP_SAMTOOLS_MERGE_LIB.out.bam )
+    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ.out.versions )
+    BP_SAMTOOLS_VIEW_MQ_INDEX ( BP_SAMTOOLS_VIEW_MQ.out.bam )
+    ch_versions = ch_versions.mix ( BP_SAMTOOLS_VIEW_MQ_INDEX.out.versions )
+
     // Remove duplicates from BAM files merged per library/PCR
-    BP_SAMREMOVEDUP_LIB ( BP_SAMTOOLS_MERGE_LIB.out.bam, reference )
+    BP_SAMREMOVEDUP_LIB ( BP_SAMTOOLS_VIEW_MQ.out.bam, reference )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB.out.versions)
     BP_SAMREMOVEDUP_LIB_INDEX ( BP_SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB_INDEX.out.versions)
