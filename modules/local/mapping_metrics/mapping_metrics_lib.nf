@@ -42,7 +42,9 @@ process MAPPING_METRICS_LIB {
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
     filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v fastp_filtered_reads=\$fastp_filtered_reads 'BEGIN { if (fastp_filtered_reads > 0) print ((filtered_reads / fastp_filtered_reads)*100); else print 0 }')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    library_complexity=\$(awk -v uniq_reads=\$uniq_reads -v filtered_reads=\$filtered_reads 'BEGIN { if (filtered_reads > 0) print ((uniq_reads / filtered_reads)*100); else print 0 }')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
     min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
     max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' ${prefix}-samtools-stats)
@@ -61,8 +63,8 @@ process MAPPING_METRICS_LIB {
         ROW+="\\t\$decoy_reads"
     fi
 
-    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
-    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
+    HEADER+="\\tmq_filter\\tfiltered_reads\\tendogenous_DNA\\tunique_reads\\tlibrary_complexity\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
+    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$endogenous_DNA\\t\$uniq_reads\\t\$library_complexity\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
 
     ## write output
     printf "\$HEADER\\n" > ${prefix}.stats.tsv
