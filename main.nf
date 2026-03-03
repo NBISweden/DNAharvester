@@ -283,7 +283,8 @@ workflow {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples_bam,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
         }

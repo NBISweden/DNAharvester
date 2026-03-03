@@ -11,6 +11,7 @@ process ANGSD_VARIANT_CALLING {
     tuple val(meta), path(bam)
     tuple val(meta2), path(fasta)
     tuple val(meta2), path(fai)
+    tuple val(meta2), path(bed_file)
 
     output:
     tuple val(meta), path("*.arg")                   , emit: angsd_log
@@ -28,10 +29,17 @@ process ANGSD_VARIANT_CALLING {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def filters = task.ext.filters ?: "${params.angsd_filters}"
+    def has_regions = !(meta2.id == 'null' && bed_file.name == 'null')
+    def regions_file = has_regions ? "-rf ${prefix}.regions.rf" : ""
 
 
     """
     ls -1 *.bam > ${prefix}.bamlist.txt
+
+    # Create regions file for ANGSD if BED file is provided 
+    # or if repeat-masked BED file is generated via 
+    # repeat_cpg_identification
+    ${has_regions ? "awk '{print \$1 \":\" \$2+1 \"-\" \$3}' ${bed_file} > ${prefix}.regions.rf" : ""}
 
     angsd -bam ${prefix}.bamlist.txt \\
     -ref $fasta \\
@@ -44,6 +52,7 @@ process ANGSD_VARIANT_CALLING {
     -GL 1 \\
     -doPost 1 \\
     -doBcf 1 \\
+    ${regions_file} \\
     -nThreads ${task.cpus} \\
     -out ${prefix} \\
     ${filters} \\
