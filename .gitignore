@@ -1,7 +1,7 @@
 .nextflow*
 .nf-core*
 work/*
-results/*
+results*/*
 bin/AMBER*
 assets/test-*.config
 assets/samplesheet-*.csv
