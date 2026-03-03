@@ -30,16 +30,18 @@ process ANGSD_VARIANT_CALLING {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def filters = task.ext.filters ?: "${params.angsd_filters}"
     def has_regions = !(meta2.id == 'null' && bed_file.name == 'null')
-    def regions_file = has_regions ? "-rf ${prefix}.regions.rf" : ""
+    def regions_file = has_regions ? '-rf "$regions_rf"' : ""
 
 
     """
     ls -1 *.bam > ${prefix}.bamlist.txt
 
+    ${has_regions ? "regions_rf=\"\$(basename ${bed_file} .bed).rf\"" : ""}
+
     # Create regions file for ANGSD if BED file is provided 
     # or if repeat-masked BED file is generated via 
     # repeat_cpg_identification
-    ${has_regions ? "awk '{print \$1 \":\" \$2+1 \"-\" \$3}' ${bed_file} > ${prefix}.regions.rf" : ""}
+    ${has_regions ? "awk '{print \$1 \":\" \$2+1 \"-\" \$3}' ${bed_file} > \"\$regions_rf\"" : ""}
 
     angsd -bam ${prefix}.bamlist.txt \\
     -ref $fasta \\
