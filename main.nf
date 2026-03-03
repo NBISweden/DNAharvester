@@ -274,14 +274,9 @@ workflow {
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
         // Variant calling with ANGSD
-        
-        // ANGSD accepts BAM-only input, create a BAM-only channel
-        ch_all_dedup_samples_bam = ch_all_dedup_samples
-            .map { meta, bam, bai -> tuple(meta, bam) }
-        
         if ( params.variant_calling_angsd.toBoolean() ) {
             VARIANT_CALLING_ANGSD (
-                ch_all_dedup_samples_bam,
+                ch_all_dedup_samples,
                 ch_reference,
                 params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
                 ch_regions
