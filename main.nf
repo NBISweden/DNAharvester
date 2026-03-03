@@ -239,24 +239,37 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.variant_calling.toBoolean() ) {
-        // Collecting processed BAM files for all samples
+        // Collecting processed BAM and BAI files for all samples
         ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
-            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .join(BAM_PROCESSING.out.dedup_sample_index)
+            .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
+
+        // Input channel for regions file with positions included in variant calling
+        ch_regions_included = params.regions_file ?
+            Channel.fromPath(params.regions_file, checkIfExists: true)
+                .map { it -> [[id: it.name], it] }.collect() :
+            Channel.value([[id: 'null'], file('null')])
 
         // Variant calling with BCFTOOLS
         if ( params.variant_calling_bcftools.toBoolean() ) {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions_included
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
         // Variant calling with ANGSD
+        
+        // ANGSD accepts BAM-only input, create a BAM-only channel
+        ch_all_dedup_samples_bam = ch_all_dedup_samples
+            .map { meta, bam, bai -> tuple(meta, bam) }
+        
         if ( params.variant_calling_angsd.toBoolean() ) {
             VARIANT_CALLING_ANGSD (
-                ch_all_dedup_samples,
+                ch_all_dedup_samples_bam,
                 ch_reference,
                 params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
             )
