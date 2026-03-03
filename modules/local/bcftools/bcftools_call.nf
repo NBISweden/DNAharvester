@@ -11,7 +11,7 @@ process BCFTOOLS_CALL {
     tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(fasta)
     tuple val(meta2), path(fai)
-    tuple val(meta4), path(regions)
+    tuple val(meta4), path(bed)
 
     output:
     tuple val(meta), path("*_sorted.bcf")              , emit: sorted_bcf
@@ -27,7 +27,7 @@ process BCFTOOLS_CALL {
     def mapQ = task.ext.mapQ ?: "${params.mapping_quality}"
     def baseQ = task.ext.baseQ ?: "${params.bcftools_base_quality}"
     def non_variant_sites = task.ext.non_variant_sites ?: params.bcftools_keep_non_variant_sites.toBoolean() ? '-v' : ''
-    def regionsfile = task.ext.regions_file ?: ((meta4.id == 'null' && regions.name == 'null') ? '' : "-R ${regions}")
+    def regions_file = task.ext.regions ?: ((meta4.id == 'null' && bed.name == 'null') ? '' : "-R ${bed}")
 
 
     """
@@ -39,7 +39,7 @@ process BCFTOOLS_CALL {
         -a FORMAT/DP \\
         ${bam} \\
         --ignore-RG \\
-        ${regionsfile} \\
+        ${regions_file} \\
         $args \\
         --threads ${task.cpus-1} | \\
     bcftools call \\

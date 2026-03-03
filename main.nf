@@ -245,9 +245,10 @@ workflow {
             .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
 
-        // Input channel for regions file with positions included in variant calling
-        ch_regions_included = params.regions_file ?
-            Channel.fromPath(params.regions_file, checkIfExists: true)
+        // Input channel for BED file used to restrict variant calling 
+        // to certain genome regions
+        ch_regions_included = params.regions ?
+            Channel.fromPath(params.regions, checkIfExists: true)
                 .map { it -> [[id: it.name], it] }.collect() :
             Channel.value([[id: 'null'], file('null')])
 
