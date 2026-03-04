@@ -30,35 +30,36 @@ process ANGSD_VARIANT_CALLING {
     def prefix = task.ext.prefix ?: "${meta.id}"
     def filters = task.ext.filters ?: "${params.angsd_filters}"
     def has_regions = !(meta2.id == 'null' && bed_file.name == 'null')
-    def regions_file = has_regions ? '-rf "$regions_rf"' : ""
+    def regions_file = has_regions ? '-sites "$angsd_sites"' : ""
 
 
     """
     ls -1 *.bam > ${prefix}.bamlist.txt
 
-    ${has_regions ? "regions_rf=\"\$(basename ${bed_file} .bed).rf\"" : ""}
+    ${has_regions ? "angsd_sites=\"\$(basename ${bed_file} .bed).angsd\"" : ""}
 
-    # Create regions file for ANGSD if BED file is provided 
-    # or if repeat-masked BED file is generated via 
+    # Create regions file for ANGSD if BED file is provided
+    # or if repeat-masked BED file is generated via
     # repeat_cpg_identification
-    ${has_regions ? "awk '{print \$1 \":\" \$2+1 \"-\" \$3}' ${bed_file} > \"\$regions_rf\"" : ""}
+    ${has_regions ? "awk '{print $1"\t"$2+1"\t"$3}' ${bed_file} > \"\$angsd_sites\"" : ""}
+    ${has_regions ? "angsd sites index \"\$angsd_sites\"" : ""}
 
     angsd -bam ${prefix}.bamlist.txt \\
-    -ref $fasta \\
-    -fai $fai \\
-    -doMaf 1 \\
-    -doMajorMinor 1 \\
-    -dogeno 1 \\
-    -docounts 1 \\
-    -doGlf 2 \\
-    -GL 1 \\
-    -doPost 1 \\
-    -doBcf 1 \\
-    ${regions_file} \\
-    -nThreads ${task.cpus} \\
-    -out ${prefix} \\
-    ${filters} \\
-    $args
+        -ref $fasta \\
+        -fai $fai \\
+        -doMaf 1 \\
+        -doMajorMinor 1 \\
+        -dogeno 1 \\
+        -docounts 1 \\
+        -doGlf 2 \\
+        -GL 1 \\
+        -doPost 1 \\
+        -doBcf 1 \\
+        ${regions_file} \\
+        -nThreads ${task.cpus} \\
+        -out ${prefix} \\
+        ${filters} \\
+        $args
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
