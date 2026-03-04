@@ -143,15 +143,6 @@ workflow {
         ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
     }
 
-    // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ?
-        Channel.fromPath(params.intervals, checkIfExists: true)
-            .map { it -> [[id: it.name], it] }.collect() :
-        (params.repeat_cpg_identification.toBoolean() ?
-            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
-            Channel.value([[id: 'null'], file('null')]) // Provide null file
-        )
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 5. RAW_BAM_QC, BAM_PROCESSING, PROCESSED_BAM_QC
@@ -178,6 +169,20 @@ workflow {
     }
 
     // PROCESSED_BAM_QC
+
+    // Input channel for BED file used to calculate depth for 
+    // certain genome regions. Use the repeat masked bed file 
+    // if repeat_cpg_identification is enabled and no custom BED 
+    // file is provided. If neither is provided, depth is calculated 
+    // for the entire reference genome.
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
+
     if ( params.processed_bam_qc.toBoolean() ) {
         PROCESSED_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
@@ -239,17 +244,32 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.variant_calling.toBoolean() ) {
-        // Collecting processed BAM files for all samples
+        // Collecting processed BAM and BAI files for all samples
         ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
-            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .join(BAM_PROCESSING.out.dedup_sample_index)
+            .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
+
+        // Input channel for BED file used to restrict variant calling 
+        // to certain genome regions. Use the repeat masked bed file 
+        // if repeat_cpg_identification is enabled and no custom BED 
+        // file is provided. If neither is provided, variants are called 
+        // for the entire reference genome.
+        ch_regions = params.regions ?
+            Channel.fromPath(params.regions, checkIfExists: true)
+                .map { it -> [[id: it.name], it] }.collect() :
+            (params.repeat_cpg_identification.toBoolean() ?
+                REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+                Channel.value([[id: 'null'], file('null')]) // Provide null file
+            )
 
         // Variant calling with BCFTOOLS
         if ( params.variant_calling_bcftools.toBoolean() ) {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
@@ -258,7 +278,8 @@ workflow {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
         }

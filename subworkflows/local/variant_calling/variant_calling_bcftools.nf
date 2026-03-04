@@ -15,6 +15,7 @@ workflow VARIANT_CALLING_BCFTOOLS {
     bam
     reference
     fai
+    bed
 
     main:
     ch_versions                     = Channel.empty()
@@ -23,7 +24,7 @@ workflow VARIANT_CALLING_BCFTOOLS {
     // 1. Variant calling with BCFtools and generating raw BCF statistics
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    VCB_BCFTOOLS_CALL ( bam, reference, fai )
+    VCB_BCFTOOLS_CALL ( bam, reference, fai, bed )
     ch_bcf                          = VCB_BCFTOOLS_CALL.out.sorted_bcf
     ch_versions                     = ch_versions.mix(VCB_BCFTOOLS_CALL.out.versions)
 

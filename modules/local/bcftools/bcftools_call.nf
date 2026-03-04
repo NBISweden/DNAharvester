@@ -8,9 +8,10 @@ process BCFTOOLS_CALL {
         'quay.io/biocontainers/bcftools:1.21--h3a4d415_1' }"
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(fasta)
     tuple val(meta2), path(fai)
+    tuple val(meta2), path(bed_file)
 
     output:
     tuple val(meta), path("*_sorted.bcf")              , emit: sorted_bcf
@@ -26,6 +27,7 @@ process BCFTOOLS_CALL {
     def mapQ = task.ext.mapQ ?: "${params.mapping_quality}"
     def baseQ = task.ext.baseQ ?: "${params.bcftools_base_quality}"
     def non_variant_sites = task.ext.non_variant_sites ?: params.bcftools_keep_non_variant_sites.toBoolean() ? '-v' : ''
+    def regions_file = (meta2.id == 'null' && bed_file.name == 'null') ? "" : "-R ${bed_file}"
 
 
     """
@@ -37,6 +39,7 @@ process BCFTOOLS_CALL {
         -a FORMAT/DP \\
         ${bam} \\
         --ignore-RG \\
+        ${regions_file} \\
         $args \\
         --threads ${task.cpus-1} | \\
     bcftools call \\
