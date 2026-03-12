@@ -41,7 +41,7 @@ process ANGSD_VARIANT_CALLING {
     # Create regions file for ANGSD if BED file is provided
     # or if repeat-masked BED file is generated via
     # repeat_cpg_identification
-    ${has_regions ? "awk '{print $1"\t"$2+1"\t"$3}' ${bed_file} > \"\$angsd_sites\"" : ""}
+    ${has_regions ? "awk '{print \$1\"\\t\"\$2+1\"\\t\"\$3}' ${bed_file} > \"\$angsd_sites\"" : ""}
     ${has_regions ? "angsd sites index \"\$angsd_sites\"" : ""}
 
     angsd -bam ${prefix}.bamlist.txt \\
