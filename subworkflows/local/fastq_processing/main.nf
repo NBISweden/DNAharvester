@@ -2,7 +2,6 @@
 
 include { FASTP         as FP_FASTP         }       from '../../../modules/local/fastp/main.nf'
 include { KRAKEN2       as FP_KRAKEN2       }       from '../../../modules/local/kraken2/kraken2.nf'
-include { FILTER_FASTQ  as FP_FILTER_FASTQ  }       from '../../../modules/local/kraken2/filter_fastq.nf'
 include { ADAPTCLEAN    as FP_ADAPTCLEAN    }       from '../../../modules/local/adaptclean/adaptclean.nf'
 
 
@@ -88,27 +87,17 @@ workflow FASTQ_PROCESSING {
     // 2. Kraken2 Classification and Filtering
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    def ch_processed_reads
     // If Kraken2 classification is enabled, run Kraken2 and filter out classified reads
     if ( params.kraken2_filtering.toBoolean() ) {
         FP_KRAKEN2 ( ch_adapter_removed_reads, kraken2_database )
         ch_versions = ch_versions.mix(FP_KRAKEN2.out.versions)
 
-        ch_kraken2_filtering = ch_adapter_removed_reads.join(FP_KRAKEN2.out.kraken2_output)
-
-        FP_FILTER_FASTQ ( ch_kraken2_filtering )
-        ch_versions = ch_versions.mix(FP_FILTER_FASTQ.out.versions)
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    // Determine final processed reads based on Kraken2 filtering set or not
-    def ch_processed_reads
-    if ( params.kraken2_filtering.toBoolean() ) {
-        ch_processed_reads = FP_FILTER_FASTQ.out.filtered_reads
+        // Keep only unclassified reads for downstream processing
+        ch_processed_reads = FP_KRAKEN2.out.kraken2_unclassified
     } else {
         ch_processed_reads = ch_adapter_removed_reads
     }
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
