@@ -4,17 +4,18 @@ process KRAKEN2 {
 
     conda "bioconda::kraken2=2.1.3"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
-        'oras://community.wave.seqera.io/library/kraken2:eed6d8ea184673ff' :
-        'community.wave.seqera.io/library/kraken2:3773f4955380979e' }"
+        'oras://community.wave.seqera.io/library/kraken2_pigz:c88f720548c3d49a' :
+        'community.wave.seqera.io/library/kraken2_pigz:be4a80723677f716' }"
 
     input:
     tuple val(meta) , path(reads)
     path(kraken2_database)
 
     output:
-    tuple val(meta), path("*.kraken2")     , emit: kraken2_output
-    tuple val(meta), path("*.output")      , emit: kraken2_report
-    path "versions.yml"                    , emit: versions
+    tuple val(meta), path("*.kraken2.out")                  , emit: kraken2_output
+    tuple val(meta), path("*.report.txt")                   , emit: kraken2_report
+    tuple val(meta), path("*.kraken_unclassified.fq.gz")    , emit: kraken2_unclassified
+    path "versions.yml"                                     , emit: versions
 
     when:
     task.ext.when == null || task.ext.when
@@ -25,14 +26,19 @@ process KRAKEN2 {
 
     """
     kraken2 \\
-        $reads $args \\
         --db ${kraken2_database} \\
-        --threads ${task.cpus} \\
+        --gzip-compressed \\
         --report-minimizer-data \\
-        --use-names \\
-        --output ${prefix}.kraken2 \\
-        --report ${prefix}.output
+        --unclassified-out ${prefix}.kraken_unclassified.fq \\
+        --memory-mapping \\
+        --confidence 0.05 \\
+        --output ${prefix}.kraken2.out \\
+        --report ${prefix}.report.txt \\
+        --threads ${task.cpus} \\
+        ${args} \\
+        ${reads}
 
+    pigz -p ${task.cpus} ${prefix}.kraken_unclassified.fq
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
