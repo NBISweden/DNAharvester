@@ -2,7 +2,7 @@ process KRAKEN2 {
     tag "$meta.id"
     label 'process_kraken2'
 
-    conda "bioconda::kraken2=2.1.3"
+    conda "bioconda::kraken2=2.1.3 conda-forge::pigz=2.8"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
         'oras://community.wave.seqera.io/library/kraken2_pigz:c88f720548c3d49a' :
         'community.wave.seqera.io/library/kraken2_pigz:be4a80723677f716' }"
@@ -27,11 +27,8 @@ process KRAKEN2 {
     """
     kraken2 \\
         --db ${kraken2_database} \\
-        --gzip-compressed \\
         --report-minimizer-data \\
         --unclassified-out ${prefix}.kraken_unclassified.fq \\
-        --memory-mapping \\
-        --confidence 0.05 \\
         --output ${prefix}.kraken2.out \\
         --report ${prefix}.report.txt \\
         --threads ${task.cpus} \\
