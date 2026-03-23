@@ -15,15 +15,6 @@ Main workflow of the Pipeline:
 
 <img src="docs/images/DNAharvester_metromap.png"/>
 
-Optional workflows: Iterative assembly of mitogenomes using MIA
-
-<img src="docs/images/DNAharvester_metromap_mia.png"/>
-
-Optional workflows: Species identification by mapping to multiple reference genomes
-
-<img src="docs/images/DNAharvester_metromap_si.png"/>
-
-
 ## Citation
 
 If you've used DNAharvester pipeline to produce results, please cite our paper:
