@@ -25,6 +25,9 @@ process SPLIT_FASTQ {
 
     if (meta.single_end) {
         """
+        echo -n | gzip > ${prefix}_short.fastq.gz
+        echo -n | gzip > ${prefix}_long.fastq.gz
+
         zcat ${reads} | awk -v minlen=${split_readlen} '
         {
             if(NR%4==1) header=\$0;
@@ -46,6 +49,11 @@ process SPLIT_FASTQ {
         """
     } else {
         """
+        echo -n | gzip > ${prefix}_R1_short.fastq.gz
+        echo -n | gzip > ${prefix}_R1_long.fastq.gz
+        echo -n | gzip > ${prefix}_R2_short.fastq.gz
+        echo -n | gzip > ${prefix}_R2_long.fastq.gz
+
         ### Process Read 1
         zcat ${reads[0]} | awk -v minlen=${split_readlen} '
         {
