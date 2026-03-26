@@ -170,10 +170,10 @@ workflow {
 
     // PROCESSED_BAM_QC
 
-    // Input channel for BED file used to calculate depth for 
-    // certain genome regions. Use the repeat masked bed file 
-    // if repeat_cpg_identification is enabled and no custom BED 
-    // file is provided. If neither is provided, depth is calculated 
+    // Input channel for BED file used to calculate depth for
+    // certain genome regions. Use the repeat masked bed file
+    // if repeat_cpg_identification is enabled and no custom BED
+    // file is provided. If neither is provided, depth is calculated
     // for the entire reference genome.
     ch_intervals = params.intervals ?
         Channel.fromPath(params.intervals, checkIfExists: true)
@@ -213,7 +213,7 @@ workflow {
             workflow_name,
             FASTQ_PROCESSING.out.fastp_json,
             RAW_BAM_QC.out.flagstat,
-            PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
+            params.readlength == "auto" ? PROCESSED_BAM_QC.out.rm_short_reads_bam_flagstat : PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib,
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
@@ -250,10 +250,10 @@ workflow {
             .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
 
-        // Input channel for BED file used to restrict variant calling 
-        // to certain genome regions. Use the repeat masked bed file 
-        // if repeat_cpg_identification is enabled and no custom BED 
-        // file is provided. If neither is provided, variants are called 
+        // Input channel for BED file used to restrict variant calling
+        // to certain genome regions. Use the repeat masked bed file
+        // if repeat_cpg_identification is enabled and no custom BED
+        // file is provided. If neither is provided, variants are called
         // for the entire reference genome.
         ch_regions = params.regions ?
             Channel.fromPath(params.regions, checkIfExists: true)
