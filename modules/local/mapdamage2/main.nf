@@ -50,6 +50,7 @@ process MAPDAMAGE2 {
             $args \\
             $rescale \\
             -l $readlength \\
+            -m $readlength \\
             -d $prefix \\
             -i $bam \\
             -r $fasta
@@ -59,6 +60,7 @@ process MAPDAMAGE2 {
             $args \\
             $rescale \\
             -l $readlength \\
+            -m $readlength \\
             -d $prefix \\
             -i $bam \\
             -r $fasta \\

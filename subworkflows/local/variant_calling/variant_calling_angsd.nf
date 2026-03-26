@@ -9,6 +9,7 @@ workflow VARIANT_CALLING_ANGSD {
     bam
     reference
     fai
+    bed
 
     main:
     ch_versions                     = Channel.empty()
@@ -17,7 +18,7 @@ workflow VARIANT_CALLING_ANGSD {
     // 1. Variant calling with ANGSD and generating raw BCF statistics
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    VCA_ANGSD_VARIANT_CALLING ( bam, reference, fai )
+    VCA_ANGSD_VARIANT_CALLING ( bam, reference, fai, bed )
     ch_bcf                          = VCA_ANGSD_VARIANT_CALLING.out.angsd_bcf
     ch_versions                     = ch_versions.mix(VCA_ANGSD_VARIANT_CALLING.out.versions)
 

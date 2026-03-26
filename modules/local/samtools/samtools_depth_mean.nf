@@ -25,6 +25,7 @@ process SAMTOOLS_DEPTH_MEAN {
     """
     samtools \\
         depth \\
+        -s \\
         --threads ${task.cpus-1} \\
         $args \\
         $intervals \\

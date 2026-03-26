@@ -19,12 +19,12 @@ include { SAMTOOLS_DEPTH_MEAN   as PBQC_SAMTOOLS_DEPTH_MEAN             } from '
 workflow PROCESSED_BAM_QC {
     take:
     reference
+    merged_bam_lib
+    merged_bam_lib_index
     mq_filtered_bam
     mq_filtered_index
     rm_short_reads_bam
     rm_short_reads_bam_index
-    merged_bam_lib
-    merged_bam_lib_index
     dedup_lib
     dedup_lib_index
     merged_bam_sample
@@ -40,6 +40,25 @@ workflow PROCESSED_BAM_QC {
     // 1. Flagstat and MultiQC on processed BAM files
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
+    // merged_bam_lib
+    ch_flagstat_merged_bam_lib               = merged_bam_lib.join(merged_bam_lib_index)
+
+    PBQC_FLAGSTAT_MERGED_BAM_LIB ( ch_flagstat_merged_bam_lib )
+    ch_versions                              = ch_versions.mix(PBQC_FLAGSTAT_MERGED_BAM_LIB.out.versions)
+
+    // Run MultiQC on samtools flagstat output
+    ch_multiqc_merged_bam_lib_files          = PBQC_FLAGSTAT_MERGED_BAM_LIB.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
+    ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
+    ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
+    ch_multiqc_logo                          = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
+
+    PBQC_MULTIQC_MERGED_BAM_LIB (
+        ch_multiqc_merged_bam_lib_files.collect(),
+        ch_multiqc_config.toList(),
+        ch_multiqc_extra_config.toList(),
+        ch_multiqc_logo.toList()
+    )
+    ch_versions                              = ch_versions.mix(PBQC_MULTIQC_MERGED_BAM_LIB.out.versions)
 
     // mq_filtered_bam
     ch_flagstat_mq_filtered_bam              = mq_filtered_bam.join(mq_filtered_index)
@@ -85,49 +104,34 @@ workflow PROCESSED_BAM_QC {
 
     }
 
-    // merged_bam_lib
-    ch_flagstat_merged_bam_lib               = merged_bam_lib.join(merged_bam_lib_index)
-
-    PBQC_FLAGSTAT_MERGED_BAM_LIB ( ch_flagstat_merged_bam_lib )
-    ch_versions                              = ch_versions.mix(PBQC_FLAGSTAT_MERGED_BAM_LIB.out.versions)
-
-    // Run MultiQC on samtools flagstat output
-    ch_multiqc_merged_bam_lib_files          = PBQC_FLAGSTAT_MERGED_BAM_LIB.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
-    ch_multiqc_config                        = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
-    ch_multiqc_extra_config                  = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
-    ch_multiqc_logo                          = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
-
-    PBQC_MULTIQC_MERGED_BAM_LIB (
-        ch_multiqc_merged_bam_lib_files.collect(),
-        ch_multiqc_config.toList(),
-        ch_multiqc_extra_config.toList(),
-        ch_multiqc_logo.toList()
-    )
-    ch_versions                              = ch_versions.mix(PBQC_MULTIQC_MERGED_BAM_LIB.out.versions)
-
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Preseq and Flagstat on deduplicated BAM files
+    // 2. Preseq and Flagstat
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
     // PRESEQ
     if ( params.preseq.toBoolean() ) {
-        ch_preseq_merged_bam_lib           = merged_bam_lib.join(merged_bam_lib_index)
+        // define input for preseq based on readlength parameter
+        if ( params.readlength == "auto" ) {
+            ch_preseq_input = rm_short_reads_bam.join(rm_short_reads_bam_index)
+        } else {
+            ch_preseq_input = mq_filtered_bam.join(mq_filtered_index)
+        }
 
-        PBQC_PRESEQ ( ch_preseq_merged_bam_lib )
-        ch_versions                              = ch_versions.mix(PBQC_PRESEQ.out.versions)
+        PBQC_PRESEQ ( ch_preseq_input )
+        ch_versions                         = ch_versions.mix(PBQC_PRESEQ.out.versions)
 
         PBQC_PLOT_PRESEQ ( PBQC_PRESEQ.out.preseq_txt )
-        ch_versions                              = ch_versions.mix(PBQC_PLOT_PRESEQ.out.versions)
+        ch_versions                         = ch_versions.mix(PBQC_PLOT_PRESEQ.out.versions)
     }
 
     // flagstat dedup_lib
-    ch_flagstat_dedup_lib                    = dedup_lib.join(dedup_lib_index)
+    ch_flagstat_dedup_lib                   = dedup_lib.join(dedup_lib_index)
 
     PBQC_FLAGSTAT_DEDUP_LIB ( ch_flagstat_dedup_lib )
-    ch_versions                              = ch_versions.mix(PBQC_FLAGSTAT_DEDUP_LIB.out.versions)
+    ch_versions                             = ch_versions.mix(PBQC_FLAGSTAT_DEDUP_LIB.out.versions)
 
     // Run MultiQC on samtools flagstat output
-    ch_multiqc_dedup_lib_files               = PBQC_FLAGSTAT_DEDUP_LIB.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
+    ch_multiqc_dedup_lib_files              = PBQC_FLAGSTAT_DEDUP_LIB.out.flagstat.map{ meta, flagstat -> flagstat }.collect()
 
     PBQC_MULTIQC_DEDUP_LIB (
         ch_multiqc_dedup_lib_files.collect(),
@@ -135,10 +139,10 @@ workflow PROCESSED_BAM_QC {
         ch_multiqc_extra_config.toList(),
         ch_multiqc_logo.toList()
     )
-    ch_versions                              = ch_versions.mix(PBQC_MULTIQC_DEDUP_LIB.out.versions)
+    ch_versions                             = ch_versions.mix(PBQC_MULTIQC_DEDUP_LIB.out.versions)
 
     // merged_bam_sample
-    ch_flagstat_merged_bam_sample            = merged_bam_sample.join(merged_bam_sample_index)
+    ch_flagstat_merged_bam_sample           = merged_bam_sample.join(merged_bam_sample_index)
 
     PBQC_FLAGSTAT_MERGED_BAM_SAMPLE ( ch_flagstat_merged_bam_sample )
     ch_versions                              = ch_versions.mix(PBQC_FLAGSTAT_MERGED_BAM_SAMPLE.out.versions)
@@ -189,6 +193,7 @@ workflow PROCESSED_BAM_QC {
     multiqc_dedup_sample_report              = PBQC_MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
     dpstats                                  = PBQC_SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
     mq_filtered_bam_flagstat                 = PBQC_FLAGSTAT_MQ_FILTERED_BAM.out.flagstat                                                               // channel: [ val(meta), path(flagstat) ]
+    rm_short_reads_bam_flagstat              = params.readlength == "auto" ? PBQC_FLAGSTAT_RM_SHORT_READS_BAM.out.flagstat : Channel.empty()            // channel: [ val(meta), path(flagstat) ]
     dedup_lib_flagstat                       = PBQC_FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
     dedup_sample_flagstat                    = PBQC_FLAGSTAT_DEDUP_SAMPLE.out.flagstat                                                                  // channel: [ val(meta), path(flagstat) ]
     preseq_txt                               = params.preseq.toBoolean() ? PBQC_PRESEQ.out.preseq_txt : Channel.empty()                                 // channel: [ val(meta), path(preseq_txt) ]

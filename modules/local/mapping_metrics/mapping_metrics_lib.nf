@@ -12,7 +12,7 @@ process MAPPING_METRICS_LIB {
     tuple val(meta),
     path(fastp_json),
     path(raw_bam_flagstat),
-    path(mq_filtered_bam_flagstat),
+    path(filtered_bam_flagstat),
     path(dedup_lib_flagstat),
     path(dedup_lib),
     path(decoy_flagstat)
@@ -34,15 +34,17 @@ process MAPPING_METRICS_LIB {
 
     ## collect stats
     id="${prefix}"
-    raw_reads=\$(cat ${fastp_json} | jq '.read1_before_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
+    raw_reads_pairs=\$(cat ${fastp_json} | jq '.read1_before_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
     fastp_filtered_reads=\$(cat ${fastp_json} | jq '.summary.after_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
     reference=\$(basename ${reference})
     mapping_tool="${mapping_tool}"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
-    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    filtered_reads=\$(cat ${filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v raw_reads_pairs=\$raw_reads_pairs 'BEGIN { if (raw_reads_pairs > 0) print ((filtered_reads / raw_reads_pairs)*100); else print 0 }')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    library_complexity=\$(awk -v uniq_reads=\$uniq_reads -v filtered_reads=\$filtered_reads 'BEGIN { if (filtered_reads > 0) print ((uniq_reads / filtered_reads)*100); else print 0 }')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
     min_reads_len=\$(awk '/^RL/ {print \$2}' ${prefix}-samtools-stats | head -n 1)
     max_reads_len=\$(awk '/^SN/ && /maximum length/ {print \$4}' ${prefix}-samtools-stats)
@@ -50,8 +52,8 @@ process MAPPING_METRICS_LIB {
     median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=\$3} END {median=total/2; sum=0; for (len in lengths) {sum+=lengths[len]; if (sum>=median) {print len; break}}}' ${prefix}-samtools-stats)
 
     ## write header and row
-    HEADER="id\\traw_reads\\tfastp_filtered_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
-    ROW="\$id\\t\$raw_reads\\t\$fastp_filtered_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
+    HEADER="id\\traw_reads_pairs\\tfastp_filtered_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
+    ROW="\$id\\t\$raw_reads_pairs\\t\$fastp_filtered_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
 
     ## add optional decoy
 
@@ -61,8 +63,8 @@ process MAPPING_METRICS_LIB {
         ROW+="\\t\$decoy_reads"
     fi
 
-    HEADER+="\\tmq_filter\\tfiltered_reads\\tunique_reads\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
-    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$uniq_reads\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
+    HEADER+="\\tmq_filter\\tfiltered_reads\\tendogenous_DNA\\tunique_reads\\tlibrary_complexity\\tmin_read_length\\tmax_read_length\\tmean_read_length\\tmedian_read_length"
+    ROW+="\\t\$mq_filter\\t\$filtered_reads\\t\$endogenous_DNA\\t\$uniq_reads\\t\$library_complexity\\t\$min_reads_len\\t\$max_reads_len\\t\$mean_reads_len\\t\$median_reads_len"
 
     ## write output
     printf "\$HEADER\\n" > ${prefix}.stats.tsv

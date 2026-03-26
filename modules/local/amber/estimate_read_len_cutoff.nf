@@ -29,7 +29,7 @@ process ESTIMATE_READ_LEN_CUTOFF {
 
     """
     ## get the number of reads from filename
-    number_reads=\$(cat ${amber_txt} | awk -F': ' '/^sample:/ {print \$2}' | cut -d'_' -f4)
+    number_reads=\$(cat ${amber_txt} | awk -F': ' '/^sample:/ {print \$2}' | cut -d'_' -f3)
 
     if [ "\$number_reads" -gt 10000 ]; then
         select_read_len_cutoff_amber.py \\

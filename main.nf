@@ -19,6 +19,7 @@ include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repe
 include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
 include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
 include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
+include { SEXING                     } from "$projectDir/subworkflows/local/sexing/main"
 include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
 include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
 include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
@@ -142,15 +143,6 @@ workflow {
         ch_all_versions = ch_all_versions.mix(REPEAT_CPG_IDENTIFICATION.out.versions)
     }
 
-    // Create a channel from repeat masked bed file
-    ch_intervals = params.intervals ?
-        Channel.fromPath(params.intervals, checkIfExists: true)
-            .map { it -> [[id: it.name], it] }.collect() :
-        (params.repeat_cpg_identification.toBoolean() ?
-            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
-            Channel.value([[id: 'null'], file('null')]) // Provide null file
-        )
-
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 5. RAW_BAM_QC, BAM_PROCESSING, PROCESSED_BAM_QC
@@ -177,15 +169,29 @@ workflow {
     }
 
     // PROCESSED_BAM_QC
+
+    // Input channel for BED file used to calculate depth for
+    // certain genome regions. Use the repeat masked bed file
+    // if repeat_cpg_identification is enabled and no custom BED
+    // file is provided. If neither is provided, depth is calculated
+    // for the entire reference genome.
+    ch_intervals = params.intervals ?
+        Channel.fromPath(params.intervals, checkIfExists: true)
+            .map { it -> [[id: it.name], it] }.collect() :
+        (params.repeat_cpg_identification.toBoolean() ?
+            REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+            Channel.value([[id: 'null'], file('null')]) // Provide null file
+        )
+
     if ( params.processed_bam_qc.toBoolean() ) {
         PROCESSED_BAM_QC (
             params.competitive_reference ? ch_competitive_reference : ch_reference,
+            BAM_PROCESSING.out.merged_bam_lib,
+            BAM_PROCESSING.out.merged_bam_lib_index,
             BAM_PROCESSING.out.mq_filtered_bam,
             BAM_PROCESSING.out.mq_filtered_index,
             BAM_PROCESSING.out.rm_short_reads_bam,
             BAM_PROCESSING.out.rm_short_reads_index,
-            BAM_PROCESSING.out.merged_bam_lib,
-            BAM_PROCESSING.out.merged_bam_lib_index,
             BAM_PROCESSING.out.dedup_lib,
             BAM_PROCESSING.out.dedup_lib_index,
             BAM_PROCESSING.out.merged_bam_sample,
@@ -207,7 +213,7 @@ workflow {
             workflow_name,
             FASTQ_PROCESSING.out.fastp_json,
             RAW_BAM_QC.out.flagstat,
-            PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
+            params.readlength == "auto" ? PROCESSED_BAM_QC.out.rm_short_reads_bam_flagstat : PROCESSED_BAM_QC.out.mq_filtered_bam_flagstat,
             PROCESSED_BAM_QC.out.dedup_lib_flagstat,
             BAM_PROCESSING.out.dedup_lib,
             PROCESSED_BAM_QC.out.dedup_sample_flagstat,
@@ -238,17 +244,32 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     if ( params.variant_calling.toBoolean() ) {
-        // Collecting processed BAM files for all samples
+        // Collecting processed BAM and BAI files for all samples
         ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
-            .map { meta, bam -> tuple([id: workflow_name], bam)}
+            .join(BAM_PROCESSING.out.dedup_sample_index)
+            .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
+
+        // Input channel for BED file used to restrict variant calling
+        // to certain genome regions. Use the repeat masked bed file
+        // if repeat_cpg_identification is enabled and no custom BED
+        // file is provided. If neither is provided, variants are called
+        // for the entire reference genome.
+        ch_regions = params.regions ?
+            Channel.fromPath(params.regions, checkIfExists: true)
+                .map { it -> [[id: it.name], it] }.collect() :
+            (params.repeat_cpg_identification.toBoolean() ?
+                REPEAT_CPG_IDENTIFICATION.out.repma_bed :
+                Channel.value([[id: 'null'], file('null')]) // Provide null file
+            )
 
         // Variant calling with BCFTOOLS
         if ( params.variant_calling_bcftools.toBoolean() ) {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
         }
@@ -257,7 +278,8 @@ workflow {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
         }
@@ -305,6 +327,17 @@ workflow {
         ch_all_versions = ch_all_versions.mix(MICROBIAL_SCREENING.out.versions)
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // 12. SEXING
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    if ( params.sexing.toBoolean() ) {
+        SEXING (
+            workflow_name,
+            BAM_PROCESSING.out.dedup_sample
+        )
+        ch_all_versions = ch_all_versions.mix(SEXING.out.versions)
+    }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
