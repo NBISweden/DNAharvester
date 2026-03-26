@@ -90,13 +90,13 @@ workflow BAM_PROCESSING {
         ch_versions = ch_versions.mix ( BP_RM_SHORT_READS_INDEX.out.versions )
 
         // channel with MQ filtered and short read removed BAM files merged per library/PCR
-        ch_mq_filtered_bam = BP_RM_SHORT_READS.out.bam
-        ch_mq_filtered_bam_index = BP_RM_SHORT_READS_INDEX.out.bai
+        ch_dedup_lib_bam_input = BP_RM_SHORT_READS.out.bam
+        ch_dedup_lib_bam_input_index = BP_RM_SHORT_READS_INDEX.out.bai
     }
     else {
         // othersise, just pass through the MQ filtered BAM files merged per library/PCR
-        ch_mq_filtered_bam = BP_SAMTOOLS_VIEW_MQ.out.bam
-        ch_mq_filtered_bam_index = BP_SAMTOOLS_VIEW_MQ_INDEX.out.bai
+        ch_dedup_lib_bam_input = BP_SAMTOOLS_VIEW_MQ.out.bam
+        ch_dedup_lib_bam_input_index = BP_SAMTOOLS_VIEW_MQ_INDEX.out.bai
     }
 
 
@@ -106,7 +106,7 @@ workflow BAM_PROCESSING {
 
 
     // Remove duplicates from BAM files merged per library/PCR
-    BP_SAMREMOVEDUP_LIB ( ch_mq_filtered_bam, reference )
+    BP_SAMREMOVEDUP_LIB ( ch_dedup_lib_bam_input, reference )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB.out.versions)
     BP_SAMREMOVEDUP_LIB_INDEX ( BP_SAMREMOVEDUP_LIB.out.dedup )
     ch_versions = ch_versions.mix(BP_SAMREMOVEDUP_LIB_INDEX.out.versions)
@@ -206,8 +206,8 @@ workflow BAM_PROCESSING {
     emit:
     merged_bam_lib              = BP_SAMTOOLS_MERGE_LIB.out.bam                                                                        // channel: [ val(meta), [ bam ] ]
     merged_bam_lib_index        = BP_SAMTOOLS_MERGE_LIB_INDEX.out.bai                                                                  // channel: [ val(meta), [ bai ] ]
-    mq_filtered_bam             = ch_mq_filtered_bam                                                                                   // channel: [ val(meta), [ bam ] ]
-    mq_filtered_index           = ch_mq_filtered_bam_index                                                                             // channel: [ val(meta), [ bai ] ]
+    mq_filtered_bam             = BP_SAMTOOLS_VIEW_MQ.out.bam                                                                          // channel: [ val(meta), [ bam ] ]
+    mq_filtered_index           = BP_SAMTOOLS_VIEW_MQ_INDEX.out.bai                                                                    // channel: [ val(meta), [ bai ] ]
     rm_short_reads_bam          = params.readlength == "auto" ? BP_RM_SHORT_READS.out.bam : Channel.empty()                            // channel: [ val(meta), [ bam ] ]
     rm_short_reads_index        = params.readlength == "auto" ? BP_RM_SHORT_READS_INDEX.out.bai : Channel.empty()                      // channel: [ val(meta), [ bai ] ]
     dedup_lib                   = BP_SAMREMOVEDUP_LIB.out.dedup                                                                        // channel: [ val(meta), [ bam ] ]
