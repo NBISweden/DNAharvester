@@ -10,7 +10,7 @@ workflow MAPPING_METRICS {
     workflow_name
     fastp_json
     raw_bam_flagstat
-    mq_filtered_bam_flagstat
+    filtered_bam_flagstat
     dedup_lib_flagstat
     dedup_lib
     dedup_sample_flagstat
@@ -42,7 +42,7 @@ workflow MAPPING_METRICS {
         [ new_meta, data ]
     }.groupTuple()
 
-    ch_mq_filtered_bam_flagstat_lib = mq_filtered_bam_flagstat.map { meta, data ->
+    ch_filtered_bam_flagstat_lib = filtered_bam_flagstat.map { meta, data ->
         def new_meta = meta.clone()
         new_meta.id = meta.id.split("_")[0] + "_" + meta.id.split("_")[1]
         new_meta.remove('single_end')
@@ -53,7 +53,7 @@ workflow MAPPING_METRICS {
     // merging channels for library statistics
     ch_mapping_metrics_lib = ch_fastp_json_lib
         .join(ch_raw_bam_flagstat_lib)
-        .join(ch_mq_filtered_bam_flagstat_lib)
+        .join(ch_filtered_bam_flagstat_lib)
         .join(dedup_lib_flagstat) // dedup_lib_flagstat is already in the corect format
         .join(dedup_lib) // dedup_lib is already in the corect format
 
@@ -105,7 +105,7 @@ workflow MAPPING_METRICS {
         [ new_meta, data ]
     }.groupTuple().map { meta, data -> [ meta, data.flatten() ] }
 
-    ch_mq_filtered_bam_flagstat_sample = ch_mq_filtered_bam_flagstat_lib.map { meta, data ->
+    ch_filtered_bam_flagstat_sample = ch_filtered_bam_flagstat_lib.map { meta, data ->
         def new_meta = meta.clone()
         new_meta.id = meta.id.split("_")[0] // remove library_id
         new_meta.remove('library_type') // remove library_type same sample can have multiple library_type
@@ -115,7 +115,7 @@ workflow MAPPING_METRICS {
     // merging§ channels for sample statistics
     ch_mapping_metrics_sample = ch_fastp_json_sample
         .join(ch_raw_bam_flagstat_sample)
-        .join(ch_mq_filtered_bam_flagstat_sample)
+        .join(ch_filtered_bam_flagstat_sample)
         .join(dedup_sample_flagstat) // dedup_sample_flagstat is already in the corect format
         .join(dedup_sample) // dedup_sample is already in the corect format
         .join(dpstats) // dpstats is already in the corect format

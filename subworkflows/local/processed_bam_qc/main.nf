@@ -189,6 +189,7 @@ workflow PROCESSED_BAM_QC {
     multiqc_dedup_sample_report              = PBQC_MULTIQC_DEDUP_SAMPLE.out.report.toList()                                                            // channel: [ val(meta), path(report) ]
     dpstats                                  = PBQC_SAMTOOLS_DEPTH_MEAN.out.dpstats                                                                     // channel: [ val(meta), path(dpstats) ]
     mq_filtered_bam_flagstat                 = PBQC_FLAGSTAT_MQ_FILTERED_BAM.out.flagstat                                                               // channel: [ val(meta), path(flagstat) ]
+    rm_short_reads_bam_flagstat              = params.readlength == "auto" ? PBQC_FLAGSTAT_RM_SHORT_READS_BAM.out.flagstat : Channel.empty()            // channel: [ val(meta), path(flagstat) ]
     dedup_lib_flagstat                       = PBQC_FLAGSTAT_DEDUP_LIB.out.flagstat                                                                     // channel: [ val(meta), path(flagstat) ]
     dedup_sample_flagstat                    = PBQC_FLAGSTAT_DEDUP_SAMPLE.out.flagstat                                                                  // channel: [ val(meta), path(flagstat) ]
     preseq_txt                               = params.preseq.toBoolean() ? PBQC_PRESEQ.out.preseq_txt : Channel.empty()                                 // channel: [ val(meta), path(preseq_txt) ]
