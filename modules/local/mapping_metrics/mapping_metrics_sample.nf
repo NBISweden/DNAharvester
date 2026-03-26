@@ -45,7 +45,7 @@ process MAPPING_METRICS_SAMPLE {
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
     filtered_reads=\$(cat ${filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
-    endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v fastp_filtered_reads=\$fastp_filtered_reads 'BEGIN { if (fastp_filtered_reads > 0) print ((filtered_reads / fastp_filtered_reads)*100); else print 0 }')
+    endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v raw_reads_pairs=\$raw_reads_pairs 'BEGIN { if (raw_reads_pairs > 0) print ((filtered_reads / raw_reads_pairs)*100); else print 0 }')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     library_complexity=\$(awk -v uniq_reads=\$uniq_reads -v filtered_reads=\$filtered_reads 'BEGIN { if (filtered_reads > 0) print ((uniq_reads / filtered_reads)*100); else print 0 }')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
