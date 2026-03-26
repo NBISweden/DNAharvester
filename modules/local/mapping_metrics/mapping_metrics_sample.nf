@@ -13,7 +13,7 @@ process MAPPING_METRICS_SAMPLE {
     tuple val(meta),
     path(fastp_json),
     path(raw_bam_flagstat),
-    path(mq_filtered_bam_flagstat),
+    path(filtered_bam_flagstat),
     path(dedup_lib_flagstat),
     path(dedup_lib),
     path(dpstats),
@@ -44,7 +44,7 @@ process MAPPING_METRICS_SAMPLE {
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
-    filtered_reads=\$(cat ${mq_filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
+    filtered_reads=\$(cat ${filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v fastp_filtered_reads=\$fastp_filtered_reads 'BEGIN { if (fastp_filtered_reads > 0) print ((filtered_reads / fastp_filtered_reads)*100); else print 0 }')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     library_complexity=\$(awk -v uniq_reads=\$uniq_reads -v filtered_reads=\$filtered_reads 'BEGIN { if (filtered_reads > 0) print ((uniq_reads / filtered_reads)*100); else print 0 }')
