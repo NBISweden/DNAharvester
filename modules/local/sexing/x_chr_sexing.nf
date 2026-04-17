@@ -82,7 +82,7 @@ process X_CHR_SEXING {
 
     # Sex determination based on ratio
     # Females (XX) typically have ratio ~1.0, Males (XY) typically have ratio ~0.5
-    if x_auto_ratio >= 0.75:
+    if x_auto_ratio >= 0.8:
         sex_call = "Female"
     elif x_auto_ratio <= 0.6:
         sex_call = "Male"
