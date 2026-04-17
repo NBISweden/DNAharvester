@@ -40,7 +40,7 @@ process BOWTIE2 {
     if (meta.single_end) {
         // Single-end mapping
         """
-        INDEX=`find -L ./ -maxdepth 2 -name "${reference}.1.bt2" | sed 's/\\.1.bt2\$//'`
+        INDEX=`find -L ./ -maxdepth 2 -name "${reference}.1.bt2" -o -name "${reference}.1.bt2l" | head -1 | sed 's/\\.1\\.bt2l\\?\$//'`
 
         bowtie2 \\
             ${args} \\
@@ -59,7 +59,7 @@ process BOWTIE2 {
     } else {
         // Paired-end mapping
         """
-        INDEX=`find -L ./ -maxdepth 2 -name "${reference}.1.bt2" | sed 's/\\.1.bt2\$//'`
+        INDEX=`find -L ./ -maxdepth 2 -name "${reference}.1.bt2" -o -name "${reference}.1.bt2l" | head -1 | sed 's/\\.1\\.bt2l\\?\$//'`
 
         bowtie2 \\
             ${args} \\
