@@ -28,6 +28,7 @@ process KRAKEN2 {
     kraken2 \\
         --db ${kraken2_database} \\
         --report-minimizer-data \\
+        --confidence 0.1 \\
         --unclassified-out ${prefix}.kraken_unclassified.fq \\
         --output ${prefix}.kraken2.out \\
         --report ${prefix}.report.txt \\
