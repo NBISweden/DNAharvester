@@ -1,6 +1,6 @@
 # DNAharvester
 
-<img src="docs/images/DNAharvester_logo.png" alt="logo" width="25%"/>
+<img src="docs/images/DNAharvester_logo.gif" alt="logo" width="25%"/>
 
 Github repository for DNAharvester, a pipeline for processing
 and analyzing extremely degraded ancient DNA.
