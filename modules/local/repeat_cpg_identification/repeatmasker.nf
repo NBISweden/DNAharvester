@@ -9,8 +9,8 @@ process REPEATMASKER {
 
     input:
     tuple val(meta2), path(fasta)
-    tuple val(meta2), path(upper_ref)
-    tuple val(meta2), path(consensi)
+    tuple val(meta_upper), path(upper_ref)
+    tuple val(meta_consensi), path(consensi)
 
     output:
     tuple val(meta2), path ("*.out")       , emit: repeatmasker_out

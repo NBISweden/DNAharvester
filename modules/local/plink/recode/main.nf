@@ -9,7 +9,7 @@ process PLINK_RECODE {
 
     input:
     tuple val(meta), path(tfam)
-    tuple val(meta), path(tped)
+    tuple val(meta_tped), path(tped)
     tuple val(meta2), path(fasta)
 
     output:

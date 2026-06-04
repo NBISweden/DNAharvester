@@ -80,7 +80,7 @@ workflow MICROBIAL_SCREENING {
         //merge BAMs from short and long reads
         ch_raw_bam_aln_mem  = MS_BWA_ALN_SHORT.out.bam.join(MS_BWA_MEM_LONG.out.bam)
             .map { meta, file1, file2 -> [meta, [file1, file2]] }
-        MS_BWA_ALN_MEM_MERGE ( ch_raw_bam_aln_mem, reference )
+        MS_BWA_ALN_MEM_MERGE ( ch_raw_bam_aln_mem, ms_reference )
         ch_versions         = ch_versions.mix(MS_BWA_ALN_MEM_MERGE.out.versions)
         ch_raw_bam          = MS_BWA_ALN_MEM_MERGE.out.bam
     }
@@ -116,7 +116,7 @@ workflow MICROBIAL_SCREENING {
                 tuple(final_meta, bams)
             }
 
-        MS_MERGED_UNMERGED_READS_BAM ( ch_raw_bam_grouped, reference )
+        MS_MERGED_UNMERGED_READS_BAM ( ch_raw_bam_grouped, ms_reference )
         ch_versions = ch_versions.mix(MS_MERGED_UNMERGED_READS_BAM.out.versions)
         ch_merged_raw_bam = MS_MERGED_UNMERGED_READS_BAM.out.bam
     }

@@ -10,7 +10,7 @@ process GATK_INDEL_REALIGNER {
     input:
     tuple val(meta), path(bam), path(bai)
     tuple val(meta2), path(reference)
-    tuple val(meta2), path(fai)
+    tuple val(meta_fai), path(fai)
     tuple val(meta3), path(dict)
 
     output:

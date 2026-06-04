@@ -9,8 +9,8 @@ process CREATE_REPMA_BED {
 
     input:
     tuple val(meta2), path(fasta)
-    tuple val(meta2), path(fai)
-    tuple val(meta2), path(repeats_bed)
+    tuple val(meta_fai), path(fai)
+    tuple val(meta_repbed), path(repeats_bed)
 
     output:
     tuple val(meta2), path("*.genome")              , emit: genomefile
