@@ -9,10 +9,10 @@ process CREATE_REPMA_CPG_BED {
 
     input:
     tuple val(meta2), path(fasta)
-    tuple val(meta2), path(genomefile)
-    tuple val(meta2), path(sorted_repeats_bed)
-    tuple val(meta2), path(ref_bed)
-    tuple val(meta2), path(cpg_bed)
+    tuple val(meta_genome), path(genomefile)
+    tuple val(meta_repbed), path(sorted_repeats_bed)
+    tuple val(meta_refbed), path(ref_bed)
+    tuple val(meta_cpgbed), path(cpg_bed)
 
     output:
     tuple val(meta2), path("*noCpG_ref.bed")                , emit: no_cpg_bed

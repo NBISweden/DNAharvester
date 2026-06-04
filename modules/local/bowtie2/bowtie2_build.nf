@@ -14,7 +14,7 @@ process BOWTIE2_BUILD {
     val (output_dir)
 
     output:
-    tuple val(meta2), path("${meta2.id}*bt2", arity: '6')       , emit: index
+    tuple val(meta2), path("${meta2.id}*bt2{,l}", arity: '6')   , emit: index
     tuple val(meta2), val(output_dir)                           , emit: index_dir
     path "versions.yml"                                         , emit: versions, optional: true
     when:

@@ -5,25 +5,25 @@
 nextflow.enable.dsl = 2
 
 // Import subworkflows
-include { GUNZIP                     } from "$projectDir/modules/local/gunzip/main"
-include { INPUT_CHECK                } from "$projectDir/subworkflows/local/input_check/main"
-include { RAW_FASTQ_QC               } from "$projectDir/subworkflows/local/raw_fastq_qc/main"
-include { FASTQ_PROCESSING           } from "$projectDir/subworkflows/local/fastq_processing/main"
-include { PROCESSED_FASTQ_QC         } from "$projectDir/subworkflows/local/processed_fastq_qc/main"
-include { MAPPING                    } from "$projectDir/subworkflows/local/mapping/main"
-include { COMPETITIVE_MAPPING        } from "$projectDir/subworkflows/local/competitive_mapping/main"
-include { MICROBIAL_SCREENING        } from "$projectDir/subworkflows/local/microbial_screening/main"
-include { ITERATIVE_ASSEMBLY         } from "$projectDir/subworkflows/local/iterative_assembly/main"
-include { TAXONOMIC_CLASSIFICATION   } from "$projectDir/subworkflows/local/taxonomic_classification/main"
-include { REPEAT_CPG_IDENTIFICATION  } from "$projectDir/subworkflows/local/repeat_cpg_identification/main"
-include { RAW_BAM_QC                 } from "$projectDir/subworkflows/local/raw_bam_qc/main"
-include { BAM_PROCESSING             } from "$projectDir/subworkflows/local/bam_processing/main"
-include { PROCESSED_BAM_QC           } from "$projectDir/subworkflows/local/processed_bam_qc/main"
-include { SEXING                     } from "$projectDir/subworkflows/local/sexing/main"
-include { RANDOM_SAMPLING_BAM        } from "$projectDir/subworkflows/local/random_sampling_bam/main"
-include { VARIANT_CALLING_BCFTOOLS   } from "$projectDir/subworkflows/local/variant_calling/variant_calling_bcftools.nf"
-include { VARIANT_CALLING_ANGSD      } from "$projectDir/subworkflows/local/variant_calling/variant_calling_angsd.nf"
-include { MAPPING_METRICS            } from "$projectDir/subworkflows/local/mapping_metrics/main"
+include { GUNZIP                     } from './modules/local/gunzip/main'
+include { INPUT_CHECK                } from './subworkflows/local/input_check/main'
+include { RAW_FASTQ_QC               } from './subworkflows/local/raw_fastq_qc/main'
+include { FASTQ_PROCESSING           } from './subworkflows/local/fastq_processing/main'
+include { PROCESSED_FASTQ_QC         } from './subworkflows/local/processed_fastq_qc/main'
+include { MAPPING                    } from './subworkflows/local/mapping/main'
+include { COMPETITIVE_MAPPING        } from './subworkflows/local/competitive_mapping/main'
+include { MICROBIAL_SCREENING        } from './subworkflows/local/microbial_screening/main'
+include { ITERATIVE_ASSEMBLY         } from './subworkflows/local/iterative_assembly/main'
+include { TAXONOMIC_CLASSIFICATION   } from './subworkflows/local/taxonomic_classification/main'
+include { REPEAT_CPG_IDENTIFICATION  } from './subworkflows/local/repeat_cpg_identification/main'
+include { RAW_BAM_QC                 } from './subworkflows/local/raw_bam_qc/main'
+include { BAM_PROCESSING             } from './subworkflows/local/bam_processing/main'
+include { PROCESSED_BAM_QC           } from './subworkflows/local/processed_bam_qc/main'
+include { SEXING                     } from './subworkflows/local/sexing/main'
+include { RANDOM_SAMPLING_BAM        } from './subworkflows/local/random_sampling_bam/main'
+include { VARIANT_CALLING_BCFTOOLS   } from './subworkflows/local/variant_calling/variant_calling_bcftools.nf'
+include { VARIANT_CALLING_ANGSD      } from './subworkflows/local/variant_calling/variant_calling_angsd.nf'
+include { MAPPING_METRICS            } from './subworkflows/local/mapping_metrics/main'
 
 
 workflow {
@@ -64,16 +64,6 @@ workflow {
         Channel.fromPath( params.competitive_reference, checkIfExists: true )
         .map { it -> [[id:it.Name], it] }.collect() : Channel.empty()
 
-    // Warn if the reference genome or competitive reference genome is larger than 20GB
-    def warnIfLarge = { Path file, String label ->
-        if (file.size() > 20L * 1024 * 1024 * 1024) {
-            log.warn """
-            ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
-            Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file.
-            However, Pipeline will continue with the current settings.
-            """
-        }
-    }
     ch_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Reference genome")}
     ch_competitive_reference.subscribe { tuple -> warnIfLarge(tuple[1], "Competitive reference genome")}
 
@@ -344,22 +334,33 @@ workflow {
     // output software versions
     ch_all_versions.collectFile(name: "versions.yml", storeDir: "${params.outdir}")
 
+    workflow.onComplete = {
+        if( workflow.success ){
+            log.info("""
+            Thank you for using DNAharvester.
+
+            Results are located in the folder: $params.outdir
+            """)
+        } else {
+            log.info("""
+            The pipeline completed unsuccessfully.
+
+            Please read the error message. If you need help to solve your issue,
+            feel free to reach out via slack or by opening an issue at
+            https://github.com/NBISweden/DNAharvester/issues.
+            """)
+        }
+    }
 }
 
-workflow.onComplete {
-    if( workflow.success ){
-        log.info("""
-        Thank you for using DNAharvester.
 
-        Results are located in the folder: $params.outdir
-        """)
-    } else {
-        log.info("""
-        The pipeline completed unsuccessfully.
-
-        Please read the error message. If you need help to solve your issue,
-        feel free to reach out via slack or by opening an issue at
-        https://github.com/NBISweden/DNAharvester/issues.
-        """)
+// Warn if a reference genome is larger than 20GB
+def warnIfLarge(file, label) {
+    if (file.size() > 20L * 1024 * 1024 * 1024) {
+        log.warn """
+        ${label} '${file.name}' is larger than 20GB. This might take a long time to process.
+        Consider increasing resources for indexing and mapping in the `config/<cluster_name>.config` file.
+        However, Pipeline will continue with the current settings.
+        """
     }
 }

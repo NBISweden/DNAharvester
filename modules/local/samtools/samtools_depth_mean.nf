@@ -26,7 +26,7 @@ process SAMTOOLS_DEPTH_MEAN {
     samtools \\
         depth \\
         -s \\
-        --threads ${task.cpus-1} \\
+        --threads ${task.cpus} \\
         $args \\
         $intervals \\
         -o ${prefix}.tsv \\

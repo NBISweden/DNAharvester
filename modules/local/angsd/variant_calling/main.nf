@@ -9,8 +9,8 @@ process ANGSD_VARIANT_CALLING {
 
     input:
     tuple val(meta), path(bam), path(bai)
-    tuple val(meta2), path(fasta)
-    tuple val(meta2), path(fai)
+    tuple val(meta_fasta), path(fasta)
+    tuple val(meta_fai), path(fai)
     tuple val(meta2), path(bed_file)
 
     output:

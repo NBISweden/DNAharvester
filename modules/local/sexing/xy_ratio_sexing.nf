@@ -109,13 +109,8 @@ process XY_RATIO_SEXING {
     ax.set_ylabel("Ry (Y chromosome reads / Autosomal reads)", fontsize=11)
     ax.set_title("Sex Determination: Rx vs Ry Ratio", fontsize=12, fontweight='bold')
 
-    # Set axis limits with padding (15% margin on each side)
-    rx_range = results_df["Rx"].max() - results_df["Rx"].min()
-    ry_range = results_df["Ry"].max() - results_df["Ry"].min()
-    rx_padding = max(rx_range * 0.15, results_df["Rx"].max() * 0.15)
-    ry_padding = max(ry_range * 0.15, results_df["Ry"].max() * 0.15)
-    ax.set_xlim(left=-rx_padding, right=results_df["Rx"].max() + rx_padding)
-    ax.set_ylim(bottom=-ry_padding, top=results_df["Ry"].max() + ry_padding)
+    # Add 10% padding relative to the actual data range on each axis
+    ax.margins(0.10)
 
     # Add grid for better readability
     ax.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
@@ -123,10 +118,11 @@ process XY_RATIO_SEXING {
     # Add legend with sex indicators
     from matplotlib.patches import Patch
     legend_elements = [
-        Patch(facecolor='none', edgecolor='none', label='High Rx, Low Ry → Female'),
-        Patch(facecolor='none', edgecolor='none', label='Lower Rx, Ry > 0 → Male')
+        Patch(facecolor='none', edgecolor='none', label='top-left → Male'),
+        Patch(facecolor='none', edgecolor='none', label='lower-right → Female')
     ]
-    ax.legend(handles=legend_elements, loc='upper right', fontsize=9, framealpha=0.9)
+    ax.legend(handles=legend_elements, loc='upper right', fontsize=9, framealpha=0.9,
+              handlelength=0, handletextpad=0)
 
     plt.tight_layout()
     plt.savefig(f"${workflow_name}_xy_ratio_sexing_plot.pdf", dpi=300, bbox_inches='tight')

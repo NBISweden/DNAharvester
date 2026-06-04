@@ -9,7 +9,7 @@ process CREATE_REPEATS_BED {
 
     input:
     tuple val(meta2), path(fasta)
-    tuple val(meta2), path(repeatmasker_out)
+    tuple val(meta_rmout), path(repeatmasker_out)
 
     output:
     tuple val(meta2), path("*_repeats.bed")     , emit: repeats_bed

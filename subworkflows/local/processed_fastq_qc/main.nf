@@ -20,7 +20,7 @@ workflow PROCESSED_FASTQ_QC {
 
     // Run MultiQC on FastQC output
     ch_multiqc_processed_files  = PFQC_FASTQC.out.zip.map{ meta, qcfile -> qcfile }.mix(
-                                    fastp_json.map{ meta, fastp_json -> fastp_json }).collect()
+                                    fastp_json.map{ meta, json -> json }).collect()
     ch_multiqc_config           = params.multiqc_config       ? Channel.fromPath( params.multiqc_config,       checkIfExists: true ) : Channel.empty()
     ch_multiqc_extra_config     = params.multiqc_extra_config ? Channel.fromPath( params.multiqc_extra_config, checkIfExists: true ) : Channel.empty()
     ch_multiqc_logo             = params.multiqc_logo         ? Channel.fromPath( params.multiqc_logo,         checkIfExists: true ) : Channel.empty()
