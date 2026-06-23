@@ -19,6 +19,9 @@ Main workflow of the Pipeline:
 
 If you've used DNAharvester pipeline to produce results, please cite our paper:
 
+Sharif, B., Kutschera, V. E., Oskolkov, N., Guinet, B., Lord, E., Chacón-Duque, J. C., Oppenheimer, J., van der Valk, T., Díez-del-Molino, D., Heintzman, P. D., & Dalén, L. (2026). DNAharvester: A Nextflow pipeline for analysing highly degraded DNA from ancient and historical specimens [Preprint bioRxiv]. https://doi.org/10.64898/2026.04.20.719564
+
+
 ## Licence information
 
 DNAharvester - a pipeline for processing and analyzing extremely degraded ancient DNA
