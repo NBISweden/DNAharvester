@@ -29,6 +29,10 @@ process ADAPTERREMOVAL {
     def args   = task.ext.args ?: ''
     // Added soft-links to original fastqs for consistent naming in MultiQC
     def prefix = task.ext.prefix ?: "${meta.id}"
+    def readlength = (params.readlength == 'auto') ? 20 : params.readlength
+    // Custom adapter sequences (optional) - left empty, AdapterRemoval3 falls back to its own defaults/auto-detection
+    def adapter1 = params.adapter1 ? "--adapter1 ${params.adapter1}" : ''
+    def adapter2 = params.adapter2 ? "--adapter2 ${params.adapter2}" : ''
     // AdapterRemoval3 only merges overlapping mates when explicitly asked to, same as fastp
     def merge_reads_enabled = params.merge_reads.toBoolean()
     def merge_cmd           = merge_reads_enabled ? '--merge' : ''
@@ -41,6 +45,8 @@ process ADAPTERREMOVAL {
         --in-file1 ${prefix}.fastq.gz \\
         --out-prefix ${prefix}.adapterremoval \\
         --threads $task.cpus \\
+        --min-length ${readlength} \\
+        ${adapter1} \\
         $args \\
         2> ${prefix}.adapterremoval.log
 
@@ -68,6 +74,9 @@ process ADAPTERREMOVAL {
         --out-prefix ${prefix}.adapterremoval \\
         --threads $task.cpus \\
         $merge_cmd \\
+        --min-length ${readlength} \\
+        ${adapter1} \\
+        ${adapter2} \\
         $args \\
         2> ${prefix}.adapterremoval.log
 
