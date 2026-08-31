@@ -39,14 +39,14 @@ workflow COMPETITIVE_MAPPING {
     // Build the BWA index - only if BWA is selected as mapping tool
     def bwa_tools = ['bwa-aln', 'bwa-mem', 'bwa-aln-mem']
     if (bwa_tools.contains( params.mapping_tool_ancient ) || bwa_tools.contains( params.mapping_tool_modern )) {
-        CM_BWA_INDEX (competitive_reference, file(params.reference).getParent())
+        CM_BWA_INDEX (competitive_reference, file(params.competitive_reference).getParent())
         ch_versions                 = ch_versions.mix(CM_BWA_INDEX.out.versions)
         ch_competitive_bwa_index    = CM_BWA_INDEX.out.index_dir
     }
     // Build the Bowtie2 index - only if Bowtie2 is selected as mapping tool
     def bowtie2_tools = ['bowtie2']
     if (bowtie2_tools.contains( params.mapping_tool_ancient ) || bowtie2_tools.contains( params.mapping_tool_modern )) {
-        CM_BOWTIE2_BUILD (competitive_reference, file(params.reference).getParent())
+        CM_BOWTIE2_BUILD (competitive_reference, file(params.competitive_reference).getParent())
         ch_versions                  = ch_versions.mix(CM_BOWTIE2_BUILD.out.versions)
         ch_competitive_bowtie2_index = CM_BOWTIE2_BUILD.out.index_dir
     }
