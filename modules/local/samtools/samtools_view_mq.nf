@@ -23,6 +23,7 @@ process SAMTOOLS_VIEW_MQ {
     """
     samtools \\
         view \\
+        -F 4 \\
         --threads ${task.cpus-1} \\
         $args \\
         -o ${prefix}-mq.bam \\
