@@ -38,14 +38,16 @@ process MAPPING_METRICS_SAMPLE {
     ## collect stats
     id="${prefix}"
     raw_reads_pairs=\$(cat ${fastp_json} | jq '.read1_before_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
-    fastp_filtered_reads=\$(cat ${fastp_json} | jq '.summary.after_filtering.total_reads' | awk '{sum += \$1} END {print sum}')
+    processed_reads=\$(awk '\$NF=="primary"{sum+=\$1} END{print sum+0}' ${raw_bam_flagstat})
     reference=\$(basename ${reference})
     mapping_tool="${mapping_tool}"
     mapped_reads=\$(cat ${raw_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     mq_filter=${params.mapping_quality}
     filtered_reads=\$(cat ${filtered_bam_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
-    endogenous_DNA=\$(awk -v filtered_reads=\$filtered_reads -v raw_reads_pairs=\$raw_reads_pairs 'BEGIN { if (raw_reads_pairs > 0) print ((filtered_reads / raw_reads_pairs)*100); else print 0 }')
+    filtered_paired_reads=\$(awk '/paired in sequencing/{sum+=\$1} END{print sum+0}' ${filtered_bam_flagstat})
+    mapped_fragments=\$(awk -v filtered_reads=\$filtered_reads -v filtered_paired_reads=\$filtered_paired_reads 'BEGIN { print filtered_reads - (filtered_paired_reads/2) }')
+    endogenous_DNA=\$(awk -v mapped_fragments=\$mapped_fragments -v raw_reads_pairs=\$raw_reads_pairs 'BEGIN { if (raw_reads_pairs > 0) print ((mapped_fragments / raw_reads_pairs)*100); else print 0 }')
     uniq_reads=\$(cat ${dedup_lib_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
     library_complexity=\$(awk -v uniq_reads=\$uniq_reads -v filtered_reads=\$filtered_reads 'BEGIN { if (filtered_reads > 0) print ((uniq_reads / filtered_reads)*100); else print 0 }')
     samtools stats --threads ${task.cpus} ${dedup_lib} > ${prefix}-samtools-stats
@@ -56,8 +58,8 @@ process MAPPING_METRICS_SAMPLE {
     median_reads_len=\$(awk '/^RL/ {total+=\$3; lengths[\$2]=\$3} END {median=total/2; sum=0; for (len in lengths) {sum+=lengths[len]; if (sum>=median) {print len; break}}}' ${prefix}-samtools-stats)
 
     ## write header and row
-    HEADER="id\\traw_reads_pairs\\tfastp_filtered_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
-    ROW="\$id\\t\$raw_reads_pairs\\t\$fastp_filtered_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
+    HEADER="id\\traw_reads_pairs\\tprocessed_reads\\tref_genome\\tmapping_tool\\tmapped_reads"
+    ROW="\$id\\t\$raw_reads_pairs\\t\$processed_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
 
     ## add optional decoy
 
