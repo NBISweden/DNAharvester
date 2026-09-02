@@ -27,7 +27,7 @@ workflow VARIANT_CALLING_DEEPVARIANT {
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // 2. Filtering: depth + quality, optional SNV-only, homozygous-alt only. Generating filtered BCF statistics
+    // 2. Filtering: depth only. Generating filtered BCF statistics
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     VCD_DEEPVARIANT_FILTER ( VCD_DEEPVARIANT_CALL.out.raw_vcf )
@@ -41,7 +41,8 @@ workflow VARIANT_CALLING_DEEPVARIANT {
     emit:
     raw_vcf                        = VCD_DEEPVARIANT_CALL.out.raw_vcf         // channel: [ val(meta), raw.vcf.gz ]
     raw_vcf_stats                  = VCD_RAW_VCF_STATS.out.bcf_stats          // channel: [ val(meta), raw-vcf-stats.txt ]
-    filtered_bcf                   = VCD_DEEPVARIANT_FILTER.out.filtered_bcf  // channel: [ val(meta), homalt.bcf, homalt.bcf.csi ]
+    gvcf                           = VCD_DEEPVARIANT_CALL.out.gvcf            // channel: [ val(meta), g.vcf.gz ] (only if deepvariant_output_gvcf is 'true')
+    filtered_bcf                   = VCD_DEEPVARIANT_FILTER.out.filtered_bcf  // channel: [ val(meta), filtered.bcf, filtered.bcf.csi ]
     filtered_bcf_stats             = VCD_FILTERED_BCF_STATS.out.bcf_stats     // channel: [ val(meta), filtered-bcf-stats.txt ]
     versions                       = ch_versions                              // channel: [ versions.yml ]
 }
