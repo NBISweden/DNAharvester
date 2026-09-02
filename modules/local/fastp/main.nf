@@ -32,6 +32,10 @@ process FASTP {
     // Custom adapter sequences (optional) - left empty, fastp falls back to its own defaults/auto-detection
     def adapter1 = params.adapter1 ? "--adapter_sequence ${params.adapter1}" : ''
     def adapter2 = params.adapter2 ? "--adapter_sequence_r2 ${params.adapter2}" : ''
+    // FASTQ-level deduplication (optional). fastp drops duplicated reads/pairs and writes what
+    // remains to the same output files below, so no extra output handling is needed here
+    def dup_calc_accuracy = params.fastp_dup_calc_accuracy ? " --dup_calc_accuracy ${params.fastp_dup_calc_accuracy}" : ''
+    def dedup_cmd = params.fastp_dedup.toBoolean() ? "--dedup${dup_calc_accuracy}" : ''
     if (meta.single_end) {
     """
     [ ! -f  ${prefix}.fastq.gz ] && ln -sf $reads ${prefix}.fastq.gz
@@ -43,6 +47,7 @@ process FASTP {
         --thread $task.cpus \\
         -l ${readlength} \\
         ${adapter1} \\
+        ${dedup_cmd} \\
         $args \\
         2> ${prefix}.fastp.log
 
@@ -69,6 +74,7 @@ process FASTP {
         -l ${readlength} \\
         ${adapter1} \\
         ${adapter2} \\
+        ${dedup_cmd} \\
         $args \\
         2> ${prefix}.fastp.log
 
