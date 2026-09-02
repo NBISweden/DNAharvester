@@ -19,7 +19,10 @@ process CREATE_SEQUENCE_DICTIONARY {
 
     script:
     def args = task.ext.args ?: ''
-    def avail_mem = task.memory ? (task.memory.toGiga()).toInteger() : 4
+    // Reserve 1GB of headroom below task.memory for the JVM's own overhead (metaspace, thread
+    // stacks, GC, JIT code cache, mmap'd CDS archive) - without it, -Xmx == the container's
+    // cgroup memory limit and the JVM's real footprint breaches that limit almost immediately
+    def avail_mem = task.memory ? Math.max((task.memory.toGiga() - 1).toInteger(), 1) : 4
 
     """
     # Create sequence dictionary if not present
