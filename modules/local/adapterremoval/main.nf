@@ -3,10 +3,10 @@ process ADAPTERREMOVAL {
     tag "$meta.id"
     label 'process_adapterremoval'
 
-    conda "bioconda::adapterremoval=3.0.1"
+    conda "bioconda::adapterremoval=3.0.2"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/adapterremoval%3A3.0.1--pl5321h0f5e619_0' :
-        'oras://community.wave.seqera.io/library/adapterremoval:3.0.1--25445162faa2b6b8' }"
+        'https://depot.galaxyproject.org/singularity/adapterremoval%3A3.0.2--pl5321h0f5e619_0' :
+        'oras://community.wave.seqera.io/library/adapterremoval:3.0.2--63127530d8469926' }"
 
     input:
     tuple val(meta), path(reads)
