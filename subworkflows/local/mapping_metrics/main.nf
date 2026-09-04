@@ -69,9 +69,9 @@ workflow MAPPING_METRICS {
         // join decoy flagstat channel to mapping metrics lib channel
         ch_mapping_metrics_lib = ch_mapping_metrics_lib.join(ch_decoy_flagstat_lib)
     } else {
-        // If no decoy flagstat is provided, append a dummy path until nextflow supports optional inputs :(
+        // If no decoy flagstat is provided, append a dummy path until nextflow supports optional inputs
         ch_mapping_metrics_lib = ch_mapping_metrics_lib.map {
-            it + [ [file('/dev/null')] ]
+            it + [ [file("${projectDir}/modules/local/mapping_metrics/.no_decoy_flagstat.placeholder")] ]
         }
     }
 
@@ -132,7 +132,7 @@ workflow MAPPING_METRICS {
     } else {
         // If no decoy flagstat is provided, append a dummy path directly
         ch_mapping_metrics_sample = ch_mapping_metrics_sample.map {
-            it + [ [file('/dev/null')] ]
+            it + [ [file("${projectDir}/modules/local/mapping_metrics/.no_decoy_flagstat.placeholder")] ]
         }
     }
 

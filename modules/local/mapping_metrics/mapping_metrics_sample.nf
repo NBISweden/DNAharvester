@@ -62,8 +62,10 @@ process MAPPING_METRICS_SAMPLE {
     ROW="\$id\\t\$raw_reads_pairs\\t\$processed_reads\\t\$reference\\t\$mapping_tool\\t\$mapped_reads"
 
     ## add optional decoy
-
-    if [[ "${decoy_flagstat}" != "null" && "${decoy_flagstat}" != "/dev/null" ]]; then
+    ## ".no_decoy_flagstat.placeholder" is the empty stand-in staged from this
+    ## module's own directory when no competitive reference is used (see the
+    ## mapping_metrics subworkflow);
+    if [[ "${decoy_flagstat}" != "null" && "${decoy_flagstat}" != ".no_decoy_flagstat.placeholder" ]]; then
         HEADER+="\\tdecoy_reads"
         decoy_reads=\$(cat ${decoy_flagstat} | grep "primary mapped (" | awk '{sum += \$1} END {print sum}')
         ROW+="\\t\$decoy_reads"
