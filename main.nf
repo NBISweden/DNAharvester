@@ -23,6 +23,7 @@ include { SEXING                     } from './subworkflows/local/sexing/main'
 include { RANDOM_SAMPLING_BAM        } from './subworkflows/local/random_sampling_bam/main'
 include { VARIANT_CALLING_BCFTOOLS   } from './subworkflows/local/variant_calling/variant_calling_bcftools.nf'
 include { VARIANT_CALLING_ANGSD      } from './subworkflows/local/variant_calling/variant_calling_angsd.nf'
+include { VARIANT_CALLING_DEEPVARIANT } from './subworkflows/local/variant_calling/variant_calling_deepvariant.nf'
 include { MAPPING_METRICS            } from './subworkflows/local/mapping_metrics/main'
 
 
@@ -240,6 +241,11 @@ workflow {
             .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
 
+        // Per-sample (not joint-cohort) BAM/BAI channel for DeepVariant, which calls
+        // and filters each sample independently rather than jointly like BCFTOOLS/ANGSD
+        ch_per_sample_dedup = BAM_PROCESSING.out.dedup_sample
+            .join(BAM_PROCESSING.out.dedup_sample_index)
+
         // Input channel for BED file used to restrict variant calling
         // to certain genome regions. Use the repeat masked bed file
         // if repeat_cpg_identification is enabled and no custom BED
@@ -272,6 +278,15 @@ workflow {
                 ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
+        }
+        // Variant calling with DeepVariant (per sample - see note on ch_per_sample_dedup above)
+        if ( params.variant_calling_deepvariant.toBoolean() ) {
+            VARIANT_CALLING_DEEPVARIANT (
+                ch_per_sample_dedup,
+                ch_reference,
+                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            )
+            ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_DEEPVARIANT.out.versions)
         }
     }
 

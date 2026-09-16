@@ -199,6 +199,15 @@ workflow BAM_PROCESSING {
         ch_versions = ch_versions.mix(BP_GATK_INDEL_REALIGNER.out.versions)
         BP_GATK_INDEL_REALIGNER_INDEX ( BP_GATK_INDEL_REALIGNER.out.realigned_bam )
         ch_versions = ch_versions.mix(BP_GATK_INDEL_REALIGNER_INDEX.out.versions)
+
+        // GATK-realigned BAM supersedes the pre-realignment dedup BAM as "the final processed
+        // sample BAM" (matches the publishDir logic below, which only publishes the
+        // pre-realignment dedup BAM when indel_realignment is off)
+        ch_final_dedup_sample_bam = BP_GATK_INDEL_REALIGNER.out.realigned_bam
+        ch_final_dedup_sample_bai = BP_GATK_INDEL_REALIGNER_INDEX.out.bai
+    } else {
+        ch_final_dedup_sample_bam = BP_SAMREMOVEDUP_SAMPLE.out.dedup
+        ch_final_dedup_sample_bai = BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -218,9 +227,9 @@ workflow BAM_PROCESSING {
     rm_trans_index              = params.remove_transitions.toBoolean() ? BP_RM_TRANSITIONS_INDEX.out.bai : Channel.empty()            // channel: [ val(meta), [ bai ] ]
     merged_bam_sample           = BP_SAMTOOLS_MERGE_SAMPLE.out.bam                                                                     // channel: [ val(meta), [ bam ] ]
     merged_bam_sample_index     = BP_SAMTOOLS_MERGE_SAMPLE_INDEX.out.bai                                                               // channel: [ val(meta), [ bai ] ]
-    dedup_sample                = BP_SAMREMOVEDUP_SAMPLE.out.dedup                                                                     // channel: [ val(meta), [ bam ] ]
-    dedup_sample_index          = BP_SAMREMOVEDUP_SAMPLE_INDEX.out.bai                                                                 // channel: [ val(meta), [ bai ] ]
-    realigned_bam               = params.indel_realignment.toBoolean() ? BP_GATK_INDEL_REALIGNER.out.realigned_bam : Channel.empty()   // channel: [ val(meta), [ bam ] ]
-    realigned_bam_index         = params.indel_realignment.toBoolean() ? BP_GATK_INDEL_REALIGNER_INDEX.out.bai : Channel.empty()       // channel: [ val(meta), [ bai ] ]
+    // "Final processed sample BAM": the GATK-realigned BAM when indel_realignment is enabled,
+    // otherwise the pre-realignment dedup BAM - see ch_final_dedup_sample_bam/_bai above
+    dedup_sample                = ch_final_dedup_sample_bam                                                                            // channel: [ val(meta), [ bam ] ]
+    dedup_sample_index          = ch_final_dedup_sample_bai                                                                            // channel: [ val(meta), [ bai ] ]
     versions                    = ch_versions                                                                                          // channel: [ versions.yml ]
 }

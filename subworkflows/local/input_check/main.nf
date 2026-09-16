@@ -86,10 +86,11 @@ workflow INPUT_CHECK {
     // VARIANT CALLING checks
     //////////////////////////////////////////////////////////////////////////////////////
 
-    // Check if `variant_calling` is set to true but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled
+    // Check if `variant_calling` is set to true but none of `variant_calling_bcftools`,
+    // `variant_calling_angsd` or `variant_calling_deepvariant` is enabled
     if (params.variant_calling.toBoolean()) {
-        if (!(params.variant_calling_bcftools.toBoolean() || params.variant_calling_angsd.toBoolean())) {
-            log.error """`variant_calling` is set to true, but neither `variant_calling_bcftools` nor `variant_calling_angsd` is enabled. Please set at least one of them to true.
+        if (!(params.variant_calling_bcftools.toBoolean() || params.variant_calling_angsd.toBoolean() || params.variant_calling_deepvariant.toBoolean())) {
+            log.error """`variant_calling` is set to true, but none of `variant_calling_bcftools`, `variant_calling_angsd` or `variant_calling_deepvariant` is enabled. Please set at least one of them to true.
             Exiting the pipeline......!
             """
             System.exit(1)

@@ -23,7 +23,10 @@ process GATK_INDEL_REALIGNER {
     script:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def avail_mem = task.memory ? (task.memory.toGiga()).toInteger() : 4
+    // Reserve 1GB of headroom below task.memory for the JVM's own overhead (metaspace, thread
+    // stacks, GC, JIT code cache, mmap'd CDS archive) - without it, -Xmx == the container's
+    // cgroup memory limit and the JVM's real footprint breaches that limit almost immediately
+    def avail_mem = task.memory ? Math.max((task.memory.toGiga() - 1).toInteger(), 1) : 4
     def ref_prefix = task.ext.ref_prefix ?: "${meta2.id}".replaceAll(/\.(fasta|fna|fa)$/, '')
 
     """
