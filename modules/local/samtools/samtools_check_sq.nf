@@ -1,6 +1,6 @@
 process SAMTOOLS_CHECK_SQ {
     tag "$meta.id"
-    label 'process_samplesheet_check'
+    label 'process_samtools_check_sq'
 
     conda "bioconda::htslib=1.21 bioconda::samtools=1.21"
     container "${ (workflow.containerEngine == 'apptainer' || workflow.containerEngine == 'singularity') && !task.ext.apptainer_pull_docker_container ?
