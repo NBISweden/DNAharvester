@@ -5,13 +5,59 @@
 // https://github.com/nf-core/tools/blob/e5ce6ce20304835bd40f102f038b7e1aadc888b2/nf_core/pipeline-template/subworkflows/local/input_check.nf
 
 include { SAMPLESHEET_CHECK      } from '../../../modules/local/samplesheet_check'
+include { BAM_SAMPLESHEET_CHECK  } from '../../../modules/local/samplesheet_check/bam_samplesheet_check.nf'
 
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+    samplesheet     // file: /path/to/samplesheet.csv
+    bam_samplesheet // file: /path/to/bam_samplesheet.csv
 
     main:
     ch_versions                              = Channel.empty()
+
+    //////////////////////////////////////////////////////////////////////////////////////
+    // BAM INPUT checks
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    // Make sure exactly one of samplesheet or bam_samplesheet is provided
+    if (samplesheet && bam_samplesheet) {
+        log.error """Both `samplesheet` and `bam_samplesheet` are provided. Please provide only one of them.
+        Provide `samplesheet` to run the pipeline on FASTQ files OR
+        provide `bam_samplesheet` to run the pipeline on already processed BAM files.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+    if (!samplesheet && !bam_samplesheet) {
+        log.error """Neither `samplesheet` nor `bam_samplesheet` is provided. Please provide one of them.
+        Exiting the pipeline......!
+        """
+        System.exit(1)
+    }
+
+    if (bam_samplesheet) {
+        // Workflow steps that need FASTQ files can not be run on BAM input
+        def fastq_steps = ['raw_fastq_qc', 'fastq_processing', 'processed_fastq_qc', 'mapping', 'raw_bam_qc', 'bam_processing',
+                           'processed_bam_qc', 'mapping_metrics', 'iterative_assembly', 'taxonomic_classification', 'microbial_screening']
+        def enabled_fastq_steps = fastq_steps.findAll { params[it].toBoolean() }
+        if (enabled_fastq_steps) {
+            log.error """`bam_samplesheet` is provided, but the following workflow steps that need FASTQ files are set to true: ${enabled_fastq_steps.join(', ')}.
+            With BAM input, only `random_sampling_bam`, `variant_calling`, `sexing` and `repeat_cpg_identification` can be run.
+            Please set the above workflow steps to false.
+            Exiting the pipeline......!
+            """
+            System.exit(1)
+        }
+
+        // The BAM files are checked against the target reference genome only
+        if (params.competitive_reference) {
+            log.error """`bam_samplesheet` is provided together with `competitive_reference`. Please leave `competitive_reference` empty.
+            For BAM files mapped to a competitive reference genome, provide only the target reference genome as `reference`.
+            Exiting the pipeline......!
+            """
+            System.exit(1)
+        }
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////
     // FASTQ PROCESSING checks
@@ -171,17 +217,32 @@ workflow INPUT_CHECK {
 
     //////////////////////////////////////////////////////////////////////////////////////
 
-    SAMPLESHEET_CHECK ( samplesheet )
-        .csv
-        .splitCsv ( header:true, sep:',' )
-        .map { create_fastq_channel(it) }
-        .set { reads }
+    if (bam_samplesheet) {
+        BAM_SAMPLESHEET_CHECK ( bam_samplesheet )
+            .csv
+            .splitCsv ( header:true, sep:',' )
+            .map { create_bam_channel(it) }
+            .set { bam }
 
-    ch_versions = ch_versions.mix(SAMPLESHEET_CHECK.out.versions)
+        reads       = Channel.empty()
+        csv         = BAM_SAMPLESHEET_CHECK.out.csv
+        ch_versions = ch_versions.mix(BAM_SAMPLESHEET_CHECK.out.versions)
+    } else {
+        SAMPLESHEET_CHECK ( samplesheet )
+            .csv
+            .splitCsv ( header:true, sep:',' )
+            .map { create_fastq_channel(it) }
+            .set { reads }
+
+        bam         = Channel.empty()
+        csv         = SAMPLESHEET_CHECK.out.csv
+        ch_versions = ch_versions.mix(SAMPLESHEET_CHECK.out.versions)
+    }
 
     emit:
     reads                                                                                   // channel: [ val(meta), [ reads ] ]
-    csv                                      = SAMPLESHEET_CHECK.out.csv                    // channel: [ samplesheet.valid.csv ]
+    bam                                                                                     // channel: [ val(meta), bam, bai or [] ]
+    csv                                                                                     // channel: [ samplesheet.valid.csv ]
     versions                                 = ch_versions                                  // channel: [ versions.yml ]
 }
 
@@ -211,4 +272,19 @@ def create_fastq_channel(LinkedHashMap row) {
         fastq_meta = [ meta, [ file(row.fastq_1), file(row.fastq_2) ] ]
     }
     return fastq_meta
+}
+
+// Function to get list of [ meta, bam, bai ]. bai is [] if no BAI file
+// (sample.bam.bai or sample.bai) is found next to the BAM file
+def create_bam_channel(LinkedHashMap row) {
+    def meta = [:]
+    meta.id = row.sample_id
+
+    def bam = file(row.bam)
+    if (!bam.exists()) {
+        exit 1, "ERROR: Please check input BAM samplesheet -> BAM file does not exist!\n${row.bam}"
+    }
+    def bai = [ file("${row.bam}.bai"), file(row.bam.replaceAll(/\.bam$/, '.bai')) ].find { it.exists() } ?: []
+
+    return [ meta, bam, bai ]
 }

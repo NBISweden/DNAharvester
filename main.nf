@@ -7,6 +7,7 @@ nextflow.enable.dsl = 2
 // Import subworkflows
 include { GUNZIP                     } from './modules/local/gunzip/main'
 include { INPUT_CHECK                } from './subworkflows/local/input_check/main'
+include { BAM_INPUT                  } from './subworkflows/local/bam_input/main'
 include { RAW_FASTQ_QC               } from './subworkflows/local/raw_fastq_qc/main'
 include { FASTQ_PROCESSING           } from './subworkflows/local/fastq_processing/main'
 include { PROCESSED_FASTQ_QC         } from './subworkflows/local/processed_fastq_qc/main'
@@ -31,6 +32,9 @@ workflow {
 
     // Set the workflow name
     def workflow_name = params.workflow_run_name ?: workflow.runName
+
+    // BAM mode: run the BAM-based workflow steps on already processed BAM files
+    def bam_input = params.bam_samplesheet ? true : false
 
     // The primary workflow for the DNAharvester pipeline
     log.info("""
@@ -74,8 +78,14 @@ workflow {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // INPUT_CHECK
-    INPUT_CHECK ( params.samplesheet )
+    INPUT_CHECK ( params.samplesheet, params.bam_samplesheet )
     ch_all_versions = ch_all_versions.mix(INPUT_CHECK.out.versions)
+
+    // BAM_INPUT (BAM mode only)
+    if ( bam_input ) {
+        BAM_INPUT ( INPUT_CHECK.out.bam, ch_reference )
+        ch_all_versions = ch_all_versions.mix(BAM_INPUT.out.versions)
+    }
 
     // RAW_FASTQ_QC
     if ( params.raw_fastq_qc.toBoolean() ) {
@@ -124,6 +134,13 @@ workflow {
         }
     }
 
+    // Reference genome index used by the downstream analyses
+    if ( bam_input ) {
+        ch_fai = BAM_INPUT.out.fai
+    } else if ( params.mapping.toBoolean() ) {
+        ch_fai = params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+    }
+
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // 4. REPEAT_CPG_IDENTIFICATION
@@ -157,6 +174,16 @@ workflow {
             params.competitive_reference ? COMPETITIVE_MAPPING.out.competitive_fai : MAPPING.out.fai
         )
         ch_all_versions = ch_all_versions.mix(BAM_PROCESSING.out.versions)
+    }
+
+    // Final BAM files used by RANDOM_SAMPLING_BAM, VARIANT_CALLING and SEXING:
+    // input BAM files in BAM mode, otherwise the deduplicated BAM files from BAM_PROCESSING
+    if ( bam_input ) {
+        ch_final_bam = BAM_INPUT.out.bam
+        ch_final_bai = BAM_INPUT.out.bai
+    } else if ( params.bam_processing.toBoolean() ) {
+        ch_final_bam = BAM_PROCESSING.out.dedup_sample
+        ch_final_bai = BAM_PROCESSING.out.dedup_sample_index
     }
 
     // PROCESSED_BAM_QC
@@ -222,9 +249,9 @@ workflow {
 
     if ( params.random_sampling_bam.toBoolean() ) {
         RANDOM_SAMPLING_BAM (
-            BAM_PROCESSING.out.dedup_sample,
+            ch_final_bam,
             ch_reference,
-            params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+            ch_fai
         )
         ch_all_versions = ch_all_versions.mix(RANDOM_SAMPLING_BAM.out.versions)
     }
@@ -236,15 +263,15 @@ workflow {
 
     if ( params.variant_calling.toBoolean() ) {
         // Collecting processed BAM and BAI files for all samples
-        ch_all_dedup_samples = BAM_PROCESSING.out.dedup_sample
-            .join(BAM_PROCESSING.out.dedup_sample_index)
+        ch_all_dedup_samples = ch_final_bam
+            .join(ch_final_bai)
             .map { meta, bam, bai -> tuple([id: workflow_name], bam, bai) }
             .groupTuple()
 
         // Per-sample (not joint-cohort) BAM/BAI channel for DeepVariant, which calls
         // and filters each sample independently rather than jointly like BCFTOOLS/ANGSD
-        ch_per_sample_dedup = BAM_PROCESSING.out.dedup_sample
-            .join(BAM_PROCESSING.out.dedup_sample_index)
+        ch_per_sample_dedup = ch_final_bam
+            .join(ch_final_bai)
 
         // Input channel for BED file used to restrict variant calling
         // to certain genome regions. Use the repeat masked bed file
@@ -264,7 +291,7 @@ workflow {
             VARIANT_CALLING_BCFTOOLS (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_fai,
                 ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_BCFTOOLS.out.versions)
@@ -274,7 +301,7 @@ workflow {
             VARIANT_CALLING_ANGSD (
                 ch_all_dedup_samples,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai,
+                ch_fai,
                 ch_regions
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_ANGSD.out.versions)
@@ -284,7 +311,7 @@ workflow {
             VARIANT_CALLING_DEEPVARIANT (
                 ch_per_sample_dedup,
                 ch_reference,
-                params.competitive_reference ? COMPETITIVE_MAPPING.out.target_fai : MAPPING.out.fai
+                ch_fai
             )
             ch_all_versions = ch_all_versions.mix(VARIANT_CALLING_DEEPVARIANT.out.versions)
         }
@@ -339,7 +366,7 @@ workflow {
     if ( params.sexing.toBoolean() ) {
         SEXING (
             workflow_name,
-            BAM_PROCESSING.out.dedup_sample
+            ch_final_bam
         )
         ch_all_versions = ch_all_versions.mix(SEXING.out.versions)
     }
