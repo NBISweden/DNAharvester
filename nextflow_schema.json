@@ -56,6 +56,10 @@
       "type": "string",
       "default": null
     },
+    "bam_samplesheet": {
+      "type": "string",
+      "default": null
+    },
     "reference": {
       "type": "string",
       "default": null
