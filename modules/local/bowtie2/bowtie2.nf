@@ -28,7 +28,8 @@ process BOWTIE2 {
         meta.sample_type == 'modern' ? (params.bowtie2_modern_params ?: '') : ''
     // Parse read group: @RG\tID:xxx\tSM:xxx\tPL:xxx\tLB:xxx -> --rg-id 'xxx' --rg 'SM:xxx' --rg 'PL:xxx' --rg 'LB:xxx'
     def rg_args = ''
-    def parts = meta.read_group.toString().replaceAll('@RG\\\\t', '').tokenize('\\t')
+    // split() on the regex for a literal "\t" (tokenize() would split on every '\' and 't' character)
+    def parts = meta.read_group.toString().replaceAll('@RG\\\\t', '').split('\\\\t')
     parts.each { part ->
         if (part.startsWith('ID:')) {
             rg_args = "--rg-id '${part.minus('ID:')}'"
