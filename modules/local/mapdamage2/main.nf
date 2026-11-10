@@ -44,8 +44,8 @@ process MAPDAMAGE2 {
 
 
     """
-    ## Run mapDamage for library type = double
-    if [ "$library_type" == "double" ]; then
+    ## Run mapDamage for library type = double-stranded
+    if [ "$library_type" == "double-stranded" ]; then
         mapDamage \\
             $args \\
             $rescale \\
@@ -55,7 +55,7 @@ process MAPDAMAGE2 {
             -i $bam \\
             -r $fasta
     else
-        ## Run mapDamage for library type = single
+        ## Run mapDamage for library type = single-stranded
         mapDamage \\
             $args \\
             $rescale \\
