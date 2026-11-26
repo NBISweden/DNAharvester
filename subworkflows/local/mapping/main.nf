@@ -3,9 +3,11 @@
 // Indexing
 include { SAMTOOLS_FAIDX as M_SAMTOOLS_FAIDX              } from '../../../modules/local/samtools/samtools_faidx.nf'
 include { BWA_INDEX as M_BWA_INDEX                        } from '../../../modules/local/bwa/bwa_index.nf'
+include { GALN_INDEX as M_GALN_INDEX                      } from '../../../modules/local/galn/galn_index.nf'
 include { BOWTIE2_BUILD as M_BOWTIE2_BUILD                } from '../../../modules/local/bowtie2/bowtie2_build.nf'
 include { BWA_ALN as M_BWA_ALN                            } from '../../../modules/local/bwa/bwa_aln.nf'
 include { BWA_MEM as M_BWA_MEM                            } from '../../../modules/local/bwa/bwa_mem.nf'
+include { GALN    as M_GALN                               } from '../../../modules/local/galn/galn.nf'
 include { SPLIT_FASTQ as M_SPLIT_FASTQ                    } from '../../../modules/local/awk/split_fastq.nf'
 include { BWA_ALN as M_BWA_ALN_SHORT                      } from '../../../modules/local/bwa/bwa_aln.nf'
 include { BWA_MEM as M_BWA_MEM_LONG                       } from '../../../modules/local/bwa/bwa_mem.nf'
@@ -30,9 +32,16 @@ workflow MAPPING {
     // 1. Index the reference genome if it is not already indexed
     ////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Build the BWA index - only if BWA is selected as mapping tool
+    // Build the BWA index - only if BWA or G-ALN is selected as mapping tool.
+    // G-ALN builds it on the GPU (much faster, byte-identical to `bwa index`),
+    // so the same index is also used by bwa-aln/bwa-mem for the other sample type.
     def bwa_tools = ['bwa-aln', 'bwa-mem', 'bwa-aln-mem']
-    if (bwa_tools.contains( params.mapping_tool_ancient ) || bwa_tools.contains( params.mapping_tool_modern )) {
+    if (params.mapping_tool_ancient == 'galn' || params.mapping_tool_modern == 'galn') {
+        M_GALN_INDEX (reference, file(params.reference).getParent())
+        ch_versions         = ch_versions.mix(M_GALN_INDEX.out.versions)
+        ch_bwa_index        = M_GALN_INDEX.out.index_dir
+    }
+    else if (bwa_tools.contains( params.mapping_tool_ancient ) || bwa_tools.contains( params.mapping_tool_modern )) {
         M_BWA_INDEX (reference, file(params.reference).getParent())
         ch_versions         = ch_versions.mix(M_BWA_INDEX.out.versions)
         ch_bwa_index        = M_BWA_INDEX.out.index_dir
@@ -62,6 +71,7 @@ workflow MAPPING {
     ch_reads_bwa_aln        = Channel.empty()
     ch_reads_bwa_mem        = Channel.empty()
     ch_reads_bwa_aln_mem    = Channel.empty()
+    ch_reads_galn           = Channel.empty()
     ch_reads_bowtie2        = Channel.empty()
 
     // Configure routing for ancient samples
@@ -69,12 +79,14 @@ workflow MAPPING {
     else if (params.mapping_tool_ancient == 'bwa-mem')      { ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.ancient) }
     else if (params.mapping_tool_ancient == 'bwa-aln-mem')  { ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.ancient) }
     else if (params.mapping_tool_ancient == 'bowtie2')      { ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.ancient) }
+    else if (params.mapping_tool_ancient == 'galn')         { ch_reads_galn = ch_reads_galn.mix(ch_reads_branched.ancient) }
 
     // Configure routing for modern samples
     if (params.mapping_tool_modern == 'bwa-aln')            { ch_reads_bwa_aln = ch_reads_bwa_aln.mix(ch_reads_branched.modern) }
     else if (params.mapping_tool_modern == 'bwa-mem')       { ch_reads_bwa_mem = ch_reads_bwa_mem.mix(ch_reads_branched.modern) }
     else if (params.mapping_tool_modern == 'bwa-aln-mem')   { ch_reads_bwa_aln_mem = ch_reads_bwa_aln_mem.mix(ch_reads_branched.modern) }
     else if (params.mapping_tool_modern == 'bowtie2')       { ch_reads_bowtie2 = ch_reads_bowtie2.mix(ch_reads_branched.modern) }
+    else if (params.mapping_tool_modern == 'galn')          { ch_reads_galn = ch_reads_galn.mix(ch_reads_branched.modern) }
 
 
     // Run Mapping Tools
@@ -83,6 +95,12 @@ workflow MAPPING {
         M_BWA_ALN ( ch_reads_bwa_aln, ch_bwa_index )
         ch_versions         = ch_versions.mix(M_BWA_ALN.out.versions)
         ch_raw_bam          = ch_raw_bam.mix(M_BWA_ALN.out.bam)
+    }
+    // G-ALN (BWA ALN on GPU)
+    if (params.mapping_tool_ancient == 'galn' || params.mapping_tool_modern == 'galn') {
+        M_GALN ( ch_reads_galn, ch_bwa_index )
+        ch_versions         = ch_versions.mix(M_GALN.out.versions)
+        ch_raw_bam          = ch_raw_bam.mix(M_GALN.out.bam)
     }
     // BWA MEM
     if (params.mapping_tool_ancient == 'bwa-mem' || params.mapping_tool_modern == 'bwa-mem') {
